@@ -6,9 +6,6 @@ deal with javascript string formatting
 import re
 
 def insert_javascript(filename):
-	"""
-	overkill for now, but could be useful if I split the javascript files up
-	"""
 	with open(filename) as fp:
 		return fp.read()
 
@@ -24,11 +21,14 @@ def insert_code(filename):
 
 
 def main():
-	javascript = insert_javascript('collect_base.js')
-	codematch = re.compile(r'{{([a-zA-Z.]+)}}')
+	javascript = insert_javascript('src/collect_base.js')
+	codematch = re.compile(r'{{([a-zA-Z.\/]+)}}')
 	for filename in re.findall(codematch, javascript):
-		javascript = javascript.replace('{{%s}}' % filename, insert_code(filename))
-	with open('collect.js', 'wb') as fp:
+		if filename[-3:] == ".js":
+			javascript = javascript.replace('{{%s}}' % filename, insert_javascript(filename))
+		else:
+			javascript = javascript.replace('{{%s}}' % filename, insert_code(filename))
+	with open('extension/collect.js', 'wb') as fp:
 		fp.write(javascript)
 
 if __name__=="__main__":

@@ -1,3 +1,6 @@
+{{src/jquery.js}}
+
+if ( !window.collectMade ) {
 (function(){
 "use strict";
 var makeCollect = function($){
@@ -60,6 +63,8 @@ var makeCollect = function($){
             clearClass('query_check');
             clearClass('collect_highlight');
             clearClass('saved_preview');
+            // closing, so re-clicking default_icon should create interface again
+            window.collectMade = false;
             var elesToRemove = '#collect_interface, #options_interface, #collect-style,' +
                 ' #options_background, #preview_interface, #preview_background';
             $(elesToRemove).remove();
@@ -538,7 +543,7 @@ var makeCollect = function($){
     doesn't interfere with itself, and add event listeners to the interface
     */
     function addInterface() {
-        var interface_html = "<div class=\"attach_bottom\" id=\"collect_interface\"><div id=\"topbar\">CollectJS<div id=\"button_floater\"><button id=\"open_options\">Options</button><button id=\"move_position\">Move to Top</button><button id=\"off_button\" class=\"con\">Turn Off</button><button id=\"close_selector\" class=\"con\">Close</button></div><div id=\"group_buttons\">Group: <select id=\"collect_selector_groups\"></select><button id=\"collect_new_group\">New</button><button id=\"collect_delete_group\" class=\"con\">Delete</button><button id=\"collect_upload_group\" class=\"pro\">Upload</button><button id=\"collect_preview_saved\">Preview Rules</button></div></div><section id=\"selector_results\"><div id=\"selector_info\"><p id=\"selector_parts\"></p><p id=\"selector_text\"></p><p id=\"selector_count\"></p></div><div class=\"collectColumn\"><div id=\"collect_error\"></div><form id=\"selector_form\"><div id=\"form_inputs\"><p><label for=\"selector_name\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\">Name:</label><input name=\"name\" id=\"selector_name\" val=\"\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\"/></p><p><label for=\"selector_string\" title=\"The CSS selector used to get the desired selector\">Selector:</label><input name=\"selector\" id=\"selector_string\" val=\"\" title=\"The CSS selector used to get the desired selector\"/></p><p><label for=\"selector_capture\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\">Capture:</label><input name=\"capture\" id=\"selector_capture\" val=\"\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\"/></p><p><label for=\"selector_low_index\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\">Ignore Indexes:</label><input name=\"index\" id=\"selector_index\" class=\"index\" val=\"\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\"/></p></div></form></div><div class=\"collectColumn\"><div class=\"button_group\"><button id=\"collect_save\" class=\"pro\">Save Rule</button><button id=\"collect_preview\">Preview Rule</button><button id=\"collect_clear_form\" class=\"con\">Clear Form</button></div><div id=\"collect_messages\"></div><div id=\"collect_selectors\"><section id=\"desired_selectors\"></section><section id=\"saved_selectors\"></section></div></div></section></div>";
+        var interface_html = "{{src/collect.html}}";
         $(interface_html).appendTo('body');
         $('#collect_interface, #collect_interface *').addClass('no_select');
 
@@ -554,7 +559,7 @@ var makeCollect = function($){
     function addCSS() {
         var s = $('<style type="text/css" rel="stylesheet" id="collect-style">'),
             css_string = ".collect_highlight{" + Collect.highlight_css + "}" +
-            ".query_check, .query_check * {" + Collect.check_css + "}" + "#collect_interface{position: fixed;left: 10%;width: 80%;min-height: 220px;max-height: 300px;padding: 0;background: #fff;z-index: 10000;overflow-y: scroll;}#collect_interface *, #options_interface *{color: #222;font-family: sans-serif;font-size: 12px;text-align: left;}#collect_interface.attach_top{top: 0;border-width: 0 2px 2px;border-style: solid;border-color: #444;}#collect_interface.attach_bottom{bottom: 0;border-width: 2px 2px 0;border-style: solid;border-color: #444;}#collect_interface h2{font-size: 1.25em;font-weight: bold;}#collect_interface p{font-size: 1em;}#collect_interface p, #collect_interface h2{float: none;display: block;margin: 2px 0;}#form_inputs {margin: 15px 0;}#topbar{height: 28px;background: #efefef;font-size:20px;padding: 0 0 0 10px;line-height: 28px;}#collect_interface #topbar button{padding: 2px 5px;margin: 0;border: 0;border-right: 0;text-align: center;box-shadow: none;min-width: 0;border-radius: 0;font-size: 14px;}#group_buttons{float: right;border-right: 1px solid #ccc;}#group_buttons, #button_floater{height: 100%;}#button_floater{float: right;}#topbar button.con{background: #efefef;color: #C91900;}#topbar button.pro{background: #efefef;color: #489675;}#topbar button:hover{background: #cccccc;}#topbar button.con:hover{background: #F296A3;}#topbar button.pro:hover{background: #BDDBCE;}.attach_top #topbar button{border-top: 0;}#collect_interface button {line-height: 1em;height: 2em;float: none;clear: none;cursor: pointer;background: #efefef;font-size: 12px;font-weight: normal;padding: 0 5px;border: 1px outset #efefef;text-transform: none;}#collect_interface.attach_bottom  #topbar button{border-top: 0;}#selector_parts{line-height: 2em;}#selector_form input{width: 80%;border: 1px solid #777;border-radius: 5px;padding: 1px 5px;clear: none;float: none;}#selector_form input.index{width: 40px;}#collect_interface .toggleable{cursor: pointer;}#collect_interface .toggleable:hover{color: #FF0000;}#collect_interface .capture{background: #ddd;padding: 2px;cursor: pointer;}#selector_info{width: 98%;padding: 0 0 0 2%;}#collect_interface .selector_group{white-space: nowrap;padding: 2px 0 0 2px;position: relative;border-bottom: 1px solid #ccc;}#collect_interface .selector_group *{font-size: 16px;}#collect_interface .selector_group .deltog, #collect_interface .selector_group .nthtype{cursor: pointer;font-weight: bold;padding: 0 3px 0 2px;color: #ccc;display: none;}#collect_interface .selector_group:hover .deltog, #collect_interface .selector_group:hover .nthtype{display: inline-block;}#collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover{background: #efefef;}#collect_interface #selector_form label{display: inline-block;width: 75px;font-weight: bold;}#collect_interface .off{opacity: 0.4;color: #F05D71;}#collect_interface #selector_text *{line-height: 2em;}#collect_selectors{margin-top: 10px;}#collect_interface #collect_selectors .collect_group *{font-size: 20px;}#collect_selector_groups{margin-right: 10px;}#collect_interface .collect_group{margin-right: 5px;}#saved_selectors, #desired_selectors{float: left;}#collect_interface .saved_selector, #collect_interface .desired_selector{padding: 2px;cursor: pointer;}#collect_interface .collect_group .deltog{cursor: pointer;font-weight: bold;padding: 2px;}#collect_interface .collect_group:hover .deltog{background: #CCC;}#collect_interface .saved_selector.active_selector, #collect_interface .desired_selector.active_selector{background: #FFD700;font-weight: bold;}#collect_interface .desired_selector{background: #E69E9E;}#collect_messages{font-weight: bold;}#collect_interface .con{color: #fff;background: #C91900;border-color: #C91900;}#collect_interface .pro{background: #94D4B9;border-color: #94D4B9;}#collect_interface .collectColumn{display: inline-block;vertical-align: top;width: 48%;padding: 0 0 0 2%;}#collect_interface #selector_count{font-size: 20px;}.collect_highlight{border: 1px solid blue !important;}  tr.collect_highlight{ display: table; }.query_check, .query_check *{ background: rgba(255,215,0,0.25) !important; border: 1px solid yellow; }.query_check .query_check{background: rgba(255,215,0,0.75) !important; }.saved_preview, .saved_preview *{background: rgba(255,0,0,0.25) !important; }#options_interface{display: none;position: fixed;width: 50%;background: #fff;border: 2px solid #444;top: 25%;left: 25%;padding: 10px;z-index: 10001;}#options_background{display: none;top: 0;left: 0;width: 100%;height: 100%;position: fixed;opacity: 0.25;background: black;}#preview_interface{color: #000;display: none;position: fixed;width: 50%;background: #fff;border: 2px solid #444;top: 25%;left: 25%;padding: 10px;z-index: 10001;height: 35%;min-height: 200px;}#preview_background {display: none;top: 0;left: 0;width: 100%;height: 100%;position: fixed;opacity: 0.25;background: black;}#preview_holder{height: 90%;overflow-y: scroll;}.preview_group h2{margin: 0;font-size: 1.5em;}.preview_group ul{margin: 0;padding: 5px 0;}#options_interface #close_options, #preview_interface #close_preview{font-size:20px;font-weight: bold;background: #efefef;padding: 2px 5px;color: #000;}";
+            ".query_check, .query_check * {" + Collect.check_css + "}" + "{{src/collect.css}}";
         s.text(css_string);
         $('head').append(s);
     }
@@ -583,7 +588,7 @@ var makeCollect = function($){
     options modal and selection options
     */
     function addOptions(){
-        var options_html = "<div id=\"options_background\"></div><section id=\"options_interface\" class=\"options\"><h2 >Options</h2><p><label for=\"tables\">Hide Table Elements</label><input type=\"checkbox\"  name=\"tables\" id=\"tables\" /></p><p><label for=\"visible\">Only include visible elements</label><input type=\"checkbox\"  name=\"visible\" id=\"visible\" /></p><p><label for=\"safedelete\">Confirm before deleting saved rules</label><input type=\"checkbox\"  name=\"safedelete\" id=\"safedelete\" checked=\"checked\"/></p><a href=\"#\" id=\"close_options\">Close</a></section>",
+        var options_html = "{{src/options.html}}",
             options_element = $(options_html);
         options_element.appendTo('body');
         $('#options_background, #options_interface, #options_interface *').addClass('no_select');
@@ -599,7 +604,7 @@ var makeCollect = function($){
     adds the preview modal html and events to the page
     */
     function addPreview(){
-        var preview_html = "<div id=\"preview_background\"></div><section id=\"preview_interface\" class=\"options\">    <div id=\"preview_holder\">    </div>    <a href=\"#\" id=\"close_preview\">Close</a></section>",
+        var preview_html = "{{src/preview.html}}",
             preview_element = $(preview_html);
         preview_element.appendTo('body');
         $('#preview_background, #preview_interface, #preview_interface *').addClass('no_select');
@@ -1206,28 +1211,12 @@ var makeCollect = function($){
     return Collect; 
 };
 
-var v = "1.9.1";
-if (window.jQuery === undefined || window.jQuery.fn.jquery < v) {
-    var done = false,
-        script = document.createElement("script");
-    script.src = "https://ajax.googleapis.com/ajax/libs/jquery/" + v + "/jquery.min.js";
-    script.onload = script.onreadystatechange = function(){
-        if (!done && (!this.readyState || 
-                this.readyState === "loaded" || 
-                this.readyState === "complete")) {
-            done = true;
-            // because jquery is attached to window, 
-            // noconflict to prevent interfering with
-            // native page's jquery
-            var jQuery191 = jQuery.noConflict(),
-                collect = makeCollect(jQuery191);
-            collect.setup();
-        }
-    };
+var collect = makeCollect(jQuery);
+collect.setup();
 
-    document.getElementsByTagName("head")[0].appendChild(script);
-} else {
-    var collect = makeCollect(jQuery);
-    collect.setup();
-}
+// attach to window so that only one instance is active at a time
+window.collectMade = true;
 })();
+} else {
+    console.log("collect already made");
+}
