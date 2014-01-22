@@ -28,7 +28,7 @@ def main():
 			javascript = javascript.replace('{{%s}}' % filename, insert_javascript(filename))
 		else:
 			javascript = javascript.replace('{{%s}}' % filename, insert_code(filename))
-	with open('extension/collect.js', 'wb') as fp:
+	with open('collect/collect.js', 'wb') as fp:
 		fp.write(javascript)
 
 if __name__=="__main__":

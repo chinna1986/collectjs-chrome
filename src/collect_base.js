@@ -548,20 +548,8 @@ var makeCollect = function($){
         $('#collect_interface, #collect_interface *').addClass('no_select');
 
         addRuleGroups();    
-        addCSS();
         addOptions();
         addPreview();
-    }
-
-    /*
-    create a style element for the collect interface and insert it into the head
-    */
-    function addCSS() {
-        var s = $('<style type="text/css" rel="stylesheet" id="collect-style">'),
-            css_string = ".collect_highlight{" + Collect.highlight_css + "}" +
-            ".query_check, .query_check * {" + Collect.check_css + "}" + "{{src/collect.css}}";
-        s.text(css_string);
-        $('head').append(s);
     }
 
     // utility function because I was removing/adding classes in a number of places
