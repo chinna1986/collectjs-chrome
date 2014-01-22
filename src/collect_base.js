@@ -1,5 +1,3 @@
-{{src/jquery.js}}
-
 if ( !window.collectMade ) {
 (function(){
 "use strict";
