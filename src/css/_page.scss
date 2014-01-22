@@ -1,0 +1,21 @@
+.collect_highlight{
+    border: 1px solid blue !important;
+}
+ /* breaks formatting, but shows border on table rows */
+ tr.collect_highlight{
+    display: table;
+ }
+
+.query_check, .query_check *{ 
+    background: rgba(255,215,0,0.25) !important; 
+    border: 1px solid yellow; 
+}
+
+/* for nested query_checks, vary opacity to differentiate between elements*/
+.query_check .query_check{
+    background: rgba(255,215,0,0.75) !important; 
+}
+
+.saved_preview, .saved_preview *{
+    background: rgba(255,0,0,0.25) !important; 
+}

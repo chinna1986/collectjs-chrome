@@ -1,0 +1,296 @@
+/* interface.scss */
+
+$red: #C91900;
+$dark-red: #F296A3;
+$green: #489675;
+$dark-green: #BDDBCE;
+$light-gray: #efefef;
+$gold: #FFD700;
+
+#collect_interface{
+    position: fixed;
+    left: 10%;
+    width: 80%;
+    min-height: 220px;
+    max-height: 300px;
+    padding: 0;
+    background: #fff;
+    z-index: 10000;
+    overflow-y: scroll;
+
+    *{
+        margin: 0;
+        padding: 0;
+        color: #222;
+        font-family: sans-serif;
+        font-size: 12px;
+        text-align: left;
+    }
+
+    h2{
+        font-size: 1.25em;
+        font-weight: bold;    
+        float: none;
+        display: block;
+        margin: 2px 0;
+    }
+    
+    p{
+        @extend p;
+        font-size: 1em;
+    }
+
+    #topbar{
+        height: 28px;
+        background: $light-gray;
+        font-size:20px;
+        padding: 0 0 0 10px;
+        line-height: 28px;
+
+        button{
+            padding: 2px 5px;
+            margin: 0;
+            border: 0;
+            border-right: 0;
+            text-align: center;
+            box-shadow: none;
+            min-width: 0;
+            border-radius: 0;
+            font-size: 14px;
+        }
+        button.con{
+            background: $light-gray;
+            color: $red;
+        }
+
+        button.pro{
+            background: $light-gray;
+            color: $green;
+        }
+
+        button:hover{
+            background: #cccccc;
+        }
+
+        button.con:hover{
+            background: $dark-red;
+        }
+
+        button.pro:hover{
+            background: $dark-green;
+        }
+
+    }
+
+    button{
+        line-height: 1em;
+        height: 2em;
+        float: none;
+        clear: none;
+        cursor: pointer;
+        background: $light-gray;
+        font-size: 12px;
+        font-weight: normal;
+        padding: 0 5px;
+        border: 1px outset $light-gray;
+        text-transform: none;
+    }
+
+    .saved_selector.active_selector{
+        background: $gold;
+        font-weight: bold;
+    }
+
+    .desired_selector.active_selector{
+        @extend .saved_selector.active_selector;
+    }
+
+    .desired_selector{
+        background: #E69E9E;
+    }
+
+    .con{
+        color: #fff;
+        background: #C91900;
+        border-color: #C91900;
+    }
+
+    .pro{
+        background: #94D4B9;
+        border-color: #94D4B9;
+    }
+
+    .collectColumn{
+        display: inline-block;
+        vertical-align: top;
+        width: 48%;
+        padding: 0 0 0 2%;
+    }
+
+    #selector_count{
+        font-size: 20px;
+    }
+
+    .selector_group{
+        white-space: nowrap;
+        padding: 2px 0 0 2px;
+        position: relative;
+        border-bottom: 1px solid #ccc;
+        margin-right: 15px;
+
+        *{
+            font-size: 16px;
+        }
+
+        .deltog, .nthtype{
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 3px 0 2px;
+            color: #ccc;
+             display: none;
+        }
+        .deltog:hover, .nthtype:hover{
+            background: $light-gray;
+        }
+
+    }
+    .selector_group:hover .deltog, .selector_group:hover .nthtype{
+            display: inline-block;
+    }
+
+    .toggleable{
+        cursor: pointer;
+    }
+
+    .toggleable:hover{
+        color: #FF0000;
+    }
+
+    .capture{
+        background: #ddd;
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .off{
+        opacity: 0.4;
+        color: #F05D71;
+    }
+
+    #selector_text *{
+        line-height: 2em;
+    }
+
+    .collect_group{
+        margin-right: 5px;
+
+        .deltog{
+            cursor: pointer;
+            font-weight: bold;
+            padding: 2px;
+        }
+    }
+
+    .saved_selector, .desired_selector{
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .collect_group:hover .deltog{
+        background: #CCC;
+    }
+
+    .collect_group:hover .saved_selector{
+        background: $light-gray;
+    }
+
+    .button_group button{
+        margin: 0 10px 0 0;
+    }
+}
+
+#collect_interface.attach_top{
+    top: 0;
+    border-width: 0 2px 2px;
+    border-style: solid;
+    border-color: #444;
+}
+
+#collect_interface.attach_bottom{
+    bottom: 0;
+    border-width: 2px 2px 0;
+    border-style: solid;
+    border-color: #444;
+}
+
+#form_inputs {
+    margin: 15px 0;
+
+    p{
+        margin: 0 0 5px 0;
+    }
+}
+
+#group_buttons{
+    float: right;
+    border-right: 1px solid #ccc;
+    height: 100%;
+}
+
+#button_floater{
+    float: right;
+    @extend #group_buttons
+}
+
+#selector_parts{
+    line-height: 2em;
+}
+
+#selector_form{
+    input{
+        width: 80%;
+        border: 1px solid #777;
+        border-radius: 5px;
+        padding: 1px 5px;
+        clear: none;
+        float: none;
+    }
+
+    input.index{
+        width: 40px;
+    }
+
+    label{
+        display: inline-block;
+        width: 75px;
+        font-weight: bold;
+    }
+}
+
+#selector_info{
+    width: 98%;
+    padding: 0 0 0 2%;
+}
+
+#collect_selectors{
+    margin-top: 10px;
+
+    .collect_group *{
+        font-size: 20px;
+    }
+}
+
+#collect_selector_groups{
+    margin-right: 10px;
+}
+
+#saved_selectors, #desired_selectors{
+    float: left;
+}
+
+#collect_messages{
+    font-weight: bold;
+}
+
+@import 'options';
+@import 'page';

@@ -4,6 +4,7 @@ deal with javascript string formatting
 """
 
 import re
+import os
 
 def insert_javascript(filename):
 	with open(filename) as fp:
@@ -30,6 +31,7 @@ def main():
 			javascript = javascript.replace('{{%s}}' % filename, insert_code(filename))
 	with open('collect/collect.js', 'wb') as fp:
 		fp.write(javascript)
+	os.system("sass src/css/interface.scss collect/css/interface.css")
 
 if __name__=="__main__":
 	main()

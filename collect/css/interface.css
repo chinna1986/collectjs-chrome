@@ -1,115 +1,58 @@
-/*
-#collect_interface shouldn't be necessary for most of these rules, but it is 
-included to prevent possible selector collisions on sites the script is run on
-*/
-#collect_interface{
-    position: fixed;
-    left: 10%;
-    width: 80%;
-    min-height: 220px;
-    max-height: 300px;
+/* interface.scss */
+#collect_interface {
+  position: fixed;
+  left: 10%;
+  width: 80%;
+  min-height: 220px;
+  max-height: 300px;
+  padding: 0;
+  background: #fff;
+  z-index: 10000;
+  overflow-y: scroll; }
+  #collect_interface * {
+    margin: 0;
     padding: 0;
-    background: #fff;
-    z-index: 10000;
-    overflow-y: scroll;
-}
-#collect_interface *, #options_interface *{
     color: #222;
     font-family: sans-serif;
     font-size: 12px;
-    text-align: left;
-}
-
-#collect_interface.attach_top{
-    top: 0;
-    border-width: 0 2px 2px;
-    border-style: solid;
-    border-color: #444;
-}
-#collect_interface.attach_bottom{
-    bottom: 0;
-    border-width: 2px 2px 0;
-    border-style: solid;
-    border-color: #444;
-}
-#collect_interface h2{
+    text-align: left; }
+  #collect_interface h2 {
     font-size: 1.25em;
     font-weight: bold;
-}
-#collect_interface p{
-    font-size: 1em;
-}
-#collect_interface p, #collect_interface h2{
     float: none;
     display: block;
-    margin: 2px 0;
-}
-
-#form_inputs {
-    margin: 15px 0;
-}
-
-#topbar{
+    margin: 2px 0; }
+  #collect_interface p {
+    font-size: 1em; }
+  #collect_interface #topbar {
     height: 28px;
     background: #efefef;
-    font-size:20px;
+    font-size: 20px;
     padding: 0 0 0 10px;
-    line-height: 28px;
-}
-
-#collect_interface #topbar button{
-    padding: 2px 5px;
-    margin: 0;
-    border: 0;
-    border-right: 0;
-    text-align: center;
-    box-shadow: none;
-    min-width: 0;
-    border-radius: 0;
-    font-size: 14px;
-}
-
-#group_buttons{
-    float: right;
-    border-right: 1px solid #ccc;
-}
-
-#group_buttons, #button_floater{
-    height: 100%;
-}
-
-#button_floater{
-    float: right;
-}
-
-#topbar button.con{
-    background: #efefef;
-    color: #C91900;
-}
-
-#topbar button.pro{
-    background: #efefef;
-    color: #489675;
-}
-
-#topbar button:hover{
-    background: #cccccc;
-}
-
-#topbar button.con:hover{
-    background: #F296A3;
-}
-
-#topbar button.pro:hover{
-    background: #BDDBCE;
-}
-
-
-.attach_top #topbar button{
-    border-top: 0;
-}
-
-#collect_interface button {
+    line-height: 28px; }
+    #collect_interface #topbar button {
+      padding: 2px 5px;
+      margin: 0;
+      border: 0;
+      border-right: 0;
+      text-align: center;
+      box-shadow: none;
+      min-width: 0;
+      border-radius: 0;
+      font-size: 14px; }
+    #collect_interface #topbar button.con {
+      background: #efefef;
+      color: #c91900; }
+    #collect_interface #topbar button.pro {
+      background: #efefef;
+      color: #489675; }
+    #collect_interface #topbar button:hover {
+      background: #cccccc; }
+    #collect_interface #topbar button.con:hover {
+      background: #f296a3; }
+    #collect_interface #topbar button.pro:hover {
+      background: #bddbce; }
+  #collect_interface button {
     line-height: 1em;
     height: 2em;
     float: none;
@@ -120,252 +63,219 @@ included to prevent possible selector collisions on sites the script is run on
     font-weight: normal;
     padding: 0 5px;
     border: 1px outset #efefef;
-    text-transform: none;
-}
-
-#collect_interface.attach_bottom  #topbar button{
-    border-top: 0;
-}
-
-#selector_parts{
-    line-height: 2em;
-}
-#selector_form input{
-    width: 80%;
-    border: 1px solid #777;
-    border-radius: 5px;
-    padding: 1px 5px;
-    clear: none;
-    float: none;
-}
-
-#selector_form input.index{
-    width: 40px;
-}
-
-#collect_interface .toggleable{
-    cursor: pointer;
-}
-#collect_interface .toggleable:hover{
-    color: #FF0000;
-}
-
-#collect_interface .capture{
-    background: #ddd;
-    padding: 2px;
-    cursor: pointer;
-}
-
-#selector_info{
-    width: 98%;
-    padding: 0 0 0 2%;
-}
-
-#collect_interface .selector_group{
+    text-transform: none; }
+  #collect_interface .saved_selector.active_selector, #collect_interface .desired_selector.active_selector {
+    background: gold;
+    font-weight: bold; }
+  #collect_interface .desired_selector {
+    background: #E69E9E; }
+  #collect_interface .con {
+    color: #fff;
+    background: #C91900;
+    border-color: #C91900; }
+  #collect_interface .pro {
+    background: #94D4B9;
+    border-color: #94D4B9; }
+  #collect_interface .collectColumn {
+    display: inline-block;
+    vertical-align: top;
+    width: 48%;
+    padding: 0 0 0 2%; }
+  #collect_interface #selector_count {
+    font-size: 20px; }
+  #collect_interface .selector_group {
     white-space: nowrap;
     padding: 2px 0 0 2px;
     position: relative;
     border-bottom: 1px solid #ccc;
-    margin-right: 15px;
-}
-
-#collect_interface .selector_group *{
-    font-size: 16px;
-}
-
-#collect_interface .selector_group .deltog, #collect_interface .selector_group .nthtype{
-    cursor: pointer;
-    font-weight: bold;
-    padding: 0 3px 0 2px;
-    color: #ccc;
-    display: none;
-}
-
-#collect_interface .selector_group:hover .deltog, #collect_interface .selector_group:hover .nthtype{
-    display: inline-block;
-}
-
-#collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover{
-    background: #efefef;
-}
-
-#collect_interface #selector_form label{
-    display: inline-block;
-    width: 75px;
-    font-weight: bold;
-}
-
-#collect_interface .off{
+    margin-right: 15px; }
+    #collect_interface .selector_group * {
+      font-size: 16px; }
+    #collect_interface .selector_group .deltog, #collect_interface .selector_group .nthtype {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0 3px 0 2px;
+      color: #ccc;
+      display: none; }
+    #collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover {
+      background: #efefef; }
+  #collect_interface .selector_group:hover .deltog, #collect_interface .selector_group:hover .nthtype {
+    display: inline-block; }
+  #collect_interface .toggleable {
+    cursor: pointer; }
+  #collect_interface .toggleable:hover {
+    color: #FF0000; }
+  #collect_interface .capture {
+    background: #ddd;
+    padding: 2px;
+    cursor: pointer; }
+  #collect_interface .off {
     opacity: 0.4;
-    color: #F05D71;
-}
-
-#collect_interface #selector_text *{
-    line-height: 2em;
-}
-
-#collect_selectors{
-    margin-top: 10px;
-}
-
-#collect_interface #collect_selectors .collect_group *{
-    font-size: 20px;
-}
-
-#collect_selector_groups{
-    margin-right: 10px;
-}
-
-#collect_interface .collect_group{
-    margin-right: 5px;
-}
-
-#saved_selectors, #desired_selectors{
-    float: left;
-}
-
-#collect_interface .saved_selector, #collect_interface .desired_selector{
+    color: #F05D71; }
+  #collect_interface #selector_text * {
+    line-height: 2em; }
+  #collect_interface .collect_group {
+    margin-right: 5px; }
+    #collect_interface .collect_group .deltog {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 2px; }
+  #collect_interface .saved_selector, #collect_interface .desired_selector {
     padding: 2px;
-    cursor: pointer;
-}
-#collect_interface .collect_group .deltog{
-    cursor: pointer;
-    font-weight: bold;
-    padding: 2px;
-}
+    cursor: pointer; }
+  #collect_interface .collect_group:hover .deltog {
+    background: #CCC; }
+  #collect_interface .collect_group:hover .saved_selector {
+    background: #efefef; }
+  #collect_interface .button_group button {
+    margin: 0 10px 0 0; }
 
-#collect_interface .collect_group:hover .deltog{
-    background: #CCC;
-}
+#collect_interface.attach_top {
+  top: 0;
+  border-width: 0 2px 2px;
+  border-style: solid;
+  border-color: #444; }
 
-#collect_interface .saved_selector.active_selector, #collect_interface .desired_selector.active_selector{
-    background: #FFD700;
-    font-weight: bold;
-}
+#collect_interface.attach_bottom {
+  bottom: 0;
+  border-width: 2px 2px 0;
+  border-style: solid;
+  border-color: #444; }
 
-#collect_interface .desired_selector{
-    background: #E69E9E;
-}
+#form_inputs {
+  margin: 15px 0; }
+  #form_inputs p {
+    margin: 0 0 5px 0; }
 
-#collect_messages{
-    font-weight: bold;
-}
+#group_buttons, #button_floater {
+  float: right;
+  border-right: 1px solid #ccc;
+  height: 100%; }
 
-#collect_interface .con{
-    color: #fff;
-    background: #C91900;
-    border-color: #C91900;
-}
+#button_floater {
+  float: right; }
 
-#collect_interface .pro{
-    background: #94D4B9;
-    border-color: #94D4B9;
-}
+#selector_parts {
+  line-height: 2em; }
 
-#collect_interface .collectColumn{
-    display: inline-block;
-    vertical-align: top;
-    width: 48%;
-    padding: 0 0 0 2%;
-}
+#selector_form input {
+  width: 80%;
+  border: 1px solid #777;
+  border-radius: 5px;
+  padding: 1px 5px;
+  clear: none;
+  float: none; }
+#selector_form input.index {
+  width: 40px; }
+#selector_form label {
+  display: inline-block;
+  width: 75px;
+  font-weight: bold; }
 
-#collect_interface #selector_count{
-    font-size: 20px;
-}
+#selector_info {
+  width: 98%;
+  padding: 0 0 0 2%; }
 
+#collect_selectors {
+  margin-top: 10px; }
+  #collect_selectors .collect_group * {
+    font-size: 20px; }
 
-/* non-interface css */
-.collect_highlight{
-    border: 1px solid blue !important;
-}
- /* breaks formatting, but shows border on table rows */
- tr.collect_highlight{
-    display: table;
- }
+#collect_selector_groups {
+  margin-right: 10px; }
 
-.query_check, .query_check *{ 
-    background: rgba(255,215,0,0.25) !important; 
-    border: 1px solid yellow; 
-}
+#saved_selectors, #desired_selectors {
+  float: left; }
 
-/* for nested query_checks, vary opacity to differentiate between elements*/
-.query_check .query_check{
-    background: rgba(255,215,0,0.75) !important; 
-}
+#collect_messages {
+  font-weight: bold; }
 
-.saved_preview, .saved_preview *{
-    background: rgba(255,0,0,0.25) !important; 
-}
+/* _options.scss */
+#options_interface * {
+  color: #222;
+  font-family: sans-serif;
+  font-size: 12px;
+  text-align: left; }
 
 /* options modal */
-#options_interface{
-    display: none;
-    position: fixed;
-    width: 50%;
-    background: #fff;
-    border: 2px solid #444;
-    top: 25%;
-    left: 25%;
-    padding: 10px;
-    z-index: 10001;
-}
+#options_interface {
+  display: none;
+  position: fixed;
+  width: 50%;
+  background: #fff;
+  border: 2px solid #444;
+  top: 25%;
+  left: 25%;
+  padding: 10px;
+  z-index: 10001; }
 
-#options_background{
-    display: none;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    opacity: 0.25;
-    background: black;
-}
+#options_background {
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  opacity: 0.25;
+  background: black; }
 
-/* preview modal */
-#preview_interface{
-    color: #000;
-    display: none;
-    position: fixed;
-    width: 50%;
-    background: #fff;
-    border: 2px solid #444;
-    top: 25%;
-    left: 25%;
-    padding: 10px;
-    z-index: 10001;
-    height: 35%;
-    min-height: 200px;
-}
+#preview_interface {
+  color: #000;
+  display: none;
+  position: fixed;
+  width: 50%;
+  background: #fff;
+  border: 2px solid #444;
+  top: 25%;
+  left: 25%;
+  padding: 10px;
+  z-index: 10001;
+  height: 35%;
+  min-height: 200px; }
 
 #preview_background {
-    display: none;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    opacity: 0.25;
-    background: black;
-}
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  opacity: 0.25;
+  background: black; }
 
-#preview_holder{
-    height: 90%;
-    overflow-y: scroll;
-}
+#preview_holder {
+  height: 90%;
+  overflow-y: scroll; }
 
-.preview_group h2{
-    margin: 0;
-    font-size: 1.5em;
-}
-.preview_group ul{
-    margin: 0;
-    padding: 5px 0;
-}
+.preview_group h2 {
+  margin: 0;
+  font-size: 1.5em; }
 
-#options_interface #close_options, #preview_interface #close_preview{
-    font-size:20px;
-    font-weight: bold;
-    background: #efefef;
-    padding: 2px 5px;
-    color: #000;
-}
+.preview_group ul {
+  margin: 0;
+  padding: 5px 0; }
+
+#options_interface #close_options, #preview_interface #close_preview {
+  font-size: 20px;
+  font-weight: bold;
+  background: #efefef;
+  padding: 2px 5px;
+  color: #000; }
+
+.collect_highlight {
+  border: 1px solid blue !important; }
+
+/* breaks formatting, but shows border on table rows */
+tr.collect_highlight {
+  display: table; }
+
+.query_check, .query_check * {
+  background: rgba(255, 215, 0, 0.25) !important;
+  border: 1px solid yellow; }
+
+/* for nested query_checks, vary opacity to differentiate between elements*/
+.query_check .query_check {
+  background: rgba(255, 215, 0, 0.75) !important; }
+
+.saved_preview, .saved_preview * {
+  background: rgba(255, 0, 0, 0.25) !important; }
