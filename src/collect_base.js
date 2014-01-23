@@ -297,7 +297,9 @@ var makeCollect = function($){
             $('#selector_capture').val(capture);
             $('#selector_index').val(index);
             if ( selector !== '' ){
-                selectorInterface(selector);
+                var longHTML = elementSelector($(selector)[0]);
+                $("#selector_parts").html(longHTML);
+
                 clearClass("query_check");
                 selectorElements(selector).addClass("query_check");
             }
@@ -623,6 +625,14 @@ var makeCollect = function($){
         parent.children('.toggleable').eq(0).removeClass('off');
         updateInterface();
     }
+
+    function pseudoHTML(selector, val) {
+        return "<span class='pseudo toggleable no_select'>:" + 
+            selector + "(<span class='child_toggle no_select' title='options: an+b " + 
+            "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
+            "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
+    }
+
 
     // end addInterface helpers
 
@@ -969,7 +979,6 @@ var makeCollect = function($){
                         attrs.push(tagAttrs[p]);
                         attr_check[curr] = true;
                     }
-                    
                 }
             }
         }
@@ -1050,50 +1059,6 @@ var makeCollect = function($){
     }
 
     // end selectorText helpers
-
-    /*
-    given a css selector string, create .selector_groups for #selector_parts
-    */
-    function selectorInterface(selector){
-        var groups = selector.split(' '),
-            curr,
-            $curr,
-            selector_groups = '';
-        for ( var i=0, len=groups.length; i < len; i++ ) {
-            curr = groups[i];
-            $curr = $(groups[i]);
-            if ( $curr.length ) {
-                var s = new Selector($curr.get(0));
-                selector_groups += s.toHTML(true);
-            }
-            // handle pseudo classes
-            if ( curr.indexOf(':') !== -1 ){
-                // 0 - full match
-                // 1 - pseudoselector's name
-                // 2 - index
-                var pseudos = curr.match(/:(.+?)\((.+?)\)/);
-                if ( pseudos.length === 3 ) {
-                    // strip off the closing span tag and 
-                    //add pseudoselector toggleable
-                    var first_half = selector_groups.slice(0,-231),
-                        second_half = selector_groups.slice(-231);
-                    selector_groups = first_half + 
-                        pseudoHTML(pseudos[1], pseudos[2]) +
-                        second_half;
-                }
-            }
-            selector_groups += ' ';
-        }
-        $(selector).addClass('query_check');
-        $('#selector_parts').html(selector_groups);
-    }
-
-    function pseudoHTML(selector, val) {
-        return "<span class='pseudo toggleable no_select'>:" + 
-            selector + "(<span class='child_toggle no_select' title='options: an+b " + 
-            "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
-            "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
-    }
 
     /*
     given an html element, create .selector_group elements to represent 
@@ -1203,6 +1168,4 @@ collect.setup();
 // attach to window so that only one instance is active at a time
 window.collectMade = true;
 })();
-} else {
-    console.log("collect already made");
 }
