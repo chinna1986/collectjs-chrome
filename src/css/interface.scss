@@ -204,8 +204,16 @@ $gold: #FFD700;
         background: $light-gray;
     }
 
-    .button_group button{
-        margin: 0 10px 0 0;
+    #form_buttons{
+        width: 20%;
+        display: inline-block;
+
+        button{
+            width: 100%;
+            margin: 0 10px 10px 0;
+            text-align: center;
+            font-size: 1.25em;
+        }
     }
 }
 
@@ -247,6 +255,9 @@ $gold: #FFD700;
 }
 
 #selector_form{
+    display: inline-block;
+    width:80%;
+
     input{
         width: 80%;
         border: 1px solid #777;

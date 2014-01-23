@@ -127,8 +127,14 @@
     background: #CCC; }
   #collect_interface .collect_group:hover .saved_selector {
     background: #efefef; }
-  #collect_interface .button_group button {
-    margin: 0 10px 0 0; }
+  #collect_interface #form_buttons {
+    width: 20%;
+    display: inline-block; }
+    #collect_interface #form_buttons button {
+      width: 100%;
+      margin: 0 10px 10px 0;
+      text-align: center;
+      font-size: 1.25em; }
 
 #collect_interface.attach_top {
   top: 0;
@@ -158,19 +164,22 @@
 #selector_parts {
   line-height: 2em; }
 
-#selector_form input {
-  width: 80%;
-  border: 1px solid #777;
-  border-radius: 5px;
-  padding: 1px 5px;
-  clear: none;
-  float: none; }
-#selector_form input.index {
-  width: 40px; }
-#selector_form label {
+#selector_form {
   display: inline-block;
-  width: 75px;
-  font-weight: bold; }
+  width: 80%; }
+  #selector_form input {
+    width: 80%;
+    border: 1px solid #777;
+    border-radius: 5px;
+    padding: 1px 5px;
+    clear: none;
+    float: none; }
+  #selector_form input.index {
+    width: 40px; }
+  #selector_form label {
+    display: inline-block;
+    width: 75px;
+    font-weight: bold; }
 
 #selector_info {
   width: 98%;

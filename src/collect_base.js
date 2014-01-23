@@ -425,7 +425,7 @@ var makeCollect = function($){
                 $('#close_selector').on('click', closeInterface);
                 $('#move_position').on('click', moveInterface);
 
-                // rule .button_group
+                // rules for #form_buttons
                 $('#collect_save').on('click', saveRuleEvent);
                 $('#collect_clear_form').on('click', clearRuleForm);
                 $('#collect_preview').on('click', previewRule);
