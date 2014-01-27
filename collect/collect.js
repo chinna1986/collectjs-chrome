@@ -1,3 +1,4 @@
+// check to make sure an interface hasn't already been created
 if ( !window.collectMade ) {
 (function(){
 "use strict";
@@ -5,19 +6,11 @@ var makeCollect = function($){
     /***************
     COLLECT OBJECT
     ***************/
-    var Collect = {
-        highlight_css: "border:1px solid blue !important;",
-        check_css: "background: yellow !important;border: 1px solid yellow !important;",
-        elements: "body *:not(.no_select)"
-    };
+    var Collect = {};
 
-    Collect.setup = function(args){
-        if ( arguments.length !== 0 ) {
-            this.highlight_css = args.highlight_css || this.highlight_css;
-            this.check_css = args.check_css || this.check_css;
-            this.elements = args.elements || this.elements;
-        }
-        // default group is no localStorage.rules
+    Collect.setup = function(){
+        this.elements = "body *:not(.no_select)";
+        // default group if localStorage.rules is undefined
         if ( !localStorage.rules ) {
             localStorage.rules = "{\"default\":{}}";
         }
@@ -893,15 +886,15 @@ var makeCollect = function($){
         function addQueryCheck(eles){
             var index = $("#selector_index").val(),
                 indexInt = parseInt(index, 10),
-                newEles,
-                low = 0,
-                high = eles.length,
-                originalLength = high;
-            // if neither low or high are defined, add to all elements
+                newEles, low, high, originalLength;
+            // if index is undefined, add to all elements
             if ( isNaN(indexInt) ) {
                 eles.addClass("query_check");
                 return eles;
             } else {
+                low = 0;
+                high = eles.length;
+                originalLength = high;
                 // if indexInt is negative, add the array length to get the desired value
                 // if indexInt is >= eles.length, set 
                 if ( indexInt < 0 ) {
@@ -914,11 +907,8 @@ var makeCollect = function($){
                 } else {
                     low = indexInt;
                 }
-                newEles = [];
-                for ( var i = low; i<high; i++ ) {
-                    eles.eq(i).addClass("query_check");
-                    newEles.push(eles.get(i));
-                }
+                newEles = eles.slice(low, high)
+                newEles.addClass("query_check");
                 return newEles;
             }
         }
@@ -936,11 +926,9 @@ var makeCollect = function($){
             } else {
                 selected = selectorElements(selector);
                 selected = addQueryCheck(selected);
-                //selected.addClass('query_check');
                 $('#selector_count').html(selected.length);
                 $('#selector_string').val(selector);
-                var text = selectorText(selected[0]);
-                $('#selector_text').html(text || "no text");
+                $('#selector_text').html(selectorText(selected[0]) || "no text");
             }
         };
     })();
