@@ -91,15 +91,15 @@
     margin-right: 15px; }
     #collect_interface .selector_group * {
       font-size: 16px; }
-    #collect_interface .selector_group .deltog, #collect_interface .selector_group .nthtype {
+    #collect_interface .selector_group .deltog, #collect_interface .selector_group .nthtype, #collect_interface .selector_group .onlychild {
       cursor: pointer;
       font-weight: bold;
       padding: 0 3px 0 2px;
       color: #ccc;
       display: none; }
-    #collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover {
+    #collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover, #collect_interface .selector_group .onlychild:hover {
       background: #efefef; }
-  #collect_interface .selector_group:hover .deltog, #collect_interface .selector_group:hover .nthtype {
+  #collect_interface .selector_group:hover .deltog, #collect_interface .selector_group:hover .nthtype, #collect_interface .selector_group:hover .onlychild {
     display: inline-block; }
   #collect_interface .toggleable {
     cursor: pointer; }

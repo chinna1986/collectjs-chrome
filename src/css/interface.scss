@@ -142,19 +142,19 @@ $gold: #FFD700;
             font-size: 16px;
         }
 
-        .deltog, .nthtype{
+        .deltog, .nthtype, .onlychild{
             cursor: pointer;
             font-weight: bold;
             padding: 0 3px 0 2px;
             color: #ccc;
-             display: none;
+            display: none;
         }
-        .deltog:hover, .nthtype:hover{
+        .deltog:hover, .nthtype:hover, .onlychild:hover{
             background: $light-gray;
         }
 
     }
-    .selector_group:hover .deltog, .selector_group:hover .nthtype{
+    .selector_group:hover .deltog, .selector_group:hover .nthtype, .selector_group:hover .onlychild{
             display: inline-block;
     }
 

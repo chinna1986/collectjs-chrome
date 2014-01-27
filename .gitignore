@@ -1,3 +1,4 @@
 *.pyc
 *.pem
 *.crx
+.sass-cache

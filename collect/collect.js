@@ -117,28 +117,46 @@ var makeCollect = function($){
             var _this = $(this),
                 parent = this.parentElement,
                 pseudo = parent.getElementsByClassName('pseudo'),
-                pseudoElement = pseudo.length ? pseudo[0] : undefined,
+                pseudoElement = pseudo[0],
                 $pseudo = $(pseudoElement),
-                toggleables = parent.getElementsByClassName('toggleable'),
-                offElements = parent.getElementsByClassName('off'),
-                toggleCount = toggleables.length,
-                offCount = offElements.length,
+                onlychild = parent.getElementsByClassName('child'),
+                childElement = onlychild[0],
+                $child = $(childElement),
+                toggleables = parent.getElementsByClassName('realselector'),
+                toggleableCount = toggleables.length,
+                offCount = 0,
                 turningOn = _this.hasClass('off');
+
+            // toggle .off, then count classes that are off
+            _this.toggleClass('off');
+            for ( var r=0, len = toggleables.length; r<len; r++ ) {
+                if ( toggleables[r].classList.contains('off')){
+                    offCount++;
+                }
+            }
 
             if ( turningOn ) {
                 // turning on the pseudo element, make sure something else if turned on
-                if ( pseudoElement === this  && offCount === toggleCount ) {
+                if ( pseudoElement === this  && offCount === toggleableCount ) {
+                    $(toggleables[0]).removeClass('off');
+                } else if ( childElement === this && offCount === toggleableCount ) {
                     $(toggleables[0]).removeClass('off');
                 }
-            } else {
-                // if turning off last real selector and pseudo selector is on, turn if off as well
-                // but don't turn off if this is pseudoElement
-                if ( pseudoElement !== this && pseudoElement && 
-                    !$pseudo.hasClass('off') && (toggleCount - offCount ) <= 2) {
+            } else {             
+                // if all "real" selectors are turned off, make sure to turn off the nth-of-type and
+                // > selectors as well
+                if ( toggleableCount === offCount ) {
+                    if ( pseudoElement !== this && pseudoElement && !$pseudo.hasClass('off') ) {
                         $pseudo.addClass('off');
+                    }
+                    if ( childElement !== this && childElement && !$child.hasClass('off') ) {
+                        $child.addClass('off');
+                    }
                 }
+
+                
             }
-            _this.toggleClass('off');
+            
             updateInterface();
         }
 
@@ -171,6 +189,11 @@ var makeCollect = function($){
 
         function addPseudoType(event){
             addPseudoElement('nth-of-type', this);
+            this.parentElement.removeChild(this);
+        }
+
+        function addOnlyChildren(event){
+            addOnlyChildElement(this);
             this.parentElement.removeChild(this);
         }
 
@@ -447,7 +470,8 @@ var makeCollect = function($){
                     .on('mouseenter', '.selector_group', previewSelectorHover)
                     .on('mouseleave', '.selector_group', removeSelectorHover)
                     .on('click', '.deltog', removeSelectorGroup)
-                    .on('click', '.nthtype', addPseudoType);
+                    .on('click', '.nthtype', addPseudoType)
+                    .on('click', '.onlychild', addOnlyChildren);
 
                 $('#selector_index').on('blur', blurUpdate);
 
@@ -469,7 +493,8 @@ var makeCollect = function($){
                     .off('mouseenter', '.selector_group', previewSelectorHover)
                     .off('mouseleave', '.selector_group', removeSelectorHover)
                     .off('click', '.deltog', removeSelectorGroup)
-                    .off('click', '.nthtype', addPseudoType);
+                    .off('click', '.nthtype', addPseudoType)
+                    .off('click', '.onlychild', addOnlyChildren);
 
                 $('#selector_index').off('blur', blurUpdate);
 
@@ -633,6 +658,15 @@ var makeCollect = function($){
             "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
     }
 
+    function addOnlyChildElement(ele){
+        var _this = $(ele),
+            parent = _this.parents('.selector_group'),
+            html = "<span class='child toggleable no_select'> &gt;</span>";
+        parent.children('.toggleable').last().after($(html));
+        // make sure the element is on so this selector makes sense
+        parent.children('.toggleable').eq(0).removeClass('off');
+        updateInterface();   
+    }
 
     // end addInterface helpers
 
@@ -1147,13 +1181,14 @@ var makeCollect = function($){
         }
 
         return "<span class='selector_group no_select'>" + selector +
-            "<span class='nthtype no_select' title='add the nth-of-type pseudo selector'>+type</span>" + 
+            "<span class='nthtype no_select' title='add the nth-of-type pseudo selector'>+t</span>" + 
+            "<span class='onlychild no_select' title='next selector must be direct child (&gt; in css)'>&gt;</span>" + 
             "<span class='deltog no_select'>x</span>"+
             "</span>";
     };
 
     function wrapToggleable(to_wrap, on) {
-        return "<span class='toggleable no_select " + (on ? "":"off") + "'>" + to_wrap + "</span>";
+        return "<span class='toggleable realselector no_select " + (on ? "":"off") + "'>" + to_wrap + "</span>";
     }
 
     /********************
