@@ -397,8 +397,9 @@ var makeCollect = function($){
                     name: group
                 },
                 uploadJSON = JSON.stringify(uploadObject);
-            console.log(uploadJSON);
-            alertMessage("not yet implemented, check console to see what would be sent");
+            chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function(response){
+                console.log(response);
+            });
         }
 
         function loadGroupEvent(event){

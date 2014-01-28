@@ -3,9 +3,10 @@
 
   "name": "CollectJS",
   "description": "Get's css selector rules for a crawler",
-  "version": "0.1",
+  "version": "0.2",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "http://localhost/*"
   ],
   "background": {
     "scripts": ["background.js"],
