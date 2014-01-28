@@ -387,6 +387,12 @@ var makeCollect = function($){
             loadSavedSelectors();
         }
 
+        function getGroupsEvent(event){
+            chrome.runtime.sendMessage({'type': 'groups'}, function(response){
+                console.log(response);
+            });
+        }
+
         function uploadGroupEvent(event){
             event.preventDefault();
             var group = currentGroup(),
@@ -451,6 +457,7 @@ var makeCollect = function($){
                 $('#saved_selectors, #desired_selectors').on('click', '.deltog', deleteRuleEvent);
                 $('#collect_preview_saved').on('click', previewGroupEvent);
                 $('#collect_new_group').on('click', createGroupEvent);
+                $('#collect_get_groups').on('click', getGroupsEvent);
                 $('#collect_delete_group').on('click', deleteGroupEvent);
                 $('#collect_upload_group').on('click', uploadGroupEvent);
                 $('#collect_selector_groups').on('change', loadGroupEvent);
