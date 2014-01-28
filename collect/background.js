@@ -13,11 +13,15 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
     if ( message ) {
-        if ( message.type === "upload") {
-            uploadData(message.msg, sendResponse);
-            // return true so sendResponse does not become invalid
-            // http://developer.chrome.com/extensions/runtime.html#event-onMessage
-            return true;
+        switch ( message.type ) {
+            case "upload":
+                uploadData(message.msg, sendResponse);
+                // return true so sendResponse does not become invalid
+                // http://developer.chrome.com/extensions/runtime.html#event-onMessage
+                return true;
+            case "groups":
+                getGroups(sendResponse);
+                return true;
         }
     }
 });
@@ -29,7 +33,6 @@ function uploadData(data, callback){
 
     xhr.onload = function(event){
         var resp = JSON.parse(xhr.responseText);
-        // not currently being called. timeout issue?
         callback(resp);
     }
     xhr.onerror = function(event){
@@ -39,4 +42,20 @@ function uploadData(data, callback){
     xhr.open("POST", url);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(data);
+}
+
+function getGroups(callback){
+    var url = "http://localhost:5000/groups",
+        xhr = new XMLHttpRequest();
+
+    xhr.onload = function(event){
+        var resp = JSON.parse(xhr.responseText);
+        callback({"error": false, "data": resp});
+    }
+    xhr.onerror = function(event){
+        callback({"error": true});
+    }
+
+    xhr.open("GET", url);
+    xhr.send();   
 }
