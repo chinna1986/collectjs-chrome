@@ -32,6 +32,10 @@ function uploadData(data, callback){
         // not currently being called. timeout issue?
         callback(resp);
     }
+    xhr.onerror = function(event){
+        callback({"error": "true"});
+    }
+
     xhr.open("POST", url);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(data);
