@@ -10,10 +10,6 @@ var makeCollect = function($){
 
     Collect.setup = function(){
         this.elements = "body *:not(.no_select)";
-        // default group if localStorage.rules is undefined
-        if ( !localStorage.rules ) {
-            localStorage.rules = "{\"default\":{}}";
-        }
         addInterface();
         this.events.permanent();
         this.events.on(); 
@@ -572,8 +568,7 @@ var makeCollect = function($){
         var interface_html = "{{src/collect.html}}";
         $(interface_html).appendTo('body');
         $('#collect_interface, #collect_interface *').addClass('no_select');
-
-        addRuleGroups();    
+   
         addOptions();
         addPreview();
     }
@@ -677,152 +672,7 @@ var makeCollect = function($){
     /*********************
         group functions
     *********************/
-    function addRuleGroups() {
-        var rules = getRules(),
-            groupSelect = document.getElementById('collect_selector_groups'),
-            option,
-            first = true;
-        if ( JSON.stringify(rules) === JSON.stringify({})) {
-            addGroup('default');
-        } else {
-            for ( var key in rules ) {
-                option = newGroupOption(key, first);
-                // set the first option to selected
-                if ( first ) {
-                    first = !first;
-                }
-                groupSelect.appendChild(option);
-            }
-        }
-        loadSavedSelectors();
-    }
-
-    function loadSavedSelectors(){
-        var group = currentGroup(),
-            rules = getRules(group);
-        $('#saved_selectors').html('');
-        for( var key in rules ){
-            addSavedSelector(rules[key]);
-        }
-    }
-
-
-    function addGroup(groupName){
-        // if no rules exist, create default group
-        if ( localStorage.rules === undefined ) {
-            localStorage.rules = "{\"default\":{}}";
-        }
-        var rules = JSON.parse(localStorage.rules);
-        if ( rules[groupName] !== undefined ) {
-            return false;
-        } else {
-            $('#collect_selector_groups option:selected').prop('selected', 'false');
-            rules[groupName] = {};
-            localStorage.rules = JSON.stringify(rules);
-            var groupSelect = document.getElementById('collect_selector_groups'),
-                newGroup = newGroupOption(groupName, true);
-            groupSelect.appendChild(newGroup);
-            return true;
-        }
-    }
-
-    function newGroupOption(name, selected){
-        var option = document.createElement('option');
-        if ( selected ) {
-            option.setAttribute('selected','selected');
-        }
-        option.innerHTML = name;
-        option.setAttribute('value', name);
-        return option;
-    }
-
-    function currentGroup(){
-        var currGroup = $('#collect_selector_groups option:selected');
-        if ( currGroup.length ) {
-            return currGroup.eq(0).val();
-        } else {
-            // undecided on how to handle this yet
-            return '';
-        }
-    }
-
-    /*********************
-        localStorage
-    *********************/
     
-    // saves @rule to localStorage.rules array
-    function saveRule(group, rule){
-        // should this break if group isn't passed?
-        if ( arguments.length !== 2) {
-            return false;
-        }
-        var rules = getRules(group),
-            active = $('.active_selector');
-        if ( active.length ) {
-            var activeName = active.eq(0).text();
-            if ( activeName !== rule.name ){
-                delete rules[activeName];
-            }
-        }
-        
-        rules[rule.name] = rule;
-        setRules(group, rules);
-        return true;
-    }
-
-    // group argument optional, if not included return all rules
-    function getRules(group){
-        if ( localStorage.rules === undefined ) {
-            localStorage.rules = "{}";
-        }
-        var rules = JSON.parse(localStorage.rules);
-        if ( group === undefined ) {
-            return rules;
-        } else {
-            // create group if it doesn't exist
-            if ( rules[group] === undefined ) {
-                rules[group] = {};
-                localStorage.rules = JSON.stringify(rules);
-            }
-            return rules[group];    
-        }
-    }
-
-    // only used by other localStorage calls
-    function setRules(group, obj){
-        var rules = getRules();
-        rules[group] = obj;
-        localStorage.rules = JSON.stringify(rules);
-    }
-
-    // delete @name rule from @group
-    function deleteRule(group, name){
-        if ( arguments.length !== 2) {
-            return false;
-        }
-        var rules = getRules(group),
-            returnVal = true;
-        if ( rules[name] ) {
-            $(rules[name].selector).removeClass('saved_preview');
-            delete rules[name];
-        } else {
-            returnVal = false;
-        }
-        setRules(group, rules);
-        return returnVal;
-    }
-
-    function clearRules(group){
-        var currGroups = JSON.parse(localStorage.rules);
-        // just clear contents of default, don't delete it
-        if ( group === 'default' ) {
-            currGroups[group] = {};
-        } else {
-            delete currGroups[group];    
-        }        
-        localStorage.rules = JSON.stringify(currGroups);
-    }
-
 
     /*********************
         selectors/rules
