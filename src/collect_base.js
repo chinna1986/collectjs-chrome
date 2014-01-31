@@ -220,13 +220,6 @@ var makeCollect = function($){
                     .data('capture', selector_object.capture)
                     .text(selector_object.name)
                     .removeClass('active_selector');
-                // move to saved_selectors
-                if ( active.parents('#desired_selectors').length ) {
-                    active
-                        .swapClasses('desired_selector', 'saved_selector')
-                        .parents('.collect_group')
-                        .appendTo('#saved_selectors');
-                }
             } else {
                 saveRule(group, selector_object);
                 // call last because index needs to be set
@@ -299,7 +292,8 @@ var makeCollect = function($){
         // that represents a selector
         function loadSelectorGroup(ele){
             var _this = $(ele),
-                selector = decodeURIComponent(_this.data('selector').replace(/\+/g, ' ')),
+                selectorVal = _this.data('selector') || '',
+                selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
                 name = _this.text(),
                 index = _this.data('index'),
                 capture = _this.data('capture');
@@ -326,7 +320,7 @@ var makeCollect = function($){
                 var host = window.location.hostname,
                     rules = storage.rules,
                     group = rules[host][currentGroup()];
-                $('#saved_selectors').html('');
+                $('#collect_selectors').html('');
 
                 for( var key in group ) {
                     var curr, results, resultsLen, prop;
@@ -368,7 +362,7 @@ var makeCollect = function($){
             var name = prompt("Group Name");
             if ( name !== '' && name !== null ){
                 addGroup(name);
-                $('#saved_selectors').html('');
+                $('#collect_selectors').html('');
                 clearInterface();
             }
         }
@@ -395,10 +389,23 @@ var makeCollect = function($){
         function getGroupsEvent(event){
             chrome.runtime.sendMessage({'type': 'groups'}, function(response){
                 if ( !response.error ){
-                    var data = response.data;
-                    addGroup(data.name);
-                    // need to create desired selector rules
-                }                
+                    var data = response.data,
+                        selectors = "",
+                        groupName = data.name,
+                        curr;
+                    addLoadedGroup(groupName, data.attrs);                    
+                    for ( var i=0, len=data.attrs.length; i < len; i++) {
+                        curr = data.attrs[i];
+                        // no deltog since it is a group of desired selectors
+                        selectors += '<span class="collect_group no_select">' + 
+                            '<span class="desired_selector no_select"' +
+                            ' data-selector="' + (curr.selector || '') + '"' +
+                            ' data-capture="' + (curr.capture || '') + '"' +
+                            ' data-index="' + (curr.index || '') + '">' +
+                            curr.name + '</span></span>';
+                    }
+                    $('#collect_selectors').html(selectors);
+                }
             });
         }
 
@@ -467,7 +474,7 @@ var makeCollect = function($){
                 $('#collect_preview').on('click', previewRule);
 
                 // group events
-                $('#saved_selectors, #desired_selectors').on('click', '.deltog', deleteRuleEvent);
+                $('#collect_selectors').on('click', '.deltog', deleteRuleEvent);
                 $('#collect_preview_saved').on('click', previewGroupEvent);
                 $('#collect_new_group').on('click', createGroupEvent);
                 $('#collect_get_groups').on('click', getGroupsEvent);
@@ -489,8 +496,7 @@ var makeCollect = function($){
 
                 $('#selector_index').on('blur', blurUpdate);
 
-                $('#saved_selectors').on('click', '.saved_selector', clearOrLoad);
-                $('#desired_selectors').on('click', '.desired_selector', clearOrLoad);
+                $('#collect_selectors').on('click', '.saved_selector, .desired_selector', clearOrLoad);
 
                 $(Collect.elements).on({
                     mouseenter: select,
@@ -512,8 +518,7 @@ var makeCollect = function($){
 
                 $('#selector_index').off('blur', blurUpdate);
 
-                $('#saved_selectors').off('click', '.saved_selector', clearOrLoad);
-                $('#desired_selectors').off('click', '.desired_selector', clearOrLoad);
+                $('#collect_selectors').off('click', '.saved_selector, .desired_selector', clearOrLoad);
 
                 $(Collect.elements).off({
                     mouseenter: select,
@@ -524,50 +529,6 @@ var makeCollect = function($){
         };
         return events;
     })();
-
-
-    /********************
-        AJAX functions
-    ********************/
-    Collect.load = function(json_url){
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: json_url,
-            success: function(data){
-                // loads a json object, array of desired properties to collect
-                var selectors = "",
-                    curr;
-                if ( data.names) {
-                    for ( var i=0, len=data.names.length; i < len; i++) {
-                        curr = data.names[i];
-                        selectors += '<span class="collect_group no_select">' + 
-                            '<span class="desired_selector no_select' +
-                            ' data-selector="' + (curr.selector || '') + '"' +
-                            ' data-capture="' + (curr.capture || '') + '">' +
-                            curr.name + '</span>' +
-                            '<span class="deltog no_select">X</span></span>';
-                    }
-                    $('#desired_selectors').html(selectors);
-                }
-            }
-        });
-    };
-
-    Collect.upload = function(json_url, uploadData){
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            data: JSON.stringify(uploadData),
-            url: json_url,
-            success: function(data){
-                    
-            },
-            error: function(){
-
-            }
-        }); 
-    };
 
     /***************
     END COLLECT OBJECT
@@ -651,7 +612,7 @@ var makeCollect = function($){
             '<span class="saved_selector no_select" data-selector="' + obj.selector + 
             '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
             '</span><span class="deltog no_select">x</span></span>';
-        $('#saved_selectors').append(selectorString);
+        $('#collect_selectors').append(selectorString);
     }
 
     function addPseudoElement(pseudoSelector, ele){
@@ -1037,7 +998,7 @@ var makeCollect = function($){
                 rules = storage.rules,
                 groupName = currentGroup(),
                 group = rules[host][groupName];
-                $('#saved_selectors').html('');
+                $('#collect_selectors').html('');
             for ( var key in group ) {
                 addSavedSelector(group[key]);
             }
@@ -1085,6 +1046,27 @@ var makeCollect = function($){
     /********************
         STORAGE
     ********************/
+
+    /*
+    create the group and add the rules
+    currently overrides if there is an existing group with that name
+    */
+    function addLoadedGroup(group, rules){
+        chrome.storage.local.get('rules', function setLoadedRules(storage){
+            var host = window.location.hostname,
+                groupRules = {},
+                parent = document.getElementById('collect_selector_groups'),
+                curr, currName;
+            parent.appendChild(newGroupOption(group, true));
+            for ( var i=0, len=rules.length; i<len; i++ ) {
+                curr = rules[i];
+                currName = curr.name;
+                groupRules[currName] = curr;
+            }
+            storage.rules[host][group] = groupRules;
+            chrome.storage.local.set({'rules': storage.rules});
+        });
+    }
 
     function saveRule(group, rule){
         chrome.storage.local.get('rules', function(storage){
