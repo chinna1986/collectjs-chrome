@@ -218,7 +218,6 @@ var makeCollect = function($){
                 active
                     .data('selector', selector_object.selector)
                     .data('capture', selector_object.capture)
-                    .data('index', selector_object.index)
                     .text(selector_object.name)
                     .removeClass('active_selector');
                 // move to saved_selectors
@@ -229,7 +228,7 @@ var makeCollect = function($){
                         .appendTo('#saved_selectors');
                 }
             } else {
-                selector_object.index = saveRule(group, selector_object);
+                saveRule(group, selector_object);
                 // call last because index needs to be set
                 addSavedSelector(selector_object);
             }
@@ -275,7 +274,7 @@ var makeCollect = function($){
             var selector_span = this.previousElementSibling,
                 selector_name = selector_span.innerHTML;
             if ( $("#safedelete").is(":checked") ) {
-                var verifyDelete = confirm("Confirm you want to delete group \"" + selector_name + "\"");
+                var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
                 if ( !verifyDelete ) {
                     return;
                 }
@@ -322,28 +321,32 @@ var makeCollect = function($){
         function previewGroupEvent(event){
             event.preventDefault();
             clearInterface();
-            var rules = getRules(currentGroup()),
-                outString = '';
-            $('#saved_selectors').html('');
+            var outString = '';
+            chrome.storage.local.get('rules', function(storage){
+                var host = window.location.hostname,
+                    rules = storage.rules,
+                    group = rules[host][currentGroup()];
+                $('#saved_selectors').html('');
 
-            for( var key in rules ) {
-                var curr, results, resultsLen, prop;
-                curr = rules[key];
-                addSavedSelector(curr);
-                results = document.querySelectorAll(curr.selector);
-                resultsLen = results.length;
-                prop = captureFunction(curr);
-                outString += "<div class='preview_group'><h2>" + curr.name + 
-                    "(Count: " + resultsLen + ")</h2><ul>";
-                for (var r=0; r<resultsLen; r++ ) {
-                    var ele = results[r];
-                    $(ele).addClass("saved_preview");
-                    outString += "<li>" + prop(ele) + "</li>";
+                for( var key in group ) {
+                    var curr, results, resultsLen, prop;
+                    curr = group[key];
+                    addSavedSelector(curr);
+                    results = document.querySelectorAll(curr.selector);
+                    resultsLen = results.length;
+                    prop = captureFunction(curr);
+                    outString += "<div class='preview_group'><h2>" + curr.name + 
+                        "(Count: " + resultsLen + ")</h2><ul>";
+                    for (var r=0; r<resultsLen; r++ ) {
+                        var ele = results[r];
+                        $(ele).addClass("saved_preview");
+                        outString += "<li>" + prop(ele) + "</li>";
+                    }
+                    outString += "</ul></div>";
                 }
-                outString += "</ul></div>";
-            }
-            $('#preview_holder').html(outString);
-            $("#preview_interface, #preview_background").show();
+                $('#preview_holder').html(outString);
+                $("#preview_interface, #preview_background").show();
+            });
         }
 
         function captureFunction(curr){
@@ -373,7 +376,7 @@ var makeCollect = function($){
         function deleteGroupEvent(event){
             event.preventDefault();
             var group = currentGroup();
-            clearRules(group);
+            deleteGroup(group);
             // don't delete default group
             if ( group !== 'default' ) {
                 $('#collect_selector_groups option:selected').remove();
@@ -391,16 +394,20 @@ var makeCollect = function($){
 
         function uploadGroupEvent(event){
             event.preventDefault();
-            var group = currentGroup(),
-                rules = getRules(group),
-                uploadObject = {
-                    host: location.host,
-                    rules: rules,
-                    name: group
-                },
-                uploadJSON = JSON.stringify(uploadObject);
-            chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function(response){
-                console.log(response);
+            chrome.storage.local.get('rules', function(storage){
+                var host = window.location.hostname,
+                    rules = storage.rules,
+                    groupName = currentGroup(),
+                    group = rules[host][groupName],
+                    uploadObject = {
+                        'host': location.host,
+                        'rules': group,
+                        'name': groupName
+                    },
+                    uploadJSON = JSON.stringify(uploadObject);
+                chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function(response){
+                    console.log(response);
+                });
             });
         }
 
@@ -569,6 +576,7 @@ var makeCollect = function($){
         $(interface_html).appendTo('body');
         $('#collect_interface, #collect_interface *').addClass('no_select');
    
+        loadGroups();
         addOptions();
         addPreview();
     }
@@ -665,14 +673,6 @@ var makeCollect = function($){
     }
 
     // end addInterface helpers
-
-
-    // localstorage related functions
-
-    /*********************
-        group functions
-    *********************/
-    
 
     /*********************
         selectors/rules
@@ -994,6 +994,117 @@ var makeCollect = function($){
     END PRIVATE FUNCTIONS
     ********************/
 
+    /********************
+        GROUPS
+    ********************/
+
+    /*
+    create option elements for each of the groups for the current site
+    */
+    function loadGroups(){
+        //chrome.storage.local.clear();
+        chrome.storage.local.get('rules', function(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                groups = rules[host],
+                parent = document.getElementById('collect_selector_groups');
+            // instantiate if it doesn't exist
+            if ( groups === undefined ) {
+                rules[host] = {'default': {}};
+                chrome.storage.local.set({'rules': rules});
+                groups = rules[host];
+            }
+            for ( var key in groups ) {
+                parent.appendChild(newGroupOption(key));
+            }
+            loadSavedSelectors();
+        });
+    }
+
+    function loadSavedSelectors(){
+        chrome.storage.local.get('rules', function(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                groupName = currentGroup(),
+                group = rules[host][groupName];
+                $('#saved_selectors').html('');
+            for ( var key in group ) {
+                addSavedSelector(group[key]);
+            }
+        })
+    }
+
+    function addGroup(name){
+        chrome.storage.local.get('rules', function(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                groups = rules[host],
+                parent = document.getElementById('collect_selector_groups');
+            // don't override if it already exists
+            if ( groups[name] === undefined ) {
+                rules[host][name] = {}
+                chrome.storage.local.set({'rules': rules});
+                parent.appendChild(newGroupOption(name, true));
+            }
+        });
+    }
+
+    function deleteGroup(name){
+        if ( name !== 'default' ) {
+            chrome.storage.local.get('rules', function(storage){
+                var host = window.location.hostname,
+                    rules = storage.rules;
+                delete rules[host][name];
+                chrome.storage.local.set({'rules': rules});
+            });    
+        }
+    }
+
+    /*
+    get the option element that is currently selected
+    */
+    function currentGroup(){
+        var currGroup = $('#collect_selector_groups option:selected');
+        if ( currGroup.length ) {
+            return currGroup.eq(0).val();
+        } else {
+            // undecided on how to handle this yet
+            return '';
+        }
+    }
+
+    function newGroupOption(name, selected){
+        var option = document.createElement('option');
+        if ( selected ) {
+            option.setAttribute('selected','selected');
+        }
+        option.innerHTML = name;
+        option.setAttribute('value', name);
+        return option;
+    }
+
+    /********************
+        STORAGE
+    ********************/
+
+    function saveRule(group, rule){
+        chrome.storage.local.get('rules', function(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                name = rule.name;
+            rules[host][group][name] = rule;
+            chrome.storage.local.set({'rules': rules});
+        });
+    }
+
+    function deleteRule(group, name){
+        chrome.storage.local.get('rules', function(storage){
+            var host = window.location.hostname,
+                rules = storage.rules;
+            delete rules[host][group][name];
+            chrome.storage.local.set({'rules': rules});
+        });  
+    }
 
     /********************
         SELECTOR OBJECT

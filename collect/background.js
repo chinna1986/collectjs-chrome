@@ -45,7 +45,7 @@ function uploadData(data, callback){
         callback(resp);
     }
     xhr.onerror = function(event){
-        callback({"error": "true"});
+        callback({"error": true});
     }
 
     xhr.open("POST", url);
@@ -59,7 +59,8 @@ function getGroups(callback){
 
     xhr.onload = function(event){
         var resp = JSON.parse(xhr.responseText);
-        chrome.storage.get('groups', function(groups){
+        chrome.storage.local.get('groups', function(storage){
+            var groups = storage.groups;
             for ( var key in resp ) {
                 groups[key] = resp[key];
             }
