@@ -64,7 +64,7 @@ function getGroups(callback){
             for ( var key in resp ) {
                 groups[key] = resp[key];
             }
-            chrome.storage.set({'groups': groups});
+            chrome.storage.local.set({'groups': groups});
         });
 
         callback({"error": false, "data": resp});

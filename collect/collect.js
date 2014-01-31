@@ -375,20 +375,30 @@ var makeCollect = function($){
 
         function deleteGroupEvent(event){
             event.preventDefault();
-            var group = currentGroup();
-            deleteGroup(group);
-            // don't delete default group
-            if ( group !== 'default' ) {
+            var name = currentGroup();
+            if ( name !== 'default' ) {
                 $('#collect_selector_groups option:selected').remove();
+                chrome.storage.local.get('rules', function(storage){
+                    var host = window.location.hostname,
+                        rules = storage.rules;
+                    delete rules[host][name];
+                    chrome.storage.local.set({'rules': rules});
+                    loadSavedSelectors();
+                });    
             } else {
                 alertMessage("Cannot delete 'default' group");
+                loadSavedSelectors();
             }
-            loadSavedSelectors();
+            
         }
 
         function getGroupsEvent(event){
             chrome.runtime.sendMessage({'type': 'groups'}, function(response){
-                console.log(response);
+                if ( !response.error ){
+                    var data = response.data;
+                    addGroup(data.name);
+                    // need to create desired selector rules
+                }                
             });
         }
 
@@ -1047,17 +1057,6 @@ var makeCollect = function($){
                 parent.appendChild(newGroupOption(name, true));
             }
         });
-    }
-
-    function deleteGroup(name){
-        if ( name !== 'default' ) {
-            chrome.storage.local.get('rules', function(storage){
-                var host = window.location.hostname,
-                    rules = storage.rules;
-                delete rules[host][name];
-                chrome.storage.local.set({'rules': rules});
-            });    
-        }
     }
 
     /*
