@@ -59,6 +59,13 @@ function getGroups(callback){
 
     xhr.onload = function(event){
         var resp = JSON.parse(xhr.responseText);
+        chrome.storage.get('groups', function(groups){
+            for ( var key in resp ) {
+                groups[key] = resp[key];
+            }
+            chrome.storage.set({'groups': groups});
+        });
+
         callback({"error": false, "data": resp});
     }
     xhr.onerror = function(event){
