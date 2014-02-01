@@ -220,6 +220,8 @@ var makeCollect = function($){
                 selector_object = completeSelector(selector_object);
                 if ( !selector_object.incomplete ) {
                     active.swapClasses('incomplete_selector', 'saved_selector');
+                } else {
+                    active.swapClasses('saved_selector', 'incomplete_selector');
                 }
             } else {
                 saveRule(group, selector_object);
@@ -374,6 +376,12 @@ var makeCollect = function($){
             event.preventDefault();
             var name = currentGroup();
             if ( name !== 'default' ) {
+                if ( $("#safedelete").is(":checked") ) {
+                var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
+                if ( !verifyDelete ) {
+                    return;
+                }
+            }
                 $('#collect_selector_groups option:selected').remove();
                 chrome.storage.local.get('rules', function(storage){
                     var host = window.location.hostname,
@@ -396,18 +404,7 @@ var makeCollect = function($){
                         selectors = "",
                         groupName = data.name,
                         curr;
-                    addLoadedGroup(groupName, data.attrs);                    
-                    for ( var i=0, len=data.attrs.length; i < len; i++) {
-                        curr = data.attrs[i];
-                        // no deltog since it is a group of desired selectors
-                        selectors += '<span class="collect_group no_select">' + 
-                            '<span class="incomplete_selector no_select"' +
-                            ' data-selector="' + (curr.selector || '') + '"' +
-                            ' data-capture="' + (curr.capture || '') + '"' +
-                            ' data-index="' + (curr.index || '') + '">' +
-                            curr.name + '</span></span>';
-                    }
-                    $('#collect_selectors').html(selectors);
+                    addLoadedGroup(groupName, data.attrs);
                 }
             });
         }
@@ -1067,14 +1064,36 @@ var makeCollect = function($){
     function addLoadedGroup(group, rules){
         chrome.storage.local.get('rules', function setLoadedRules(storage){
             var host = window.location.hostname,
-                groupRules = {},
+                groupRules = storage.rules[host][group],
                 parent = document.getElementById('collect_selector_groups'),
+                exists = true,
+                selectors = '',
                 curr, currName;
-            parent.appendChild(newGroupOption(group, true));
+            if ( groupRules === undefined ) {
+                groupRules = {};
+                exists = false;
+                parent.appendChild(newGroupOption(group, true));
+                selectors = '';
+            }           
+                    
             for ( var i=0, len=rules.length; i<len; i++ ) {
                 curr = rules[i];
                 currName = curr.name;
                 groupRules[currName] = curr;
+
+                if ( !exists ){
+                    // html for the selector
+                    selectors += '<span class="collect_group no_select">' + 
+                        '<span class="incomplete_selector no_select"' +
+                        ' data-selector="' + (curr.selector || '') + '"' +
+                        ' data-capture="' + (curr.capture || '') + '"' +
+                        ' data-index="' + (curr.index || '') + '">' +
+                        curr.name + '</span></span>';    
+                }
+                
+            }
+            if ( !exists ) {
+                $('#collect_selectors').html(selectors);    
             }
             storage.rules[host][group] = groupRules;
             chrome.storage.local.set({'rules': storage.rules});
