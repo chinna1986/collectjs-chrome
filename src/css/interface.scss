@@ -1,9 +1,9 @@
 /* interface.scss */
 
 $red: #C91900;
-$dark-red: #F296A3;
+$light-red: #F296A3;
 $green: #489675;
-$dark-green: #BDDBCE;
+$light-green: #BDDBCE;
 $light-gray: #efefef;
 $gold: #FFD700;
 
@@ -73,11 +73,11 @@ $gold: #FFD700;
         }
 
         button.con:hover{
-            background: $dark-red;
+            background: $light-red;
         }
 
         button.pro:hover{
-            background: $dark-green;
+            background: $light-green;
         }
 
     }
@@ -101,12 +101,16 @@ $gold: #FFD700;
         font-weight: bold;
     }
 
-    .desired_selector.active_selector{
+    .incomplete_selector.active_selector{
         @extend .saved_selector.active_selector;
     }
 
-    .desired_selector{
-        background: #E69E9E;
+    .saved_selector{
+        background: $light_green;
+    }
+
+    .incomplete_selector{
+        background: $light_red;
     }
 
     .con{
@@ -191,7 +195,7 @@ $gold: #FFD700;
         }
     }
 
-    .saved_selector, .desired_selector{
+    .saved_selector, .incomplete_selector{
         padding: 2px;
         cursor: pointer;
     }
@@ -293,10 +297,6 @@ $gold: #FFD700;
 
 #collect_selector_groups{
     margin-right: 10px;
-}
-
-#saved_selectors, #desired_selectors{
-    float: left;
 }
 
 #collect_messages{

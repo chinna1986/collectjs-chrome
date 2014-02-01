@@ -64,11 +64,13 @@
     padding: 0 5px;
     border: 1px outset #efefef;
     text-transform: none; }
-  #collect_interface .saved_selector.active_selector, #collect_interface .desired_selector.active_selector {
+  #collect_interface .saved_selector.active_selector, #collect_interface .incomplete_selector.active_selector {
     background: gold;
     font-weight: bold; }
-  #collect_interface .desired_selector {
-    background: #E69E9E; }
+  #collect_interface .saved_selector {
+    background: #bddbce; }
+  #collect_interface .incomplete_selector {
+    background: #f296a3; }
   #collect_interface .con {
     color: #fff;
     background: #C91900;
@@ -120,7 +122,7 @@
       cursor: pointer;
       font-weight: bold;
       padding: 2px; }
-  #collect_interface .saved_selector, #collect_interface .desired_selector {
+  #collect_interface .saved_selector, #collect_interface .incomplete_selector {
     padding: 2px;
     cursor: pointer; }
   #collect_interface .collect_group:hover .deltog {
@@ -192,9 +194,6 @@
 
 #collect_selector_groups {
   margin-right: 10px; }
-
-#saved_selectors, #desired_selectors {
-  float: left; }
 
 #collect_messages {
   font-weight: bold; }

@@ -197,19 +197,15 @@ var makeCollect = function($){
                 
             for ( var p=0, len=inputs.length; p<len; p++ ) {
                 var curr = inputs[p],
-                    name = curr.getAttribute('name') || 'noname',
+                    name = curr.getAttribute('name'),
                     value = curr.value;
-                // hardcoded to allow index to be empty
-                if ( value === '' && name != 'index' ) {
-                    missing.push(name);
-                } else {
-                    selector_object[name] = value;
-                }
+                selector_object[name] = value;
             }
             if ( missing.length !== 0 ){
                 $('#collect_error').html('missing attribute(s): ' + missing.join(', '));
                 return;
             }
+
             // active isn't undefined if you're editing an already saved selector
             if ( active.length ){
                 saveRule(group, selector_object);
@@ -220,6 +216,11 @@ var makeCollect = function($){
                     .data('capture', selector_object.capture)
                     .text(selector_object.name)
                     .removeClass('active_selector');
+
+                selector_object = completeSelector(selector_object);
+                if ( !selector_object.incomplete ) {
+                    active.swapClasses('incomplete_selector', 'saved_selector');
+                }
             } else {
                 saveRule(group, selector_object);
                 // call last because index needs to be set
@@ -319,24 +320,26 @@ var makeCollect = function($){
             chrome.storage.local.get('rules', function(storage){
                 var host = window.location.hostname,
                     rules = storage.rules,
-                    group = rules[host][currentGroup()];
-                $('#collect_selectors').html('');
+                    group = rules[host][currentGroup()],
+                    curr, results, resultsLen, prop;
 
                 for( var key in group ) {
-                    var curr, results, resultsLen, prop;
                     curr = group[key];
-                    addSavedSelector(curr);
-                    results = document.querySelectorAll(curr.selector);
-                    resultsLen = results.length;
-                    prop = captureFunction(curr);
-                    outString += "<div class='preview_group'><h2>" + curr.name + 
-                        "(Count: " + resultsLen + ")</h2><ul>";
-                    for (var r=0; r<resultsLen; r++ ) {
-                        var ele = results[r];
-                        $(ele).addClass("saved_preview");
-                        outString += "<li>" + prop(ele) + "</li>";
+                    // make sure to only run on completed rules
+                    curr = completeSelector(curr);
+                    if ( !curr.incomplete) {
+                        results = document.querySelectorAll(curr.selector);
+                        resultsLen = results.length;
+                        prop = captureFunction(curr);
+                        outString += "<div class='preview_group'><h2>" + curr.name + 
+                            "(Count: " + resultsLen + ")</h2><ul>";
+                        for (var r=0; r<resultsLen; r++ ) {
+                            var ele = results[r];
+                            $(ele).addClass("saved_preview");
+                            outString += "<li>" + prop(ele) + "</li>";
+                        }
+                        outString += "</ul></div>";
                     }
-                    outString += "</ul></div>";
                 }
                 $('#preview_holder').html(outString);
                 $("#preview_interface, #preview_background").show();
@@ -398,7 +401,7 @@ var makeCollect = function($){
                         curr = data.attrs[i];
                         // no deltog since it is a group of desired selectors
                         selectors += '<span class="collect_group no_select">' + 
-                            '<span class="desired_selector no_select"' +
+                            '<span class="incomplete_selector no_select"' +
                             ' data-selector="' + (curr.selector || '') + '"' +
                             ' data-capture="' + (curr.capture || '') + '"' +
                             ' data-index="' + (curr.index || '') + '">' +
@@ -496,7 +499,7 @@ var makeCollect = function($){
 
                 $('#selector_index').on('blur', blurUpdate);
 
-                $('#collect_selectors').on('click', '.saved_selector, .desired_selector', clearOrLoad);
+                $('#collect_selectors').on('click', '.saved_selector, .incomplete_selector', clearOrLoad);
 
                 $(Collect.elements).on({
                     mouseenter: select,
@@ -518,7 +521,7 @@ var makeCollect = function($){
 
                 $('#selector_index').off('blur', blurUpdate);
 
-                $('#collect_selectors').off('click', '.saved_selector, .desired_selector', clearOrLoad);
+                $('#collect_selectors').off('click', '.saved_selector, .incomplete_selector', clearOrLoad);
 
                 $(Collect.elements).off({
                     mouseenter: select,
@@ -608,12 +611,22 @@ var makeCollect = function($){
 
     // add interactive identifier for saved selectors
     function addSavedSelector(obj){
+        obj = completeSelector(obj);
         var selectorString = '<span class="collect_group no_select">' + 
-            '<span class="saved_selector no_select" data-selector="' + obj.selector + 
+            '<span class="' + (obj.incomplete ? 'incomplete_selector' : 'saved_selector') +
+            ' no_select" data-selector="' + obj.selector + 
             '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
             '</span><span class="deltog no_select">x</span></span>';
         $('#collect_selectors').append(selectorString);
     }
+
+    function completeSelector(selector_object){
+        if ( selector_object.name === '' || selector_object.selector === ''
+            || selector_object.capture === '' ) {
+            selector_object.incomplete = true;
+        }
+        return selector_object;
+    }    
 
     function addPseudoElement(pseudoSelector, ele){
         var _this = $(ele),
