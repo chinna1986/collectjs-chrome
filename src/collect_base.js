@@ -401,9 +401,7 @@ var makeCollect = function($){
             chrome.runtime.sendMessage({'type': 'groups'}, function(response){
                 if ( !response.error ){
                     var data = response.data,
-                        selectors = "",
-                        groupName = data.name,
-                        curr;
+                        groupName = data.name;
                     addLoadedGroup(groupName, data.attrs);
                 }
             });
@@ -417,11 +415,21 @@ var makeCollect = function($){
                     groupName = currentGroup(),
                     group = rules[host][groupName],
                     uploadObject = {
-                        'host': location.host,
-                        'rules': group,
-                        'name': groupName
+                        'host': host,
+                        'name': groupName,
+                        'rules': {}
                     },
-                    uploadJSON = JSON.stringify(uploadObject);
+                    uploadGroups = {},
+                    uploadJSON, curr;
+                // don't upload if the rule hasn't been completed
+                for ( var key in group ) {
+                    curr = group[key];
+                    if ( !curr.incomplete ) {
+                        uploadObject.rules[key] = group[key];
+                    }
+                }
+                uploadJSON = JSON.stringify(uploadObject);
+                console.log(uploadObject);
                 chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function(response){
                     console.log(response);
                 });
@@ -1069,6 +1077,7 @@ var makeCollect = function($){
                 exists = true,
                 selectors = '',
                 curr, currName;
+            // only create group if it doesn't already exist
             if ( groupRules === undefined ) {
                 groupRules = {};
                 exists = false;
@@ -1078,6 +1087,8 @@ var makeCollect = function($){
                     
             for ( var i=0, len=rules.length; i<len; i++ ) {
                 curr = rules[i];
+                // set as incomplete when first loaded
+                curr.incomplete = true;
                 currName = curr.name;
                 groupRules[currName] = curr;
 

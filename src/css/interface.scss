@@ -196,7 +196,8 @@ $gold: #FFD700;
     }
 
     .saved_selector, .incomplete_selector{
-        padding: 2px;
+        padding: 2px 5px;
+        min-width: 25px;
         cursor: pointer;
     }
 
