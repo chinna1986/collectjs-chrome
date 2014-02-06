@@ -1088,7 +1088,7 @@ var makeCollect = function($){
                 }           
 
                 for ( var r=0, rulesLen=currRules.length; r<rulesLen; r++ ) {
-                    rule = currRules[r];
+                    rule = emptyRule(currRules[r]);
                     rule.incomplete = true;
                     groupRules[rule.name] = rule;
                     if ( i === 0 ) {
@@ -1100,6 +1100,15 @@ var makeCollect = function($){
             $('#collect_selectors').html(selectors);    
             chrome.storage.local.set({'rules': storage.rules});
         });
+    }
+
+    function emptyRule(name){
+        return {
+            'name': name,
+            'capture': '',
+            'selector': '',
+            'index': ''
+        }
     }
 
     function selectorHTML(rule){
