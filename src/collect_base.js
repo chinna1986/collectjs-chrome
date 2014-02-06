@@ -227,7 +227,7 @@ var makeCollect = function($){
             } else {
                 saveRule(group, selector_object);
                 // call last because index needs to be set
-                addSavedSelector(selector_object);
+                $('#collect_selectors').append(selectorHTML(selector_object));
             }
             clearInterface();
         }
@@ -429,9 +429,12 @@ var makeCollect = function($){
                     }
                 }
                 uploadJSON = JSON.stringify(uploadObject);
-                console.log(uploadObject);
                 chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function uploadResponseChrome(response){
-                    console.log(response);
+                    if ( response.error ) {
+                        alertMessage("failed to upload");
+                    } else {
+                        alertMessage("group successfully uploaded");
+                    }
                 });
             });
         }
@@ -615,14 +618,13 @@ var makeCollect = function($){
     //addInterface helpers
 
     // add interactive identifier for saved selectors
-    function addSavedSelector(obj){
+    function selectorHTML(obj){
         obj = completeSelector(obj);
-        var selectorString = '<span class="collect_group no_select">' + 
+        return '<span class="collect_group no_select">' + 
             '<span class="' + (obj.incomplete ? 'incomplete_selector' : 'saved_selector') +
             ' no_select" data-selector="' + obj.selector + 
             '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
             '</span><span class="deltog no_select">x</span></span>';
-        $('#collect_selectors').append(selectorString);
     }
 
     function completeSelector(selector_object){
@@ -1014,11 +1016,12 @@ var makeCollect = function($){
             var host = window.location.hostname,
                 rules = storage.rules,
                 groupName = currentGroup(),
-                group = rules[host][groupName];
-                $('#collect_selectors').html('');
+                group = rules[host][groupName],
+                selectors = '';
             for ( var key in group ) {
-                addSavedSelector(group[key]);
+                selectors += selectorHTML(group[key]);
             }
+            $('#collect_selectors').html(selectors);
         })
     }
 
@@ -1105,15 +1108,6 @@ var makeCollect = function($){
             'selector': '',
             'index': ''
         }
-    }
-
-    function selectorHTML(rule){
-        return '<span class="collect_group no_select">' + 
-            '<span class="incomplete_selector no_select"' +
-            ' data-selector="' + (rule.selector || '') + '"' +
-            ' data-capture="' + (rule.capture || '') + '"' +
-            ' data-index="' + (rule.index || '') + '">' +
-            rule.name + '</span></span>';    
     }
 
     function saveRule(group, rule){
