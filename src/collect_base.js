@@ -991,7 +991,6 @@ var makeCollect = function($){
     create option elements for each of the groups for the current site
     */
     function loadGroups(){
-        //chrome.storage.local.clear();
         chrome.storage.local.get('rules', function loadGroupsChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules,
