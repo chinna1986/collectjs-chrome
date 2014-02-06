@@ -400,9 +400,7 @@ var makeCollect = function($){
         function getGroupsEvent(event){
             chrome.runtime.sendMessage({'type': 'groups'}, function(response){
                 if ( !response.error ){
-                    var data = response.data,
-                        groupName = data.name;
-                    addLoadedGroup(groupName, data.attrs);
+                    addLoadedGroups(response.groups);
                 }
             });
         }
@@ -1069,46 +1067,48 @@ var makeCollect = function($){
     create the group and add the rules
     currently overrides if there is an existing group with that name
     */
-    function addLoadedGroup(group, rules){
+    function addLoadedGroups(groups){
         chrome.storage.local.get('rules', function setLoadedRules(storage){
             var host = window.location.hostname,
-                groupRules = storage.rules[host][group],
                 parent = document.getElementById('collect_selector_groups'),
-                exists = true,
+                len = groups.length,
                 selectors = '',
-                curr, currName;
-            // only create group if it doesn't already exist
-            if ( groupRules === undefined ) {
-                groupRules = {};
-                exists = false;
-                parent.appendChild(newGroupOption(group, true));
-                selectors = '';
-            }           
-                    
-            for ( var i=0, len=rules.length; i<len; i++ ) {
-                curr = rules[i];
-                // set as incomplete when first loaded
-                curr.incomplete = true;
-                currName = curr.name;
-                groupRules[currName] = curr;
+                groupRules, curr, currName, currRules, rule;
 
-                if ( !exists ){
-                    // html for the selector
-                    selectors += '<span class="collect_group no_select">' + 
-                        '<span class="incomplete_selector no_select"' +
-                        ' data-selector="' + (curr.selector || '') + '"' +
-                        ' data-capture="' + (curr.capture || '') + '"' +
-                        ' data-index="' + (curr.index || '') + '">' +
-                        curr.name + '</span></span>';    
+            for ( var i=0; i<len; i++ ) {
+                curr = groups[i];
+                currName = curr.name;
+                currRules = curr.rules;
+                groupRules = storage.rules[host][currName];
+                // only create group if it doesn't already exist
+                if ( groupRules === undefined ) {
+                    groupRules = {};
+                    // set select option to selected for first group
+                    parent.appendChild(newGroupOption(currName, (i===0)));
+                }           
+
+                for ( var r=0, rulesLen=currRules.length; r<rulesLen; r++ ) {
+                    rule = currRules[r];
+                    rule.incomplete = true;
+                    groupRules[rule.name] = rule;
+                    if ( i === 0 ) {
+                        selectors += selectorHTML(rule);
+                    }    
                 }
-                
+                storage.rules[host][currName] = groupRules;
             }
-            if ( !exists ) {
-                $('#collect_selectors').html(selectors);    
-            }
-            storage.rules[host][group] = groupRules;
+            $('#collect_selectors').html(selectors);    
             chrome.storage.local.set({'rules': storage.rules});
         });
+    }
+
+    function selectorHTML(rule){
+        return '<span class="collect_group no_select">' + 
+            '<span class="incomplete_selector no_select"' +
+            ' data-selector="' + (rule.selector || '') + '"' +
+            ' data-capture="' + (rule.capture || '') + '"' +
+            ' data-index="' + (rule.index || '') + '">' +
+            rule.name + '</span></span>';    
     }
 
     function saveRule(group, rule){

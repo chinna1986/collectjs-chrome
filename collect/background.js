@@ -59,15 +59,25 @@ function getGroups(callback){
 
     xhr.onload = function(event){
         var resp = JSON.parse(xhr.responseText);
+        console.log(resp);
         chrome.storage.local.get('groups', function(storage){
-            var groups = storage.groups;
-            for ( var key in resp ) {
-                groups[key] = resp[key];
+            var groups = storage.groups,
+                newGroups = resp.groups,
+                curr, currObject, currRules;
+            for ( var i=0, len=newGroups.length; i<len; i++ ) {
+                curr = newGroups[i];
+                currRules = curr.rules;
+                currObject = {};
+                for ( var key in currRules ) {
+                    currObject[key] = currRules[key];
+                }
+                groups[curr.name] = currObject;
             }
+            
             chrome.storage.local.set({'groups': groups});
         });
 
-        callback({"error": false, "data": resp});
+        callback({"error": false, "groups": resp.groups});
     }
     xhr.onerror = function(event){
         callback({"error": true});
