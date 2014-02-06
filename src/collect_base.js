@@ -1,6 +1,6 @@
 // check to make sure an interface hasn't already been created
 if ( !window.collectMade ) {
-(function(){
+
 "use strict";
 var makeCollect = function($){
     /***************
@@ -13,6 +13,7 @@ var makeCollect = function($){
         addInterface();
         this.events.permanent();
         this.events.on(); 
+        this.ignoreSelectors = {'.clearfix':true};
     };
 
     Collect.events = (function(){
@@ -302,7 +303,7 @@ var makeCollect = function($){
                 capture = _this.data('capture'),
                 $string = $('#selector_string');
             $('#selector_name').val(name);
-            $('#selector_string').val(selector || $string.val());
+            $string.val(selector || $string.val());
             $('#selector_capture').val(capture);
             $('#selector_index').val(index);
             if ( selector !== '' ){
@@ -1042,12 +1043,7 @@ var makeCollect = function($){
     */
     function currentGroup(){
         var currGroup = $('#collect_selector_groups option:selected');
-        if ( currGroup.length ) {
-            return currGroup.eq(0).val();
-        } else {
-            // undecided on how to handle this yet
-            return '';
-        }
+        return (currGroup.length) ? currGroup.eq(0).val() : '';
     }
 
     function newGroupOption(name, selected){
@@ -1155,6 +1151,18 @@ var makeCollect = function($){
             }
             this.classes.push( '.' + curr );
         }
+        if ( $("#ignoreselectors").is(":checked") ) {
+            this.removeCommon();
+        }
+    }
+
+    Selector.prototype.removeCommon = function(){
+        var classLength = this.classes.length;
+        while ( classLength-- ){
+            if ( Collect.ignoreSelectors[this.classes[classLength]] === true ) {
+                this.classes.splice(classLength, 1);
+            }
+        }
     }
 
     /*
@@ -1193,5 +1201,5 @@ collect.setup();
 
 // attach to window so that only one instance is active at a time
 window.collectMade = true;
-})();
+
 }
