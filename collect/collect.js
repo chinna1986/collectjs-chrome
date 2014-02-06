@@ -299,9 +299,10 @@ var makeCollect = function($){
                 selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
                 name = _this.text(),
                 index = _this.data('index'),
-                capture = _this.data('capture');
+                capture = _this.data('capture'),
+                $string = $('#selector_string');
             $('#selector_name').val(name);
-            $('#selector_string').val(selector);
+            $('#selector_string').val(selector || $string.val());
             $('#selector_capture').val(capture);
             $('#selector_index').val(index);
             if ( selector !== '' ){
