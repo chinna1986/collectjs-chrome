@@ -319,7 +319,7 @@ var makeCollect = function($){
             event.preventDefault();
             clearInterface();
             var outString = '';
-            chrome.storage.local.get('rules', function(storage){
+            chrome.storage.local.get('rules', function previewGroupChrome(storage){
                 var host = window.location.hostname,
                     rules = storage.rules,
                     group = rules[host][currentGroup()],
@@ -383,7 +383,7 @@ var makeCollect = function($){
                 }
             }
                 $('#collect_selector_groups option:selected').remove();
-                chrome.storage.local.get('rules', function(storage){
+                chrome.storage.local.get('rules', function deleteGroupChrome(storage){
                     var host = window.location.hostname,
                         rules = storage.rules;
                     delete rules[host][name];
@@ -398,7 +398,7 @@ var makeCollect = function($){
         }
 
         function getGroupsEvent(event){
-            chrome.runtime.sendMessage({'type': 'groups'}, function(response){
+            chrome.runtime.sendMessage({'type': 'groups'}, function getGroupsChrome(response){
                 if ( !response.error ){
                     addLoadedGroups(response.groups);
                 }
@@ -407,7 +407,7 @@ var makeCollect = function($){
 
         function uploadGroupEvent(event){
             event.preventDefault();
-            chrome.storage.local.get('rules', function(storage){
+            chrome.storage.local.get('rules', function uploadGroupChrome(storage){
                 var host = window.location.hostname,
                     rules = storage.rules,
                     groupName = currentGroup(),
@@ -428,7 +428,7 @@ var makeCollect = function($){
                 }
                 uploadJSON = JSON.stringify(uploadObject);
                 console.log(uploadObject);
-                chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function(response){
+                chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function uploadResponseChrome(response){
                     console.log(response);
                 });
             });
@@ -990,7 +990,7 @@ var makeCollect = function($){
     */
     function loadGroups(){
         //chrome.storage.local.clear();
-        chrome.storage.local.get('rules', function(storage){
+        chrome.storage.local.get('rules', function loadGroupsChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules,
                 groups = rules[host],
@@ -1009,7 +1009,7 @@ var makeCollect = function($){
     }
 
     function loadSavedSelectors(){
-        chrome.storage.local.get('rules', function(storage){
+        chrome.storage.local.get('rules', function loadSavedChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules,
                 groupName = currentGroup(),
@@ -1022,7 +1022,7 @@ var makeCollect = function($){
     }
 
     function addGroup(name){
-        chrome.storage.local.get('rules', function(storage){
+        chrome.storage.local.get('rules', function addGroupChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules,
                 groups = rules[host],
@@ -1121,7 +1121,7 @@ var makeCollect = function($){
     }
 
     function saveRule(group, rule){
-        chrome.storage.local.get('rules', function(storage){
+        chrome.storage.local.get('rules', function saveRuleChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules,
                 name = rule.name;
@@ -1131,7 +1131,7 @@ var makeCollect = function($){
     }
 
     function deleteRule(group, name){
-        chrome.storage.local.get('rules', function(storage){
+        chrome.storage.local.get('rules', function deleteRuleChrome(storage){
             var host = window.location.hostname,
                 rules = storage.rules;
             delete rules[host][group][name];
