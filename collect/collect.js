@@ -32,14 +32,14 @@ var makeCollect = function($){
             if ( events_on ) {
                 Collect.events.off();
                 _this.text('Turn On');
-                _this.swapClasses('con', 'pro');
+                swapClasses(this, 'con', 'pro');
                 clearClass('query_check');
                 clearClass('collect_highlight');
                 clearClass('saved_preview');
             } else {
                 Collect.events.on();
                 _this.text('Turn Off');
-                _this.swapClasses('pro', 'con');
+                swapClasses(this, 'pro', 'con');
             }
             events_on = !events_on;
         }
@@ -53,28 +53,31 @@ var makeCollect = function($){
             clearClass('saved_preview');
             // closing, so re-clicking default_icon should create interface again
             window.collectMade = false;
-            var elesToRemove = '#collect_interface, #options_interface, #collect-style,' +
-                ' #options_background, #preview_interface, #preview_background';
-            $(elesToRemove).remove();
+            var elesToRemove = ['collect_interface', 'options_interface', 'options_background',
+                'preview_interface', 'preview_background'],
+                curr;
+            for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
+                curr = document.getElementById(elesToRemove[i]);
+                curr.parentElement.removeChild(curr);
+            }
         }
 
         // toggle interface between top and bottom of screen
         function moveInterface(event){
             event.stopPropagation();
-            var collect_interface = $('#collect_interface');
-            if ( collect_interface.hasClass('attach_top') ) {
-                collect_interface.swapClasses('attach_top', 'attach_bottom');
-                $(this).text('Move to Top');
+            var collect_interface = document.getElementById('collect_interface');
+            if ( collect_interface.classList.contains('attach_top') ) {
+                swapClasses(collect_interface, 'attach_top', 'attach_bottom');
+                this.textContent = 'Move to Top';
             } else {
-                collect_interface.swapClasses('attach_bottom', 'attach_top');
-                $(this).text('Move to Bottom');
+                swapClasses(collect_interface, 'attach_bottom', 'attach_top');
+                this.textContent = 'Move to Bottom';
             }
         }
 
         // select which attribute (or text) to capture desired data from query selected elements
         function setCaptureVal(event){
-            var _this = $(this);
-            $('#selector_capture').val( _this.data('capture') );
+            document.getElementById('selector_capture').value = this.dataset.capture;
         }
 
 
@@ -85,15 +88,15 @@ var makeCollect = function($){
         function verifyDropdown(event){
             event.stopPropagation();
             // verify that nth-of-type is legitimate input
-            var _this = $(this),
-                text = _this.text().toLowerCase(),
+            var text = this.textContent.toLowerCase(),
                 /* matches nth-of-type selectors:
                     odd, even, positive integers, an+b, -an+b
                 */
                 child_match = /^(?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)$/;
             if ( text.match(child_match) === null ) {
                 // if input is bad, reset to 1 and turn the selector off
-                _this.text('1').parent().addClass('off');
+                this.textContent = 1;
+                this.parentElement.classList.add('off');
             }
             updateInterface();
         }
@@ -104,21 +107,18 @@ var makeCollect = function($){
         element of the group as well
         */
         function toggleOff(event){
-            var _this = $(this),
-                parent = this.parentElement,
+            var parent = this.parentElement,
                 pseudo = parent.getElementsByClassName('pseudo'),
                 pseudoElement = pseudo[0],
-                $pseudo = $(pseudoElement),
                 onlychild = parent.getElementsByClassName('child'),
                 childElement = onlychild[0],
-                $child = $(childElement),
                 toggleables = parent.getElementsByClassName('realselector'),
                 toggleableCount = toggleables.length,
                 offCount = 0,
-                turningOn = _this.hasClass('off');
+                turningOn = this.classList.contains('off');
 
             // toggle .off, then count classes that are off
-            _this.toggleClass('off');
+            this.classList.toggle('off');
             for ( var r=0, len = toggleables.length; r<len; r++ ) {
                 if ( toggleables[r].classList.contains('off')){
                     offCount++;
@@ -128,19 +128,19 @@ var makeCollect = function($){
             if ( turningOn ) {
                 // turning on the pseudo element, make sure something else if turned on
                 if ( pseudoElement === this  && offCount === toggleableCount ) {
-                    $(toggleables[0]).removeClass('off');
+                    toggleables[0].classList.remove('off');
                 } else if ( childElement === this && offCount === toggleableCount ) {
-                    $(toggleables[0]).removeClass('off');
+                    toggleables[0].classList.remove('off');
                 }
             } else {             
                 // if all "real" selectors are turned off, make sure to turn off the nth-of-type and
                 // > selectors as well
                 if ( toggleableCount === offCount ) {
                     if ( pseudoElement !== this && pseudoElement && !$pseudo.hasClass('off') ) {
-                        $pseudo.addClass('off');
+                        pseudoElement.classList.add('off');
                     }
                     if ( childElement !== this && childElement && !$child.hasClass('off') ) {
-                        $child.addClass('off');
+                        childElement.classList.add('off');
                     }
                 }
 
@@ -190,10 +190,10 @@ var makeCollect = function($){
         // create and save an object for the current query selector/capture data
         function saveRuleEvent(event){
             event.preventDefault();
-            var inputs = $('#selector_form input'),
+            var inputs = document.getElementById('selector_form').getElementsByTagName('input'),
                 selector_object = {},
-                active = $('.active_selector').eq(0),
-                missing = [],
+                activeSelectors = document.getElementsByClassName('active_selector'),
+                active = activeSelectors[0],
                 group = currentGroup();
                 
             for ( var p=0, len=inputs.length; p<len; p++ ) {
@@ -202,32 +202,27 @@ var makeCollect = function($){
                     value = curr.value;
                 selector_object[name] = value;
             }
-            if ( missing.length !== 0 ){
-                $('#collect_error').html('missing attribute(s): ' + missing.join(', '));
-                return;
-            }
 
             // active isn't undefined if you're editing an already saved selector
-            if ( active.length ){
+            if ( active ){
                 saveRule(group, selector_object);
 
                 // modify name, selector, and capture but not index
-                active
-                    .data('selector', selector_object.selector)
-                    .data('capture', selector_object.capture)
-                    .text(selector_object.name)
-                    .removeClass('active_selector');
+                active.dataset.selector = selector_object.selector;
+                active.dataset.capture = selector_object.capture;
+                active.textContent = selector_object.name;
+                active.classList.remove('active_selector');
 
                 selector_object = completeSelector(selector_object);
                 if ( !selector_object.incomplete ) {
-                    active.swapClasses('incomplete_selector', 'saved_selector');
+                    swapClasses(active, 'incomplete_selector', 'saved_selector');
                 } else {
-                    active.swapClasses('saved_selector', 'incomplete_selector');
+                    swapClasses(active, 'saved_selector', 'incomplete_selector');
                 }
             } else {
                 saveRule(group, selector_object);
                 // call last because index needs to be set
-                $('#collect_selectors').append(selectorHTML(selector_object));
+                document.getElementById('collect_selectors').innerHTML += selectorHTML(selector_object);
             }
             clearInterface();
         }
@@ -235,9 +230,9 @@ var makeCollect = function($){
         // output a preview of current selector form values to the preview modal
         function previewRule(event){
             event.preventDefault();
-            var selector = $('#selector_string').val(),
+            var selector = document.getElementById('selector_string').value,
                 eles = selectorElements(selector),
-                type = $('#selector_capture').val(),
+                type = document.getElementById('selector_capture').value,
                 outString = '',
                 i = 0,
                 len = eles.length,
@@ -246,16 +241,16 @@ var makeCollect = function($){
                 outString = "No attribute to capture";
             } else if ( type === 'text' ) {
                 for ( ; i<len; i++ ) {
-                    outString += "<p>" + ($(eles[i]).text()) + "</p>";
+                    outString += "<p>" + (eles[i].textContent) + "</p>";
                 }
             } else if ( type.indexOf('attr-') === 0 ) {
                 // get everything after attr-
                 attr = type.slice(type.indexOf('-')+1);
                 for ( ; i<len; i++ ) {
-                    outString += "<p>" + ($(eles[i]).prop(attr)) + "</p>";
+                    outString += "<p>" + (eles[i].getAttribute(attr)) + "</p>";
                 }
             }
-            $("#preview_holder").html(outString);
+            document.getElementById('preview_holder').innerHTML = outString;
             $("#preview_interface, #preview_background").show();
         }
 
@@ -284,8 +279,7 @@ var makeCollect = function($){
         // load saved selector information into the #selector_form for editing
         function clearOrLoad(event){
             event.stopPropagation();
-            var _this = $(this);
-            if ( _this.hasClass('active_selector') ) {
+            if ( this.classList.contains('active_selector') ) {
                 clearInterface();
             } else {
                 loadSelectorGroup(this);
@@ -295,26 +289,24 @@ var makeCollect = function($){
         // sets the fields in the #selector_form given an element 
         // that represents a selector
         function loadSelectorGroup(ele){
-            var _this = $(ele),
-                selectorVal = _this.data('selector') || '',
+            var selectorVal = ele.dataset.selector || '',
                 selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
-                name = _this.text(),
-                index = _this.data('index'),
-                capture = _this.data('capture'),
-                $string = $('#selector_string');
-            $('#selector_name').val(name);
-            $string.val(selector || $string.val());
-            $('#selector_capture').val(capture);
-            $('#selector_index').val(index);
+                name = ele.textContent,
+                index = ele.dataset.index,
+                capture = ele.dataset.capture;
+            document.getElementById('selector_name').value = name;
+            document.getElementById('selector_string').value = selector;
+            document.getElementById('selector_capture').value = capture;
+            document.getElementById('selector_index').value = index;
             if ( selector !== '' ){
-                var longHTML = elementSelector($(selector)[0]);
-                $("#selector_parts").html(longHTML);
+                var longHTML = elementSelector(document.querySelector(selector));
+                document.getElementById('selector_parts').innerHTML = longHTML;
 
                 clearClass("query_check");
                 selectorElements(selector).addClass("query_check");
             }
             clearClass('active_selector');
-            _this.addClass('active_selector');
+            ele.classList.add('active_selector');
         }
 
         function previewGroupEvent(event){
@@ -339,13 +331,13 @@ var makeCollect = function($){
                             "(Count: " + resultsLen + ")</h2><ul>";
                         for (var r=0; r<resultsLen; r++ ) {
                             var ele = results[r];
-                            $(ele).addClass("saved_preview");
+                            ele.classList.add("saved_preview");
                             outString += "<li>" + prop(ele) + "</li>";
                         }
                         outString += "</ul></div>";
                     }
                 }
-                $('#preview_holder').html(outString);
+                document.getElementById('preview_holder').innerHTML = outString;
                 $("#preview_interface, #preview_background").show();
             });
         }
@@ -369,7 +361,7 @@ var makeCollect = function($){
             var name = prompt("Group Name");
             if ( name !== '' && name !== null ){
                 addGroup(name);
-                $('#collect_selectors').html('');
+                document.getElementById('collect_selectors').innerHTML = '';
                 clearInterface();
             }
         }
@@ -379,11 +371,11 @@ var makeCollect = function($){
             var name = currentGroup();
             if ( name !== 'default' ) {
                 if ( $("#safedelete").is(":checked") ) {
-                var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
-                if ( !verifyDelete ) {
-                    return;
+                    var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
+                    if ( !verifyDelete ) {
+                        return;
+                    }
                 }
-            }
                 $('#collect_selector_groups option:selected').remove();
                 chrome.storage.local.get('rules', function deleteGroupChrome(storage){
                     var host = window.location.hostname,
@@ -445,12 +437,12 @@ var makeCollect = function($){
 
         function select(event){
             event.stopPropagation();
-            $(this).addClass('collect_highlight');
+            this.classList.add('collect_highlight');
         }
 
         function deselect(event){
             event.stopPropagation();
-            $(this).removeClass('collect_highlight');
+            this.classList.remove('collect_highlight');
         }
 
         /*
@@ -462,7 +454,7 @@ var makeCollect = function($){
             if ( this === null ) {
                 return;
             }
-            if ( !$('.active_selector').length ){
+            if ( !document.getElementsByClassName('.active_selector').length ){
                 clearInterface();
             }
             elementInterface(this);
@@ -554,23 +546,24 @@ var makeCollect = function($){
     doesn't interfere with itself, and add event listeners to the interface
     */
     function addInterface() {
-        var interface_html = "<div class=\"attach_bottom\" id=\"collect_interface\"><div id=\"topbar\">CollectJS<div id=\"button_floater\"><button id=\"open_options\">Options</button><button id=\"move_position\">Move to Top</button><button id=\"off_button\" class=\"con\">Turn Off</button><button id=\"close_selector\" class=\"con\">Close</button></div><div id=\"group_buttons\">Group: <select id=\"collect_selector_groups\"></select><button id=\"collect_new_group\">New</button><button id=\"collect_get_groups\">Get</button><button id=\"collect_delete_group\" class=\"con\">Delete</button><button id=\"collect_upload_group\" class=\"pro\">Upload</button><button id=\"collect_preview_saved\">Preview Rules</button></div></div><section id=\"selector_results\"><div id=\"selector_info\"><p id=\"selector_parts\"></p><p id=\"selector_text\"></p><p id=\"selector_count\"></p></div><div class=\"collectColumn\"><div id=\"collect_error\"></div><form id=\"selector_form\"><div id=\"form_inputs\"><p><label for=\"selector_name\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\">Name:</label><input name=\"name\" id=\"selector_name\" val=\"\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\"/></p><p><label for=\"selector_string\" title=\"The CSS selector used to get the desired selector\">Selector:</label><input name=\"selector\" id=\"selector_string\" val=\"\" title=\"The CSS selector used to get the desired selector\"/></p><p><label for=\"selector_capture\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\">Capture:</label><input name=\"capture\" id=\"selector_capture\" val=\"\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\"/></p><p><label for=\"selector_low_index\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\">Ignore Indexes:</label><input name=\"index\" id=\"selector_index\" class=\"index\" val=\"\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\"/></p></div></form><div id=\"form_buttons\"><button id=\"collect_save\" class=\"pro\">Save Rule</button><button id=\"collect_preview\">Preview Rule</button><button id=\"collect_clear_form\" class=\"con\">Clear Form</button></div></div><div class=\"collectColumn\"><div id=\"collect_messages\"></div><div id=\"collect_selectors\"></div></div></section></div>";
-        $(interface_html).appendTo('body');
-        $('#collect_interface, #collect_interface *').addClass('no_select');
-   
+        var interface_html = "<div class=\"attach_bottom no_select\" id=\"collect_interface\"><div id=\"topbar\">CollectJS<div id=\"button_floater\"><button id=\"open_options\">Options</button><button id=\"move_position\">Move to Top</button><button id=\"off_button\" class=\"con\">Turn Off</button><button id=\"close_selector\" class=\"con\">Close</button></div><div id=\"group_buttons\">Group: <select id=\"collect_selector_groups\"></select><button id=\"collect_new_group\">New</button><button id=\"collect_get_groups\">Get</button><button id=\"collect_delete_group\" class=\"con\">Delete</button><button id=\"collect_upload_group\" class=\"pro\">Upload</button><button id=\"collect_preview_saved\">Preview Rules</button></div></div><section id=\"selector_results\"><div id=\"selector_info\"><p id=\"selector_parts\"></p><p id=\"selector_text\"></p><p id=\"selector_count\"></p></div><div class=\"collectColumn\"><div id=\"collect_error\"></div><form id=\"selector_form\"><div id=\"form_inputs\"><p><label for=\"selector_name\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\">Name:</label><input name=\"name\" id=\"selector_name\" val=\"\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\"/></p><p><label for=\"selector_string\" title=\"The CSS selector used to get the desired selector\">Selector:</label><input name=\"selector\" id=\"selector_string\" val=\"\" title=\"The CSS selector used to get the desired selector\"/></p><p><label for=\"selector_capture\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\">Capture:</label><input name=\"capture\" id=\"selector_capture\" val=\"\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\"/></p><p><label for=\"selector_low_index\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\">Ignore Indexes:</label><input name=\"index\" id=\"selector_index\" class=\"index\" val=\"\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\"/></p></div></form><div id=\"form_buttons\"><button id=\"collect_save\" class=\"pro\">Save Rule</button><button id=\"collect_preview\">Preview Rule</button><button id=\"collect_clear_form\" class=\"con\">Clear Form</button></div></div><div class=\"collectColumn\"><div id=\"collect_messages\"></div><div id=\"collect_selectors\"></div></div></section></div>",
+            interfaceEles;
+        document.body.innerHTML += interface_html;
+        document.getElementById('collect_interface').classList.add('no_select');
+        interfaceEles = document.querySelectorAll('#collect_interface *');
+        for ( var i=0, len=interfaceEles.length; i<len; i++ ) {
+            interfaceEles[i].classList.add('no_select');
+        }
         loadGroups();
         addOptions();
         addPreview();
     }
 
     // utility function because I was removing/adding classes in a number of places
-    $.fn.swapClasses = function(oldClass, newClass){
-        return this.each(function(){
-            $(this)
-                .removeClass(oldClass)
-                .addClass(newClass);
-        });
-    };
+    function swapClasses(ele, oldClass, newClass){
+        ele.classList.remove(oldClass);
+        ele.classList.add(newClass);
+    }
 
     // adds a div with text @msg to #collect_messages, disappears after 2 seconds
     function alertMessage(msg) {
@@ -733,7 +726,7 @@ var makeCollect = function($){
         negative values remove elements from the end of the eles array
         */
         function addQueryCheck(eles){
-            var index = $("#selector_index").val(),
+            var index = document.getElementById('selector_index').value,
                 indexInt = parseInt(index, 10),
                 newEles, low, high, originalLength;
             // if index is undefined, add to all elements
@@ -767,31 +760,45 @@ var makeCollect = function($){
                 selected;
             clearClass('query_check');
             clearClass('collect_highlight');
-            $('#collect_error').html('');
+            document.getElementById('collect_error').innerHTML = '';
             if (selector === ''){
-                $('#selector_count').html("0");
-                $('#selector_string').val("");
-                $('#selector_text').html("");
+                document.getElementById('selector_count').innerHTML = '0';
+                document.getElementById('selector_string').value = '';
+                document.getElementById('selector_text').innerHTML = '';
             } else {
                 selected = selectorElements(selector);
                 selected = addQueryCheck(selected);
-                $('#selector_count').html(selected.length);
-                $('#selector_string').val(selector);
-                $('#selector_text').html(selectorText(selected[0]) || "no text");
+                document.getElementById('selector_count').innerHTML = selected.length;
+                document.getElementById('selector_string').value = selector;
+                document.getElementById('selector_text').innerHTML = selectorText(selected[0]) || "no text";
             }
         };
     })();
 
     // purge a classname from all elements with it
     function clearClass(name){
-        $('.'+name).removeClass(name);
+        var eles = document.getElementsByClassName(name),
+            len = eles.length;
+        // iterate from length to 0 because its a NodeList
+        while ( len-- ){
+            eles[len].classList.remove(name);
+        }
     }
 
     // reset the form part of the interface
     function clearInterface(){
-        $('#selector_form input').val('');
-        $('#selector_parts, #selector_count, #selector_text').html('');
-        $('#collect_error').html('');
+        var form = document.getElementById('selector_form'),
+            inputs;
+        if ( form !== null ) {
+            inputs = form.getElementsByTagName('input');
+            for ( var i=0, len=inputs.length; i<len; i++ ) {
+                inputs[i].value = '';
+            }
+        }
+        document.getElementById('selector_parts').innerHTML = '';
+        document.getElementById('selector_count').innerHTML = '';
+        document.getElementById('selector_text').innerHTML = '';
+        document.getElementById('collect_error').innerHTML = '';
         clearClass('query_check');
         clearClass('active_selector');
         clearClass('saved_preview');
@@ -808,7 +815,7 @@ var makeCollect = function($){
             html = cleanOuterHTML(element).replace(singleSpaceRegexp, ' '),
             // match all opening html tags along with their attributes
             tags = html.match(/<[^\/].+?>/g),
-            text_val = $(element).text().replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
+            text_val = element.textContent.replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
             attrs = tagAttributes(tags);               
 
         html = html.replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -869,12 +876,10 @@ var makeCollect = function($){
         for ( var i=0, prop_len=attrs.length; i<prop_len; i++ ) {
             curr = attrs[i];
             attr = curr.slice(0, curr.indexOf('='));
-            /*
-            make sure either start of phrase or a space before to prevent a bad match
-            eg. title="test" would match data-title="test"
-            */
+            // make sure either start of phrase or a space before to prevent a bad match
+            // eg. title="test" would match data-title="test"
             replace_regexp = new RegExp("(?:^|\\s)" + escapeRegExp(curr), 'g');
-            // don't include on___ attrs
+            // don't include on___ attrs eg onmousemove
             if ( attr.indexOf('on') === 0 ) {
                 html = html.replace(replace_regexp, '');    
             } else {
@@ -898,15 +903,13 @@ var makeCollect = function($){
             return '';
         }
         var copy = ele.cloneNode(true),
-            $copy = $(copy),
             // strip unnecessary spaces spit out by some template englines
-            text = $copy.text().replace(/(\s{2,}|[\n\t]+)/g,' ');
-        $copy.removeClass('query_check').removeClass('collect_highlight');
-        // 
+            text = copy.textContent.replace(/(\s{2,}|[\n\t]+)/g,' ');
+        copy.classList.remove('query_check', 'collect_highlight');
         if ( text.length > 100 ){
             text = text.slice(0, 25) + "..." + text.slice(-25);
         }
-        $copy.html(text);
+        copy.innerHTML = text
         return copy.outerHTML;
     }
 
@@ -946,7 +949,7 @@ var makeCollect = function($){
             ele = ele.children[0];
         }
         long_selector = elementSelector(ele);
-        $('#selector_parts').html(long_selector);
+        document.getElementById('selector_parts').innerHTML = long_selector;
         updateInterface();
     }
 
@@ -1021,7 +1024,7 @@ var makeCollect = function($){
             for ( var key in group ) {
                 selectors += selectorHTML(group[key]);
             }
-            $('#collect_selectors').html(selectors);
+            document.getElementById('collect_selectors').innerHTML = selectors;
         })
     }
 
@@ -1096,7 +1099,7 @@ var makeCollect = function($){
                 }
                 storage.rules[host][currName] = groupRules;
             }
-            $('#collect_selectors').html(selectors);    
+            document.getElementById('collect_selectors').innerHTML = selectors;
             chrome.storage.local.set({'rules': storage.rules});
         });
     }
@@ -1134,8 +1137,7 @@ var makeCollect = function($){
     ********************/
     function Selector( ele ){
         this.tag = ele.tagName;
-        this.id = ele.hasAttribute('id') ? 
-            '#' + ele.getAttribute('id') : undefined;
+        this.id = ele.hasAttribute('id') ? '#' + ele.getAttribute('id') : undefined;
         this.classes = [];
         for ( var i=0, len=ele.classList.length; i<len; i++ ) {
             var curr = ele.classList[i];
