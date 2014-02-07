@@ -108,14 +108,11 @@ var makeCollect = function($){
         */
         function toggleOff(event){
             var parent = this.parentElement,
-                pseudo = parent.getElementsByClassName('pseudo'),
-                pseudoElement = pseudo[0],
-                onlychild = parent.getElementsByClassName('child'),
-                childElement = onlychild[0],
+                pseudoElement = parent.getElementsByClassName('pseudo')[0],
+                childElement = parent.getElementsByClassName('child')[0],
                 toggleables = parent.getElementsByClassName('realselector'),
                 toggleableCount = toggleables.length,
-                offCount = 0,
-                turningOn = this.classList.contains('off');
+                offCount = 0;
 
             // toggle .off, then count classes that are off
             this.classList.toggle('off');
@@ -125,8 +122,9 @@ var makeCollect = function($){
                 }
             }
 
-            if ( turningOn ) {
-                // turning on the pseudo element, make sure something else if turned on
+            if ( this.classList.contains('off') ) {
+                // when turning on the pseudo element or > selector, make sure something else is 
+                // also turned on
                 if ( pseudoElement === this  && offCount === toggleableCount ) {
                     toggleables[0].classList.remove('off');
                 } else if ( childElement === this && offCount === toggleableCount ) {
@@ -433,6 +431,7 @@ var makeCollect = function($){
 
         function loadGroupEvent(event){
             loadSavedSelectors();
+            clearInterface();
         }
 
         function select(event){
