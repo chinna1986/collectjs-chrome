@@ -2,7 +2,7 @@
 if ( !window.collectMade ) {
 
 "use strict";
-var makeCollect = function($){
+var collect = (function($){
     /***************
     COLLECT OBJECT
     ***************/
@@ -17,10 +17,6 @@ var makeCollect = function($){
     };
 
     Collect.events = (function(){
-        /*************
-        Event Functions
-        *************/
-
         /*************
         Control Button Functions
         *************/
@@ -44,6 +40,10 @@ var makeCollect = function($){
             events_on = !events_on;
         }
 
+
+        /*************
+        Event Functions
+        *************/
         // close the collect interface
         function closeInterface(event){
             event.stopPropagation();
@@ -579,7 +579,7 @@ var makeCollect = function($){
     options modal and selection options
     */
     function addOptions(){
-        var options_html = "<div id=\"options_background\"></div><section id=\"options_interface\" class=\"options\"><h2 >Options</h2><p><label for=\"tables\">Hide Table Elements</label><input type=\"checkbox\"  name=\"tables\" id=\"tables\" /></p><p><label for=\"visible\">Only include visible elements</label><input type=\"checkbox\"  name=\"visible\" id=\"visible\" /></p><p><label for=\"safedelete\">Confirm before deleting saved rules</label><input type=\"checkbox\"  name=\"safedelete\" id=\"safedelete\" checked=\"checked\"/></p><p><label for=\"ignoreselectors\">Ignore commonly used selectors (eg clearfix)</label><input type=\"checkbox\"  name=\"ignoreselectors\" id=\"ignoreselectors\" checked=\"checked\"/></p><a href=\"#\" id=\"close_options\">Close</a></section>",
+        var options_html = "<div id=\"options_background\"></div><section id=\"options_interface\" class=\"options\"><h2 >Options</h2><p><label for=\"tables\">Hide Table Elements</label><input type=\"checkbox\"  name=\"tables\" id=\"tables\" /></p><p><label for=\"visible\">Only include visible elements</label><input type=\"checkbox\"  name=\"visible\" id=\"visible\" /></p><p><label for=\"safedelete\">Confirm before deleting saved rules</label><input type=\"checkbox\"  name=\"safedelete\" id=\"safedelete\" checked=\"checked\"/></p><p><label for=\"ignoreselectors\">Ignore commonly used selectors (eg clearfix)</label><input type=\"checkbox\"  name=\"ignoreselectors\" id=\"ignoreselectors\" checked=\"checked\"/></p><a href=\"#\" id=\"close_options\" class=\"closer\">X</a></section>",
             options_element = $(options_html);
         options_element.appendTo('body');
         $('#options_background, #options_interface, #options_interface *').addClass('no_select');
@@ -595,7 +595,7 @@ var makeCollect = function($){
     adds the preview modal html and events to the page
     */
     function addPreview(){
-        var preview_html = "<div id=\"preview_background\"></div><section id=\"preview_interface\" class=\"options\">    <div id=\"preview_holder\">    </div>    <a href=\"#\" id=\"close_preview\">Close</a></section>",
+        var preview_html = "<div id=\"preview_background\"></div><section id=\"preview_interface\" class=\"options\">    <div id=\"preview_holder\">    </div>    <a href=\"#\" id=\"close_preview\" class=\"closer\">X</a></section>",
             preview_element = $(preview_html);
         preview_element.appendTo('body');
         $('#preview_background, #preview_interface, #preview_interface *').addClass('no_select');
@@ -1188,9 +1188,8 @@ var makeCollect = function($){
     END SELECTOR OBJECT
     ********************/
     return Collect; 
-};
+})(jQuery);
 
-var collect = makeCollect(jQuery);
 collect.setup();
 
 // attach to window so that only one instance is active at a time

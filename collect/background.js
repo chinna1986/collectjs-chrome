@@ -6,7 +6,7 @@ chrome.storage.local.get(null, function(storage) {
     if ( !storage.rules ) {
         chrome.storage.local.set({"rules": {}});
     }
-   if ( !storage.groups ) {
+    if ( !storage.groups ) {
         chrome.storage.local.set({"groups": {}});
     }    
 });

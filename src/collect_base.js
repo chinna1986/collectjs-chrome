@@ -2,7 +2,7 @@
 if ( !window.collectMade ) {
 
 "use strict";
-var makeCollect = function($){
+var collect = (function($){
     /***************
     COLLECT OBJECT
     ***************/
@@ -17,10 +17,6 @@ var makeCollect = function($){
     };
 
     Collect.events = (function(){
-        /*************
-        Event Functions
-        *************/
-
         /*************
         Control Button Functions
         *************/
@@ -44,6 +40,10 @@ var makeCollect = function($){
             events_on = !events_on;
         }
 
+
+        /*************
+        Event Functions
+        *************/
         // close the collect interface
         function closeInterface(event){
             event.stopPropagation();
@@ -1188,9 +1188,8 @@ var makeCollect = function($){
     END SELECTOR OBJECT
     ********************/
     return Collect; 
-};
+})(jQuery);
 
-var collect = makeCollect(jQuery);
 collect.setup();
 
 // attach to window so that only one instance is active at a time

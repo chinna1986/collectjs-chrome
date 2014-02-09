@@ -15,7 +15,14 @@
     color: #222;
     font-family: sans-serif;
     font-size: 12px;
-    text-align: left; }
+    text-align: left;
+    vertical-align: inherit; }
+  #collect_interface select {
+    -webkit-appearance: menulist !important; }
+  #collect_interface input[type=radio] {
+    -webkit-appearance: radio !important; }
+  #collect_interface input[type=checkbox] {
+    -webkit-appearance: checkbox !important; }
   #collect_interface h2 {
     font-size: 1.25em;
     font-weight: bold;
@@ -30,6 +37,9 @@
     font-size: 20px;
     padding: 0 0 0 10px;
     line-height: 28px; }
+    #collect_interface #topbar #collect_selector_groups {
+      margin-right: 10px;
+      width: 75px; }
     #collect_interface #topbar button {
       padding: 2px 5px;
       margin: 0;
@@ -89,7 +99,7 @@
     white-space: nowrap;
     padding: 2px 0 0 2px;
     position: relative;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #cccccc;
     margin-right: 15px; }
     #collect_interface .selector_group * {
       font-size: 16px; }
@@ -97,7 +107,7 @@
       cursor: pointer;
       font-weight: bold;
       padding: 0 3px 0 2px;
-      color: #ccc;
+      color: #cccccc;
       display: none; }
     #collect_interface .selector_group .deltog:hover, #collect_interface .selector_group .nthtype:hover, #collect_interface .selector_group .onlychild:hover {
       background: #efefef; }
@@ -119,6 +129,7 @@
   #collect_interface .collect_group {
     margin-right: 5px; }
     #collect_interface .collect_group .deltog {
+      background: #efefef;
       cursor: pointer;
       font-weight: bold;
       padding: 2px; }
@@ -127,12 +138,13 @@
     min-width: 25px;
     cursor: pointer; }
   #collect_interface .collect_group:hover .deltog {
-    background: #CCC; }
+    background: #cccccc; }
   #collect_interface .collect_group:hover .saved_selector {
     background: #efefef; }
   #collect_interface #form_buttons {
     width: 20%;
-    display: inline-block; }
+    display: inline-block;
+    margin: 10px 0 0; }
     #collect_interface #form_buttons button {
       width: 100%;
       margin: 0 10px 10px 0;
@@ -143,13 +155,13 @@
   top: 0;
   border-width: 0 2px 2px;
   border-style: solid;
-  border-color: #444; }
+  border-color: #444444; }
 
 #collect_interface.attach_bottom {
   bottom: 0;
   border-width: 2px 2px 0;
   border-style: solid;
-  border-color: #444; }
+  border-color: #444444; }
 
 #form_inputs {
   margin: 15px 0; }
@@ -158,7 +170,7 @@
 
 #group_buttons, #button_floater {
   float: right;
-  border-right: 1px solid #ccc;
+  border-right: 1px solid #cccccc;
   height: 100%; }
 
 #button_floater {
@@ -193,56 +205,49 @@
   #collect_selectors .collect_group * {
     font-size: 20px; }
 
-#collect_selector_groups {
-  margin-right: 10px; }
-
 #collect_messages {
   font-weight: bold; }
 
 /* _options.scss */
-#options_interface * {
-  color: #222;
-  font-family: sans-serif;
-  font-size: 12px;
-  text-align: left; }
-
 /* options modal */
-#options_interface {
+#options_interface, #preview_interface {
   display: none;
   position: fixed;
   width: 50%;
   background: #fff;
-  border: 2px solid #444;
+  border: 2px solid #444444;
   top: 25%;
   left: 25%;
-  padding: 10px;
-  z-index: 10001; }
-
-#options_background {
-  display: none;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  opacity: 0.25;
-  background: black; }
-
-#preview_interface {
+  padding: 20px;
+  z-index: 10001;
   color: #000;
-  display: none;
-  position: fixed;
-  width: 50%;
-  background: #fff;
-  border: 2px solid #444;
-  top: 25%;
-  left: 25%;
-  padding: 10px;
   z-index: 10001;
   height: 35%;
   min-height: 200px; }
+  #options_interface *, #preview_interface * {
+    color: #222;
+    font-family: sans-serif;
+    font-size: 12px;
+    text-align: left; }
+  #options_interface input[type=radio], #preview_interface input[type=radio] {
+    -webkit-appearance: radio !important; }
+  #options_interface input[type=checkbox], #preview_interface input[type=checkbox] {
+    -webkit-appearance: checkbox !important; }
+  #options_interface p, #preview_interface p {
+    margin: 0 0 5px; }
+  #options_interface .closer, #preview_interface .closer {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    text-align: center;
+    border: 2px solid #444444;
+    font-size: 20px;
+    font-weight: bold;
+    background: #efefef;
+    color: #000; }
 
-#preview_background {
+#options_background, #preview_background {
   display: none;
   top: 0;
   left: 0;
@@ -256,20 +261,12 @@
   height: 90%;
   overflow-y: scroll; }
 
-.preview_group h2 {
+#preview_interface .preview_group h2 {
   margin: 0;
   font-size: 1.5em; }
-
-.preview_group ul {
+#preview_interface .preview_group ul {
   margin: 0;
   padding: 5px 0; }
-
-#options_interface #close_options, #preview_interface #close_preview {
-  font-size: 20px;
-  font-weight: bold;
-  background: #efefef;
-  padding: 2px 5px;
-  color: #000; }
 
 .collect_highlight {
   border: 1px solid blue !important; }

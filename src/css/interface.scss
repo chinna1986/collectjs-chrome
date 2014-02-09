@@ -5,6 +5,8 @@ $light-red: #F296A3;
 $green: #489675;
 $light-green: #BDDBCE;
 $light-gray: #efefef;
+$dark-gray: #444444;
+$gray: #CCCCCC;
 $gold: #FFD700;
 
 #collect_interface{
@@ -25,6 +27,19 @@ $gold: #FFD700;
         font-family: sans-serif;
         font-size: 12px;
         text-align: left;
+        vertical-align: inherit;
+    }
+    
+    select{
+        -webkit-appearance: menulist !important;
+    }
+
+    input[type=radio]{
+        -webkit-appearance: radio !important;
+    }
+
+    input[type=checkbox]{
+        -webkit-appearance: checkbox !important;
     }
 
     h2{
@@ -46,6 +61,11 @@ $gold: #FFD700;
         font-size:20px;
         padding: 0 0 0 10px;
         line-height: 28px;
+
+        #collect_selector_groups{
+            margin-right: 10px;
+            width: 75px;
+        }
 
         button{
             padding: 2px 5px;
@@ -69,7 +89,7 @@ $gold: #FFD700;
         }
 
         button:hover{
-            background: #cccccc;
+            background: $gray;
         }
 
         button.con:hover{
@@ -139,7 +159,7 @@ $gold: #FFD700;
         white-space: nowrap;
         padding: 2px 0 0 2px;
         position: relative;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid $gray;
         margin-right: 15px;
 
         *{
@@ -150,7 +170,7 @@ $gold: #FFD700;
             cursor: pointer;
             font-weight: bold;
             padding: 0 3px 0 2px;
-            color: #ccc;
+            color: $gray;
             display: none;
         }
         .deltog:hover, .nthtype:hover, .onlychild:hover{
@@ -189,6 +209,7 @@ $gold: #FFD700;
         margin-right: 5px;
 
         .deltog{
+            background: $light-gray;
             cursor: pointer;
             font-weight: bold;
             padding: 2px;
@@ -202,7 +223,7 @@ $gold: #FFD700;
     }
 
     .collect_group:hover .deltog{
-        background: #CCC;
+        background: $gray;
     }
 
     .collect_group:hover .saved_selector{
@@ -212,6 +233,7 @@ $gold: #FFD700;
     #form_buttons{
         width: 20%;
         display: inline-block;
+        margin: 10px 0 0;
 
         button{
             width: 100%;
@@ -226,14 +248,14 @@ $gold: #FFD700;
     top: 0;
     border-width: 0 2px 2px;
     border-style: solid;
-    border-color: #444;
+    border-color: $dark-gray;
 }
 
 #collect_interface.attach_bottom{
     bottom: 0;
     border-width: 2px 2px 0;
     border-style: solid;
-    border-color: #444;
+    border-color: $dark-gray;
 }
 
 #form_inputs {
@@ -246,7 +268,7 @@ $gold: #FFD700;
 
 #group_buttons{
     float: right;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid $gray;
     height: 100%;
 }
 
@@ -294,10 +316,6 @@ $gold: #FFD700;
     .collect_group *{
         font-size: 20px;
     }
-}
-
-#collect_selector_groups{
-    margin-right: 10px;
 }
 
 #collect_messages{
