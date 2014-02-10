@@ -550,9 +550,8 @@ var collect = (function($){
         document.body.innerHTML += interface_html;
         document.getElementById('collect_interface').classList.add('no_select');
         interfaceEles = document.querySelectorAll('#collect_interface *');
-        for ( var i=0, len=interfaceEles.length; i<len; i++ ) {
-            interfaceEles[i].classList.add('no_select');
-        }
+        addNoSelect(interfaceEles);
+        
         loadGroups();
         addOptions();
         addPreview();
@@ -580,15 +579,25 @@ var collect = (function($){
     */
     function addOptions(){
         var options_html = "{{src/options.html}}",
-            options_element = $(options_html);
+            options_element = $(options_html),
+            eles,
+            optionTogglers, optionsLen;
         options_element.appendTo('body');
-        $('#options_background, #options_interface, #options_interface *').addClass('no_select');
-        $("#open_options, #close_options, #options_background").click(function(event){
+        
+        eles = document.querySelectorAll('#options_background, #options_interface, #options_interface *');
+        addNoSelect(eles);
+        
+        function toggleOptions(event){
             event.preventDefault();
             event.stopPropagation();
             options_element.toggle();
-        });
+        }
 
+        optionTogglers = document.querySelectorAll("#open_options, #close_options, #options_background");
+        optionsLen = optionTogglers.length;
+        for ( var j=0; j<optionsLen; j++ ) {
+            optionTogglers[j].addEventListener('click', toggleOptions, false);
+        }
     }
 
     /*
@@ -596,15 +605,32 @@ var collect = (function($){
     */
     function addPreview(){
         var preview_html = "{{src/preview.html}}",
-            preview_element = $(preview_html);
+            preview_element = $(preview_html),
+            eles,
+            previewTogglers, previewLen;
         preview_element.appendTo('body');
-        $('#preview_background, #preview_interface, #preview_interface *').addClass('no_select');
-        $("#close_preview, #preview_background").click(function(event){
+        eles = document.querySelectorAll('#preview_background, #preview_interface, #preview_interface *');
+        addNoSelect(eles);
+
+        function togglePreview(event){
             event.preventDefault();
             event.stopPropagation();
             preview_element.toggle();
             clearClass('saved_preview');
-        });
+        }
+
+        previewTogglers = document.querySelectorAll("#close_preview, #preview_background");
+        previewLen = previewTogglers.length;
+        for ( var i=0; i<previewLen; i++ ) {
+            previewTogglers[i].addEventListener('click', togglePreview, false);
+        }
+    }
+
+    function addNoSelect(eles){
+        var len = eles.length;
+        for( var i=0; i<len; i++ ) {
+            eles[i].classList.add('no_select');
+        }
     }
 
     //addInterface helpers
