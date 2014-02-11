@@ -594,10 +594,7 @@ var collect = (function($){
         }
 
         optionTogglers = document.querySelectorAll("#open_options, #close_options, #options_background");
-        optionsLen = optionTogglers.length;
-        for ( var j=0; j<optionsLen; j++ ) {
-            optionTogglers[j].addEventListener('click', toggleOptions, false);
-        }
+        addEvents(optionTogglers, 'click', toggleOptions);
     }
 
     /*
@@ -620,10 +617,26 @@ var collect = (function($){
         }
 
         previewTogglers = document.querySelectorAll("#close_preview, #preview_background");
-        previewLen = previewTogglers.length;
-        for ( var i=0; i<previewLen; i++ ) {
-            previewTogglers[i].addEventListener('click', togglePreview, false);
+        addEvents(previewTogglers, 'click', togglePreview);
+    }
+
+    function addEvents(eles, type, fn){
+        // convert nodelist to array
+        eles = Array.prototype.slice.call(eles);
+        var len = eles.length;
+        for ( var i=0; i<len; i++ ) {
+            eles[i].addEventListener(type, fn, false);
         }
+    }
+
+    function removeEvents(ele, type, fn){
+        // convert nodelist to array
+        eles = Array.prototype.slice.call(eles);
+        var len = eles.length;
+        for ( var i=0; i<len; i++ ) {
+            ele.removeEventListener(type, fn);
+        }
+        
     }
 
     function addNoSelect(eles){
@@ -654,13 +667,13 @@ var collect = (function($){
     }    
 
     function addPseudoElement(pseudoSelector, ele){
-        var _this = $(ele),
-            parent = _this.parents('.selector_group'),
-            html = pseudoHTML(pseudoSelector);
+        var parent = $(ele).parents('.selector_group'),
+            html = pseudoHTML(pseudoSelector),
+            toggleable = parent.children('.toggleable');
         parent.children('.pseudo').remove();
-        parent.children('.toggleable').last().after($(html));
+        toggleable.last().after($(html));
         // make sure the element is on so this selector makes sense
-        parent.children('.toggleable').eq(0).removeClass('off');
+        toggleable.eq(0).removeClass('off');
         updateInterface();
     }
 
@@ -672,12 +685,12 @@ var collect = (function($){
     }
 
     function addOnlyChildElement(ele){
-        var _this = $(ele),
-            parent = _this.parents('.selector_group'),
-            html = "<span class='child toggleable no_select'> &gt;</span>";
-        parent.children('.toggleable').last().after($(html));
+        var parent = $(ele).parents('.selector_group'),
+            html = "<span class='child toggleable no_select'> &gt;</span>",
+            toggleable = parent.children('.toggleable');
+        toggleable.last().after($(html));
         // make sure the element is on so this selector makes sense
-        parent.children('.toggleable').eq(0).removeClass('off');
+        toggleable.eq(0).removeClass('off');
         updateInterface();   
     }
 
