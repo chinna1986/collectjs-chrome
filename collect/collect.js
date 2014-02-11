@@ -1004,7 +1004,7 @@ var collect = (function($){
         var ele_selector,
             selector = '',
             count = 0,
-            toggle_on = true;
+            first = true;
         // stop generating selector when you get to the body element
         while ( ele.tagName !== "BODY" ){
             if ( !testSelectorRules(ele) ) {
@@ -1014,9 +1014,9 @@ var collect = (function($){
             ele_selector = new Selector( ele );
             // default 'off' class for all parent elements
             if ( count++ > 0 ) {
-                toggle_on = false;
+                first = false;
             }
-            selector = ele_selector.toHTML( toggle_on ) + ' ' + selector;
+            selector = ele_selector.toHTML(first) + ' ' + selector;
             ele = ele.parentElement;
         }
         return selector;
@@ -1201,20 +1201,20 @@ var collect = (function($){
     /*
     returns the html for a selector group
     */
-    Selector.prototype.toHTML = function( on ){
-        var selector = wrapToggleable(this.tag.toLowerCase(), on);
+    Selector.prototype.toHTML = function(first){
+        var selector = wrapToggleable(this.tag.toLowerCase(), first);
         if ( this.id ) {
-            selector += wrapToggleable(this.id, on);
+            selector += wrapToggleable(this.id, first);
         }
         if ( this.classes.length ) {
             for ( var pos=0, len=this.classes.length; pos < len; pos++ ) {
-                selector += wrapToggleable(this.classes[pos], on);
+                selector += wrapToggleable(this.classes[pos], first);
             }
         }
 
         return "<span class='selector_group no_select'>" + selector +
             "<span class='nthtype no_select' title='add the nth-of-type pseudo selector'>+t</span>" + 
-            "<span class='onlychild no_select' title='next selector must be direct child (&gt; in css)'>&gt;</span>" + 
+            (first ? "" : "<span class='onlychild no_select' title='next selector must be direct child (&gt; in css)'>&gt;</span>") + 
             "<span class='deltog no_select'>x</span>"+
             "</span>";
     };
