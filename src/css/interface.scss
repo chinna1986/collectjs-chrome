@@ -110,7 +110,7 @@ $gold: #FFD700;
         cursor: pointer;
         background: $light-gray;
         font-size: 12px;
-        font-weight: normal;
+        font-weight: normal !important;
         padding: 0 5px;
         border: 1px outset $light-gray;
         text-transform: none;

@@ -85,7 +85,7 @@ var collect = (function($){
             event.stopPropagation();
         }
 
-        function verifyDropdown(event){
+        function verifyPseudoVal(event){
             event.stopPropagation();
             // verify that nth-of-type is legitimate input
             var text = this.textContent.toLowerCase(),
@@ -297,7 +297,7 @@ var collect = (function($){
             document.getElementById('selector_capture').value = capture;
             document.getElementById('selector_index').value = index;
             if ( selector !== '' ){
-                var longHTML = elementSelector(document.querySelector(selector));
+                var longHTML = accurateSelectorGroups(selector);
                 document.getElementById('selector_parts').innerHTML = longHTML;
 
                 clearClass("query_check");
@@ -306,6 +306,89 @@ var collect = (function($){
             clearClass('active_selector');
             ele.classList.add('active_selector');
         }
+
+    function accurateSelectorGroups(selector){
+        var ele = document.querySelector(selector),
+            selectorParts = selector.split(' '),
+            parseParts = [],
+            selectorHTML = '',
+            ele_selector, on, currentParse;
+        for ( var i=0, len=selectorParts.length; i<len; i++ ) {
+            parseParts.push(parseSelector(selectorParts[i]));
+        }
+        currentParse = parseParts.pop();
+        // stop generating selector when you get to the body element
+        if ( ele === null ) {
+            alertMessage('no valid elements match selector in page');
+            return '';
+        }
+        while ( ele !== null && ele.tagName !== "BODY" ){
+            on = false;
+            if ( !testSelectorRules(ele) ) {
+                ele = ele.parentElement;
+                continue;
+            }
+            ele_selector = new Selector(ele);
+            // check if current element matches what we're looking for
+            if ( currentParse) {
+                on = matchSelector(ele, currentParse);
+                if ( on ) {
+                    currentParse = parseParts.pop();
+                }
+            }
+
+            selectorHTML = ele_selector.toHTML(on) + ' ' + selectorHTML;
+            ele = ele.parentElement;
+        }
+        return selectorHTML;
+
+    }
+
+    /*
+    given a string representing a query selector, return an object containing the parts
+    */
+    function parseSelector(selector){
+        var tagMatch = /^[a-z][\w0-9-]*/i,
+            idMatch = /(?:#)([a-z][\w0-9-]*)/i,
+            classMatches = /(\.[a-z][\w0-9-]*)/ig,
+            // only matching ints instead of all pseudo rules
+            pseudoMatch = /:nth-of-type\((?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)\)/i
+            tag = selector.match(tagMatch),
+            id = selector.match(idMatch),
+            classes = selector.match(classMatches),
+            pseudo = selector.match(pseudoMatch),
+            selectorObject = {};
+        if ( tag !== null ) {
+            selectorObject.tag = tag[0];
+        }
+        if ( id !== null ) {
+            selectorObject.id = id[0];
+        }
+        if ( classes !== null ) {
+            selectorObject.classes = classes;
+        }
+        if ( pseudo !== null ) {
+            selectorObject.pseudo = pseudo[0];
+        }
+        return selectorObject;
+    }
+
+    function matchSelector(ele, selector){
+        if ( (selector.tag && ele.tagName.toLowerCase() !== selector.tag ) ||
+            ( selector.id && ele.getAttribute('id') !== selector.id ) ){
+            return false;
+        }
+        if ( selector.classes ) {
+            for ( var i=0, len=selector.classes.length; i<len; i++ ) {
+                var curr = selector.classes[i];
+                // ignore the period in the class name
+                if ( !ele.classList.contains(curr.substr(1))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
         function previewGroupEvent(event){
             event.preventDefault();
@@ -488,7 +571,7 @@ var collect = (function($){
                 $('#selector_text').on('click', '.capture', setCaptureVal);
                 $('#selector_parts')
                     .on('click', '.child_toggle', stopPropagation)
-                    .on('blur', '.child_toggle', verifyDropdown)
+                    .on('blur', '.child_toggle', verifyPseudoVal)
                     .on('click', '.toggleable', toggleOff)
                     .on('mouseenter', '.selector_group', previewSelectorHover)
                     .on('mouseleave', '.selector_group', removeSelectorHover)
@@ -510,7 +593,7 @@ var collect = (function($){
                 $('#selector_text').off('click', '.capture', setCaptureVal);
                 $('#selector_parts')
                     .off('click', '.child_toggle', stopPropagation)
-                    .off('blur', '.child_toggle', verifyDropdown)
+                    .off('blur', '.child_toggle', verifyPseudoVal)
                     .off('click', '.toggleable', toggleOff)
                     .off('mouseenter', '.selector_group', previewSelectorHover)
                     .off('mouseleave', '.selector_group', removeSelectorHover)
@@ -853,6 +936,7 @@ var collect = (function($){
             html = cleanOuterHTML(element).replace(singleSpaceRegexp, ' '),
             // match all opening html tags along with their attributes
             tags = html.match(/<[^\/].+?>/g),
+            /* !!ERROR!! */
             text_val = element.textContent.replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
             attrs = tagAttributes(tags);               
 
@@ -1006,7 +1090,11 @@ var collect = (function($){
             count = 0,
             first = true;
         // stop generating selector when you get to the body element
-        while ( ele.tagName !== "BODY" ){
+        if ( ele === null ) {
+            alertMessage('no valid elements match selector in page');
+            return '';
+        }
+        while ( ele !== null && ele.tagName !== "BODY" ){
             if ( !testSelectorRules(ele) ) {
                 ele = ele.parentElement;
                 continue;
