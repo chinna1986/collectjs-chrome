@@ -466,8 +466,16 @@ var collect = (function($){
                     loadSavedSelectors();
                 });    
             } else {
-                alertMessage("Cannot delete 'default' group");
-                loadSavedSelectors();
+                var clearRules = confirm("Cannot delete 'default' group, clear rules instead?");
+                if ( clearRules ) {
+                    chrome.storage.local.get('rules', function clearDefaultGroup(storage){
+                        var host = window.location.hostname,
+                            rules = storage.rules;
+                        rules[host][name] = {};
+                        chrome.storage.local.set({'rules': rules});
+                        loadSavedSelectors();
+                    });    
+                }
             }
             
         }
