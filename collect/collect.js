@@ -1,51 +1,49 @@
 // check to make sure an interface hasn't already been created
 if ( !window.collectMade ) {
-
 "use strict";
 var collect = (function($){
     /***************
     COLLECT OBJECT
     ***************/
-    var Collect = {};
+    var Collect = {
+        elements: "body *:not(.no_select)",
+        ignoreSelectors: {'.clearfix':true}
+    };
 
+    /***
+    add the interface and turn on events
+    ***/
     Collect.setup = function(){
-        this.elements = "body *:not(.no_select)";
-        addInterface();
+        addInterfaceModal();
         this.events.permanent();
-        this.events.on(); 
-        this.ignoreSelectors = {'.clearfix':true};
+        this.events.on();
     };
 
     Collect.events = (function(){
         /*************
-        Control Button Functions
+        Event Functions
         *************/
         var events_on = true;
         // turn off events for highlighting/selecting page elements
         function toggleEvents(event){
             event.stopPropagation();
-            var _this = $(this);
             if ( events_on ) {
                 Collect.events.off();
-                _this.text('Turn On');
+                this.textContent = 'Turn On';
                 swapClasses(this, 'con', 'pro');
                 clearClass('query_check');
                 clearClass('collect_highlight');
                 clearClass('saved_preview');
             } else {
                 Collect.events.on();
-                _this.text('Turn Off');
+                this.textContent = 'Turn Off';
                 swapClasses(this, 'pro', 'con');
             }
             events_on = !events_on;
         }
 
-
-        /*************
-        Event Functions
-        *************/
         // close the collect interface
-        function closeInterface(event){
+        function removeInterface(event){
             event.stopPropagation();
             Collect.events.off();
             clearClass('query_check');
@@ -66,7 +64,7 @@ var collect = (function($){
         function moveInterface(event){
             event.stopPropagation();
             var collect_interface = document.getElementById('collect_interface');
-            if ( collect_interface.classList.contains('attach_top') ) {
+            if ( hasClass(collect_interface, 'attach_top') ) {
                 swapClasses(collect_interface, 'attach_top', 'attach_bottom');
                 this.textContent = 'Move to Top';
             } else {
@@ -77,75 +75,75 @@ var collect = (function($){
 
         // select which attribute (or text) to capture desired data from query selected elements
         function setCaptureVal(event){
-            document.getElementById('selector_capture').value = this.dataset.capture;
+            if ( hasClass(event.target, 'capture') ) {
+                document.getElementById('selector_capture').value = event.target.dataset.capture;    
+            }
         }
 
-
         function stopPropagation(event){
-            event.stopPropagation();
+            if ( hasClass(event.target, 'child_toggle')){
+                event.stopPropagation();    
+            }
         }
 
         function verifyPseudoVal(event){
             event.stopPropagation();
             // verify that nth-of-type is legitimate input
-            var text = this.textContent.toLowerCase(),
+            var ele = event.target,
+                text = ele.textContent.toLowerCase(),
                 /* matches nth-of-type selectors:
                     odd, even, positive integers, an+b, -an+b
                 */
                 child_match = /^(?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)$/;
             if ( text.match(child_match) === null ) {
                 // if input is bad, reset to 1 and turn the selector off
-                this.textContent = 1;
-                this.parentElement.classList.add('off');
+                ele.textContent = 1;
+                ele.parentElement.classList.add('off');
             }
             updateInterface();
         }
 
-        /*
-        if there is a pseudo selector and all other parts of a seletor group are turned off,
-        turn off the pseudo selector as well. If turning on a pseudo selector, turn on the first
-        element of the group as well
-        */
         function toggleOff(event){
-            var parent = this.parentElement,
-                pseudoElement = parent.getElementsByClassName('pseudo')[0],
-                childElement = parent.getElementsByClassName('child')[0],
-                toggleables = parent.getElementsByClassName('realselector'),
-                toggleableCount = toggleables.length,
-                offCount = 0;
+            if ( hasClass(event.target, 'toggleable')){
+                var ele = event.target,
+                    parent = ele.parentElement,
+                    pseudoElement = parent.getElementsByClassName('pseudo')[0],
+                    childElement = parent.getElementsByClassName('child')[0],
+                    toggleables = parent.getElementsByClassName('realselector'),
+                    toggleableCount = toggleables.length,
+                    offCount = 0;
 
-            // toggle .off, then count classes that are off
-            this.classList.toggle('off');
-            for ( var r=0, len = toggleables.length; r<len; r++ ) {
-                if ( toggleables[r].classList.contains('off')){
-                    offCount++;
-                }
-            }
-
-            if ( this.classList.contains('off') ) {
-                // when turning on the pseudo element or > selector, make sure something else is 
-                // also turned on
-                if ( pseudoElement === this  && offCount === toggleableCount ) {
-                    toggleables[0].classList.remove('off');
-                } else if ( childElement === this && offCount === toggleableCount ) {
-                    toggleables[0].classList.remove('off');
-                }
-            } else {             
-                // if all "real" selectors are turned off, make sure to turn off the nth-of-type and
-                // > selectors as well
-                if ( toggleableCount === offCount ) {
-                    if ( pseudoElement !== this && pseudoElement && !$pseudo.hasClass('off') ) {
-                        pseudoElement.classList.add('off');
-                    }
-                    if ( childElement !== this && childElement && !$child.hasClass('off') ) {
-                        childElement.classList.add('off');
+                /*
+                if there is a pseudo selector and all other parts of a seletor group are turned off,
+                turn off the pseudo selector as well. If turning on a pseudo selector, turn on the
+                first element of the group as well
+                */
+                // toggle .off, then count classes that are off
+                ele.classList.toggle('off');
+                for ( var r=0, len = toggleables.length; r<len; r++ ) {
+                    if ( hasClass(toggleables[r], 'off')){
+                        offCount++;
                     }
                 }
-
-                
+                if ( ele !== pseudoElement && ele !== childElement ) {
+                    // turning it off
+                    if ( hasClass(ele, 'off') && toggleableCount == offCount) {
+                        if ( pseudoElement ) {
+                            pseudoElement.classList.add('off');
+                        }
+                        if ( childElement ) {
+                            childElement.classList.add('off');
+                        }
+                    }
+                } else {
+                    if ( pseudoElement === ele  && offCount === toggleableCount ) {
+                        toggleables[0].classList.remove('off');
+                    } else if ( childElement === ele && offCount === toggleableCount ) {
+                        toggleables[0].classList.remove('off');
+                    }
+                }
+                updateInterface();    
             }
-            
-            updateInterface();
         }
 
         function blurUpdate(event){
@@ -155,9 +153,9 @@ var collect = (function($){
 
         function previewSelectorHover(event){
             var index = 0,
-                elem = this,
+                ele = event.target,
                 selector;
-            while ( (elem=elem.previousElementSibling) !== null ) {
+            while ( (ele=ele.previousElementSibling) !== null ) {
                 index++;
             }
             // + 1 to include the hovered selector
@@ -171,18 +169,40 @@ var collect = (function($){
         }
 
         function removeSelectorGroup(event){
-            $(this).parents('.selector_group').remove();
-            updateInterface();
+            if ( hasClass(event.target, 'deltog')){
+                $(event.target).parents('.selector_group').remove();
+                updateInterface();
+            }
         }
 
         function addPseudoType(event){
-            addPseudoElement('nth-of-type', this);
-            this.parentElement.removeChild(this);
+            if ( hasClass(event.target, 'nthtype')){
+                var ele = event.target,
+                    parent = $(ele).parents('.selector_group'),
+                    html = pseudoHTML('nth-of-type'),
+                    toggleable = parent.children('.toggleable');
+                parent.children('.pseudo').remove();
+                toggleable.last().after($(html));
+                // make sure the element is on so this selector makes sense
+                toggleable.eq(0).removeClass('off');
+                ele.parentElement.removeChild(ele);
+                updateInterface();
+            }
         }
 
         function addOnlyChildren(event){
-            addOnlyChildElement(this);
-            this.parentElement.removeChild(this);
+            if ( hasClass(event.target, 'onlychild')){
+                var ele = event.target,
+                    parent = $(ele).parents('.selector_group'),
+                    html = "<span class='child toggleable no_select'> &gt;</span>",
+                    toggleable = parent.children('.toggleable');
+                ele.parentElement.removeChild(ele);
+                
+                toggleable.last().after($(html));
+                // make sure the element is on so this selector makes sense
+                toggleable.eq(0).removeClass('off');
+                updateInterface(); 
+            }
         }
 
         // create and save an object for the current query selector/capture data
@@ -211,7 +231,7 @@ var collect = (function($){
                 active.textContent = selector_object.name;
                 active.classList.remove('active_selector');
 
-                selector_object = completeSelector(selector_object);
+                selector_object = selectorIsComplete(selector_object);
                 if ( !selector_object.incomplete ) {
                     swapClasses(active, 'incomplete_selector', 'saved_selector');
                 } else {
@@ -261,27 +281,33 @@ var collect = (function($){
         // remove selector rule from localstorage
         function deleteRuleEvent(event){
             event.stopPropagation();
-            var selector_span = this.previousElementSibling,
-                selector_name = selector_span.innerHTML;
-            if ( $("#safedelete").is(":checked") ) {
-                var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
-                if ( !verifyDelete ) {
-                    return;
+            if ( hasClass(event.target, 'deltog')){
+                var ele = event.target,
+                    selector_span = ele.previousElementSibling,
+                    selector_name = selector_span.innerHTML;
+                if ( $("#safedelete").is(":checked") ) {
+                    var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
+                    if ( !verifyDelete ) {
+                        return;
+                    }
                 }
+                $(ele).parents('.collect_group').remove();
+                deleteRule(currentGroup(), selector_name);
             }
-            
-            $(this).parents('.collect_group').remove();
-            deleteRule(currentGroup(), selector_name);
         }
 
         // load saved selector information into the #selector_form for editing
         function clearOrLoad(event){
             event.stopPropagation();
-            if ( this.classList.contains('active_selector') ) {
-                clearInterface();
-            } else {
-                loadSelectorGroup(this);
+            var ele = event.target
+            if ( hasClass(ele, 'saved_selector') || hasClass(ele, 'saved_selector') ) {
+                if ( hasClass(ele, 'active_selector') ) {
+                    clearInterface();
+                } else {
+                    loadSelectorGroup(ele);
+                }
             }
+            
         }
         
         // sets the fields in the #selector_form given an element 
@@ -297,98 +323,97 @@ var collect = (function($){
             document.getElementById('selector_capture').value = capture;
             document.getElementById('selector_index').value = index;
             if ( selector !== '' ){
-                var longHTML = accurateSelectorGroups(selector);
-                document.getElementById('selector_parts').innerHTML = longHTML;
-
+                document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
                 clearClass("query_check");
                 selectorElements(selector).addClass("query_check");
             }
             clearClass('active_selector');
             ele.classList.add('active_selector');
+            updateInterface();
         }
 
-    function accurateSelectorGroups(selector){
-        var ele = document.querySelector(selector),
-            selectorParts = selector.split(' '),
-            parseParts = [],
-            selectorHTML = '',
-            ele_selector, on, currentParse;
-        for ( var i=0, len=selectorParts.length; i<len; i++ ) {
-            parseParts.push(parseSelector(selectorParts[i]));
-        }
-        currentParse = parseParts.pop();
-        // stop generating selector when you get to the body element
-        if ( ele === null ) {
-            alertMessage('no valid elements match selector in page');
-            return '';
-        }
-        while ( ele !== null && ele.tagName !== "BODY" ){
-            on = false;
-            if ( !testSelectorRules(ele) ) {
+        function accurateSelectorGroups(selector){
+            var ele = document.querySelector(selector),
+                selectorParts = selector.split(' '),
+                parseParts = [],
+                html = '',
+                ele_selector, on, currentParse;
+            for ( var i=0, len=selectorParts.length; i<len; i++ ) {
+                parseParts.push(parseSelector(selectorParts[i]));
+            }
+            currentParse = parseParts.pop();
+            // stop generating selector when you get to the body element
+            if ( ele === null ) {
+                alertMessage('no valid elements match selector in page');
+                return '';
+            }
+            while ( ele !== null && ele.tagName !== "BODY" ){
+                on = false;
+                if ( !testSelectorRules(ele) ) {
+                    ele = ele.parentElement;
+                    continue;
+                }
+                ele_selector = new Selector(ele);
+                // check if current element matches what we're looking for
+                if ( currentParse) {
+                    on = matchSelector(ele, currentParse);
+                    if ( on ) {
+                        currentParse = parseParts.pop();
+                    }
+                }
+
+                html = ele_selector.toHTML(on) + ' ' + html;
                 ele = ele.parentElement;
-                continue;
             }
-            ele_selector = new Selector(ele);
-            // check if current element matches what we're looking for
-            if ( currentParse) {
-                on = matchSelector(ele, currentParse);
-                if ( on ) {
-                    currentParse = parseParts.pop();
+            return html;
+
+        }
+
+        /*
+        given a string representing a query selector, return an object containing the parts
+        */
+        function parseSelector(selector){
+            var tagMatch = /^[a-z][\w0-9-]*/i,
+                idMatch = /(?:#)([a-z][\w0-9-]*)/i,
+                classMatches = /(\.[a-z][\w0-9-]*)/ig,
+                // only matching ints instead of all pseudo rules
+                pseudoMatch = /:nth-of-type\((?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)\)/i
+                tag = selector.match(tagMatch),
+                id = selector.match(idMatch),
+                classes = selector.match(classMatches),
+                pseudo = selector.match(pseudoMatch),
+                selectorObject = {};
+            if ( tag !== null ) {
+                selectorObject.tag = tag[0];
+            }
+            if ( id !== null ) {
+                selectorObject.id = id[0];
+            }
+            if ( classes !== null ) {
+                selectorObject.classes = classes;
+            }
+            if ( pseudo !== null ) {
+                selectorObject.pseudo = pseudo[0];
+            }
+            return selectorObject;
+        }
+
+        function matchSelector(ele, selector){
+            if ( (selector.tag && ele.tagName.toLowerCase() !== selector.tag ) ||
+                ( selector.id && ele.getAttribute('id') !== selector.id ) ){
+                return false;
+            }
+            if ( selector.classes ) {
+                for ( var i=0, len=selector.classes.length; i<len; i++ ) {
+                    var curr = selector.classes[i];
+                    // ignore the period in the class name
+                    if ( !hasClass(ele, curr.substr(1))) {
+                        return false;
+                    }
                 }
             }
-
-            selectorHTML = ele_selector.toHTML(on) + ' ' + selectorHTML;
-            ele = ele.parentElement;
+            return true;
         }
-        return selectorHTML;
-
-    }
-
-    /*
-    given a string representing a query selector, return an object containing the parts
-    */
-    function parseSelector(selector){
-        var tagMatch = /^[a-z][\w0-9-]*/i,
-            idMatch = /(?:#)([a-z][\w0-9-]*)/i,
-            classMatches = /(\.[a-z][\w0-9-]*)/ig,
-            // only matching ints instead of all pseudo rules
-            pseudoMatch = /:nth-of-type\((?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)\)/i
-            tag = selector.match(tagMatch),
-            id = selector.match(idMatch),
-            classes = selector.match(classMatches),
-            pseudo = selector.match(pseudoMatch),
-            selectorObject = {};
-        if ( tag !== null ) {
-            selectorObject.tag = tag[0];
-        }
-        if ( id !== null ) {
-            selectorObject.id = id[0];
-        }
-        if ( classes !== null ) {
-            selectorObject.classes = classes;
-        }
-        if ( pseudo !== null ) {
-            selectorObject.pseudo = pseudo[0];
-        }
-        return selectorObject;
-    }
-
-    function matchSelector(ele, selector){
-        if ( (selector.tag && ele.tagName.toLowerCase() !== selector.tag ) ||
-            ( selector.id && ele.getAttribute('id') !== selector.id ) ){
-            return false;
-        }
-        if ( selector.classes ) {
-            for ( var i=0, len=selector.classes.length; i<len; i++ ) {
-                var curr = selector.classes[i];
-                // ignore the period in the class name
-                if ( !ele.classList.contains(curr.substr(1))) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
         function previewGroupEvent(event){
             event.preventDefault();
@@ -403,7 +428,7 @@ var collect = (function($){
                 for( var key in group ) {
                     curr = group[key];
                     // make sure to only run on completed rules
-                    curr = completeSelector(curr);
+                    curr = selectorIsComplete(curr);
                     if ( !curr.incomplete) {
                         results = document.querySelectorAll(curr.selector);
                         resultsLen = results.length;
@@ -527,6 +552,7 @@ var collect = (function($){
 
         function select(event){
             event.stopPropagation();
+            clearClass('collect_highlight');
             this.classList.add('collect_highlight');
         }
 
@@ -547,7 +573,7 @@ var collect = (function($){
             if ( !document.getElementsByClassName('.active_selector').length ){
                 clearInterface();
             }
-            elementInterface(this);
+            makeSelectorGroups(this);
         }
 
         /*************
@@ -557,39 +583,40 @@ var collect = (function($){
         var events = {
             permanent: function(){
                 // #control_buttons
-                $('#off_button').on('click', toggleEvents);
-                $('#close_selector').on('click', closeInterface);
-                $('#move_position').on('click', moveInterface);
+                document.getElementById('off_button').addEventListener('click', toggleEvents, false);
+                document.getElementById('close_selector').addEventListener('click', removeInterface, false);
+                document.getElementById('move_position').addEventListener('click', moveInterface, false);
 
                 // rules for #form_buttons
-                $('#collect_save').on('click', saveRuleEvent);
-                $('#collect_clear_form').on('click', clearRuleForm);
-                $('#collect_preview').on('click', previewRule);
+                document.getElementById('collect_save').addEventListener('click', saveRuleEvent, false);
+                document.getElementById('collect_clear_form').addEventListener('click', clearRuleForm, false);
+                document.getElementById('collect_preview').addEventListener('click', previewRule, false);
 
                 // group events
-                $('#collect_selectors').on('click', '.deltog', deleteRuleEvent);
-                $('#collect_preview_saved').on('click', previewGroupEvent);
-                $('#collect_new_group').on('click', createGroupEvent);
-                $('#collect_get_groups').on('click', getGroupsEvent);
-                $('#collect_delete_group').on('click', deleteGroupEvent);
-                $('#collect_upload_group').on('click', uploadGroupEvent);
-                $('#collect_selector_groups').on('change', loadGroupEvent);
+                document.getElementById('collect_selectors').addEventListener('click', deleteRuleEvent, false);
+                document.getElementById('collect_preview_saved').addEventListener('click', previewGroupEvent, false);
+                document.getElementById('collect_new_group').addEventListener('click', createGroupEvent, false);
+                document.getElementById('collect_get_groups').addEventListener('click', getGroupsEvent, false);
+                document.getElementById('collect_delete_group').addEventListener('click', deleteGroupEvent, false);
+                document.getElementById('collect_upload_group').addEventListener('click', uploadGroupEvent, false);
+                document.getElementById('collect_selector_groups').addEventListener('change', loadGroupEvent, false);
             },
             on: function(){
-                $('#selector_text').on('click', '.capture', setCaptureVal);
+                var selectorParts = document.getElementById('selector_parts');
+                document.getElementById('selector_text').addEventListener('click', setCaptureVal, false);
+                document.getElementById('selector_index').addEventListener('blur', blurUpdate, false);
+                document.getElementById('collect_selectors').addEventListener('click', clearOrLoad, false);
+                
+                selectorParts.addEventListener('click', stopPropagation, false);
+                selectorParts.addEventListener('click', toggleOff, false);
+                selectorParts.addEventListener('click', removeSelectorGroup, false);
+                selectorParts.addEventListener('click', addPseudoType, false);
+                selectorParts.addEventListener('click', addOnlyChildren, false);
+
                 $('#selector_parts')
-                    .on('click', '.child_toggle', stopPropagation)
                     .on('blur', '.child_toggle', verifyPseudoVal)
-                    .on('click', '.toggleable', toggleOff)
                     .on('mouseenter', '.selector_group', previewSelectorHover)
                     .on('mouseleave', '.selector_group', removeSelectorHover)
-                    .on('click', '.deltog', removeSelectorGroup)
-                    .on('click', '.nthtype', addPseudoType)
-                    .on('click', '.onlychild', addOnlyChildren);
-
-                $('#selector_index').on('blur', blurUpdate);
-
-                $('#collect_selectors').on('click', '.saved_selector, .incomplete_selector', clearOrLoad);
 
                 $(Collect.elements).on({
                     mouseenter: select,
@@ -598,20 +625,21 @@ var collect = (function($){
                 });
             },
             off: function(){
-                $('#selector_text').off('click', '.capture', setCaptureVal);
+                var selectorParts = document.getElementById('selector_parts');
+                document.getElementById('selector_text').removeEventListener('click', setCaptureVal);
+                document.getElementById('selector_index').removeEventListener('blur', blurUpdate);
+                document.getElementById('collect_selectors').removeEventListener('click', clearOrLoad);
+
+                selectorParts.removeEventListener('click', stopPropagation);
+                selectorParts.removeEventListener('click', toggleOff);
+                selectorParts.removeEventListener('click', removeSelectorGroup);
+                selectorParts.removeEventListener('click', addPseudoType);
+                selectorParts.removeEventListener('click', addOnlyChildren);
+                
                 $('#selector_parts')
-                    .off('click', '.child_toggle', stopPropagation)
                     .off('blur', '.child_toggle', verifyPseudoVal)
-                    .off('click', '.toggleable', toggleOff)
                     .off('mouseenter', '.selector_group', previewSelectorHover)
                     .off('mouseleave', '.selector_group', removeSelectorHover)
-                    .off('click', '.deltog', removeSelectorGroup)
-                    .off('click', '.nthtype', addPseudoType)
-                    .off('click', '.onlychild', addOnlyChildren);
-
-                $('#selector_index').off('blur', blurUpdate);
-
-                $('#collect_selectors').off('click', '.saved_selector, .incomplete_selector', clearOrLoad);
 
                 $(Collect.elements).off({
                     mouseenter: select,
@@ -628,27 +656,25 @@ var collect = (function($){
     ***************/
 
     /********************
-    PRIVATE FUNCTIONS
+    UTILITY FUNCTIONS
     ********************/
-    
-    /*
-    create the collect interface, add no_select class to its elements so the interface
-    doesn't interfere with itself, and add event listeners to the interface
-    */
-    function addInterface() {
-        var interface_html = "<div class=\"attach_bottom no_select\" id=\"collect_interface\"><div id=\"topbar\">CollectJS<div id=\"button_floater\"><button id=\"open_options\">Options</button><button id=\"move_position\">Move to Top</button><button id=\"off_button\" class=\"con\">Turn Off</button><button id=\"close_selector\" class=\"con\">Close</button></div><div id=\"group_buttons\">Group: <select id=\"collect_selector_groups\"></select><button id=\"collect_new_group\">New</button><button id=\"collect_get_groups\">Get</button><button id=\"collect_delete_group\" class=\"con\">Delete</button><button id=\"collect_upload_group\" class=\"pro\">Upload</button><button id=\"collect_preview_saved\">Preview Rules</button></div></div><section id=\"selector_results\"><div id=\"selector_info\"><p id=\"selector_parts\"></p><p id=\"selector_text\"></p><p id=\"selector_count\"></p></div><div class=\"collectColumn\"><div id=\"collect_error\"></div><form id=\"selector_form\"><div id=\"form_inputs\"><p><label for=\"selector_name\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\">Name:</label><input name=\"name\" id=\"selector_name\" val=\"\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\"/></p><p><label for=\"selector_string\" title=\"The CSS selector used to get the desired selector\">Selector:</label><input name=\"selector\" id=\"selector_string\" val=\"\" title=\"The CSS selector used to get the desired selector\"/></p><p><label for=\"selector_capture\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\">Capture:</label><input name=\"capture\" id=\"selector_capture\" val=\"\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\"/></p><p><label for=\"selector_low_index\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\">Ignore Indexes:</label><input name=\"index\" id=\"selector_index\" class=\"index\" val=\"\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\"/></p></div></form><div id=\"form_buttons\"><button id=\"collect_save\" class=\"pro\">Save Rule</button><button id=\"collect_preview\">Preview Rule</button><button id=\"collect_clear_form\" class=\"con\">Clear Form</button></div></div><div class=\"collectColumn\"><div id=\"collect_messages\"></div><div id=\"collect_selectors\"></div></div></section></div>",
-            interfaceEles;
-        document.body.innerHTML += interface_html;
-        document.getElementById('collect_interface').classList.add('no_select');
-        interfaceEles = document.querySelectorAll('#collect_interface *');
-        addNoSelect(interfaceEles);
-        
-        loadGroups();
-        addOptions();
-        addPreview();
+
+    // check if an element has a class
+    function hasClass(ele, name){
+        return ele.classList.contains(name);
     }
 
-    // utility function because I was removing/adding classes in a number of places
+    // purge a classname from all elements with it
+    function clearClass(name){
+        var eles = document.getElementsByClassName(name),
+            len = eles.length;
+        // iterate from length to 0 because its a NodeList
+        while ( len-- ){
+            eles[len].classList.remove(name);
+        }
+    }
+
+    // utility function to swap two classes
     function swapClasses(ele, oldClass, newClass){
         ele.classList.remove(oldClass);
         ele.classList.add(newClass);
@@ -666,9 +692,70 @@ var collect = (function($){
     }
 
     /*
+    add an EventListener to an array/nodelist of elements
+    */
+    function addEvents(eles, type, fn){
+        // convert nodelist to array
+        eles = Array.prototype.slice.call(eles);
+        var len = eles.length;
+        for ( var i=0; i<len; i++ ) {
+
+            eles[i].addEventListener(type, fn, false);
+        }
+    }
+
+    /*
+    remove an EventListener from an array/nodelist of elements
+    */
+    function removeEvents(eles, type, fn){
+        // convert nodelist to array
+        eles = Array.prototype.slice.call(eles);
+        var len = eles.length;
+        for ( var i=0; i<len; i++ ) {
+            eles[i].removeEventListener(type, fn);
+        }
+        
+    }
+
+    /*
+    add the .no_select class to eles array, so that collect.js doesn't try to select them
+    */
+    function addNoSelect(eles){
+        var len = eles.length;
+        for( var i=0; i<len; i++ ) {
+            eles[i].classList.add('no_select');
+        }
+    }
+
+    /********************
+    END UTILITY FUNCTIONS
+    ********************/
+
+    /********************
+    INTERFACE FUNCTIONS
+    ********************/
+
+    /*
+    create the collect interface, add no_select class to its elements so the interface
+    doesn't interfere with itself, and add event listeners to the interface
+    */
+    function addInterfaceModal() {
+        var interface_html = "<div class=\"attach_bottom no_select\" id=\"collect_interface\"><div id=\"topbar\">CollectJS<div id=\"button_floater\"><button id=\"open_options\">Options</button><button id=\"move_position\">Move to Top</button><button id=\"off_button\" class=\"con\">Turn Off</button><button id=\"close_selector\" class=\"con\">Close</button></div><div id=\"group_buttons\">Group: <select id=\"collect_selector_groups\"></select><button id=\"collect_new_group\">New</button><button id=\"collect_get_groups\">Get</button><button id=\"collect_delete_group\" class=\"con\">Delete</button><button id=\"collect_upload_group\" class=\"pro\">Upload</button><button id=\"collect_preview_saved\">Preview Rules</button></div></div><section id=\"selector_results\"><div id=\"selector_info\"><p id=\"selector_parts\"></p><p id=\"selector_text\"></p><p id=\"selector_count\"></p></div><div class=\"collectColumn\"><div id=\"collect_error\"></div><form id=\"selector_form\"><div id=\"form_inputs\"><p><label for=\"selector_name\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\">Name:</label><input name=\"name\" id=\"selector_name\" val=\"\" title=\"The name of the value that is being selected. This should be equivalent to the item\'s column name in a database\"/></p><p><label for=\"selector_string\" title=\"The CSS selector used to get the desired selector\">Selector:</label><input name=\"selector\" id=\"selector_string\" val=\"\" title=\"The CSS selector used to get the desired selector\"/></p><p><label for=\"selector_capture\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\">Capture:</label><input name=\"capture\" id=\"selector_capture\" val=\"\" title=\"Either the HTML element\'s attribute to capture or the element\'s text\"/></p><p><label for=\"selector_low_index\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\">Ignore Indexes:</label><input name=\"index\" id=\"selector_index\" class=\"index\" val=\"\" title=\"Use this for selectors that return multiple values if you want to exclude certain values. A positive index will exclude elements from zero up to the index and a negative index will exclude values after the array\'s length minus the index\'s absolute value\"/></p></div></form><div id=\"form_buttons\"><button id=\"collect_save\" class=\"pro\">Save Rule</button><button id=\"collect_preview\">Preview Rule</button><button id=\"collect_clear_form\" class=\"con\">Clear Form</button></div></div><div class=\"collectColumn\"><div id=\"collect_messages\"></div><div id=\"collect_selectors\"></div></div></section></div>",
+            interfaceEles;
+        document.body.innerHTML += interface_html;
+        document.getElementById('collect_interface').classList.add('no_select');
+        interfaceEles = document.querySelectorAll('#collect_interface *');
+        addNoSelect(interfaceEles);
+        
+        loadGroups();
+        addOptionsModal();
+        addPreviewModal();
+    }
+
+    /*
     options modal and selection options
     */
-    function addOptions(){
+    function addOptionsModal(){
         var options_html = "<div id=\"options_background\"></div><section id=\"options_interface\" class=\"options\"><h2 >Options</h2><p><label for=\"tables\">Hide Table Elements</label><input type=\"checkbox\"  name=\"tables\" id=\"tables\" /></p><p><label for=\"visible\">Only include visible elements</label><input type=\"checkbox\"  name=\"visible\" id=\"visible\" /></p><p><label for=\"safedelete\">Confirm before deleting saved rules</label><input type=\"checkbox\"  name=\"safedelete\" id=\"safedelete\" checked=\"checked\"/></p><p><label for=\"ignoreselectors\">Ignore commonly used selectors (eg clearfix)</label><input type=\"checkbox\"  name=\"ignoreselectors\" id=\"ignoreselectors\" checked=\"checked\"/></p><a href=\"#\" id=\"close_options\" class=\"closer\">X</a></section>",
             options_element = $(options_html),
             eles,
@@ -691,7 +778,7 @@ var collect = (function($){
     /*
     adds the preview modal html and events to the page
     */
-    function addPreview(){
+    function addPreviewModal(){
         var preview_html = "<div id=\"preview_background\"></div><section id=\"preview_interface\" class=\"options\">    <div id=\"preview_holder\">    </div>    <a href=\"#\" id=\"close_preview\" class=\"closer\">X</a></section>",
             preview_element = $(preview_html),
             eles,
@@ -711,84 +798,12 @@ var collect = (function($){
         addEvents(previewTogglers, 'click', togglePreview);
     }
 
-    function addEvents(eles, type, fn){
-        // convert nodelist to array
-        eles = Array.prototype.slice.call(eles);
-        var len = eles.length;
-        for ( var i=0; i<len; i++ ) {
-            eles[i].addEventListener(type, fn, false);
-        }
-    }
-
-    function removeEvents(ele, type, fn){
-        // convert nodelist to array
-        eles = Array.prototype.slice.call(eles);
-        var len = eles.length;
-        for ( var i=0; i<len; i++ ) {
-            ele.removeEventListener(type, fn);
-        }
-        
-    }
-
-    function addNoSelect(eles){
-        var len = eles.length;
-        for( var i=0; i<len; i++ ) {
-            eles[i].classList.add('no_select');
-        }
-    }
-
-    //addInterface helpers
-
-    // add interactive identifier for saved selectors
-    function selectorHTML(obj){
-        obj = completeSelector(obj);
-        return '<span class="collect_group no_select">' + 
-            '<span class="' + (obj.incomplete ? 'incomplete_selector' : 'saved_selector') +
-            ' no_select" data-selector="' + obj.selector + 
-            '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
-            '</span><span class="deltog no_select">x</span></span>';
-    }
-
-    function completeSelector(selector_object){
-        if ( selector_object.name === '' || selector_object.selector === ''
-            || selector_object.capture === '' ) {
-            selector_object.incomplete = true;
-        }
-        return selector_object;
-    }    
-
-    function addPseudoElement(pseudoSelector, ele){
-        var parent = $(ele).parents('.selector_group'),
-            html = pseudoHTML(pseudoSelector),
-            toggleable = parent.children('.toggleable');
-        parent.children('.pseudo').remove();
-        toggleable.last().after($(html));
-        // make sure the element is on so this selector makes sense
-        toggleable.eq(0).removeClass('off');
-        updateInterface();
-    }
-
-    function pseudoHTML(selector, val) {
-        return "<span class='pseudo toggleable no_select'>:" + 
-            selector + "(<span class='child_toggle no_select' title='options: an+b " + 
-            "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
-            "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
-    }
-
-    function addOnlyChildElement(ele){
-        var parent = $(ele).parents('.selector_group'),
-            html = "<span class='child toggleable no_select'> &gt;</span>",
-            toggleable = parent.children('.toggleable');
-        toggleable.last().after($(html));
-        // make sure the element is on so this selector makes sense
-        toggleable.eq(0).removeClass('off');
-        updateInterface();   
-    }
-
-    // end addInterface helpers
+    /********************
+    END INTERFACE FUNCTIONS
+    ********************/
 
     /*********************
-        selectors/rules
+        SELECTORS/RULES
     *********************/
     /*
     takes an element and applies the rules based on the options, returning true if it passes
@@ -810,27 +825,24 @@ var collect = (function($){
     toggleable elements that are not 'off'
     */
     function baseSelector(index) {
-        var groups = $('#selector_parts .selector_group'),
-            selector = '',
-            group_selector = '',
-            togChildren,
+        var groups = document.querySelectorAll('#selector_parts .selector_group'),
             len = index || groups.length,
-            group_text = [];
+            group_text = [],
+            group_selector, togChildren;
         for (var g=0; g < len; g++) {
             group_selector = '';
-            togChildren = groups.eq(g).children('.toggleable');
+            togChildren = groups[g].getElementsByClassName('toggleable');
             for ( var i=0, childrenLen=togChildren.length; i<childrenLen; i++ ) {
-                var curr = togChildren.eq(i);
-                // if index is undefined and element has class .off, use add empty string,
+                var curr = togChildren[i];
+                // if index is undefined and element has class .off, use an empty string,
                 // but when index is defined, we want all elements included
-                group_selector += (curr.hasClass('off') && index===undefined) ? '' : curr.text();
+                group_selector += (hasClass(curr, 'off') && index===undefined) ? '' : curr.textContent;
             }
             if ( group_selector !== '' ) {
                 group_text.push(group_selector);
             }
         }
-        selector = group_text.join(' ');
-        return selector;
+        return group_text.join(' ');
     }
 
     /*
@@ -844,73 +856,66 @@ var collect = (function($){
         selector += ':not(.no_select)';
         return $(selector);
     }
+   
+    /*
+    uses #selector_index to exclude values from getting query_check
+    positive values remove elements from beginning of the eles array
+    negative values remove elements from the end of the eles array
+    */
+    function updateInterface(){
+        var selectorCount = document.getElementById('selector_count'),
+            selectorString = document.getElementById('selector_string'),
+            selectorText = document.getElementById('selector_text'),
+            selector = baseSelector(),
+            selected;
+
+        clearClass('query_check');
+        clearClass('collect_highlight');
+        document.getElementById('collect_error').innerHTML = '';
+        if (selector === ''){
+            selectorCount.innerHTML = '0';
+            selectorString.value = '';
+            selectorText.innerHTML = '';
+        } else {
+            selected = addQueryCheckClass( selectorElements(selector) );
+            selectorCount.innerHTML = selected.length;
+            selectorString.value = selector;
+            selectorText.innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
+        }
+    }
 
     /*
-    updates the interface based on the states of the (.selector_group)s
-    */  
-    var updateInterface = (function(){
-        /*
-        uses #seletor_index to exclude values from getting query_check
-        positive values remove elements from beginning of the eles array
-        negative values remove elements from the end of the eles array
-        */
-        function addQueryCheck(eles){
-            var index = document.getElementById('selector_index').value,
-                indexInt = parseInt(index, 10),
-                newEles, low, high, originalLength;
-            // if index is undefined, add to all elements
-            if ( isNaN(indexInt) ) {
-                eles.addClass("query_check");
-                return eles;
+    given an array of elements, add .query_check to each and returns the array
+    if #selector_index has a value, slice array based on rules before adding class and return
+    sliced array
+    */
+    function addQueryCheckClass(eles){
+        var index = document.getElementById('selector_index').value,
+            indexInt = parseInt(index, 10),
+            newEles, low, high, originalLength;
+        // if index is undefined, add to all elements
+        if ( isNaN(indexInt) ) {
+            eles.addClass("query_check");
+            return eles;
+        } else {
+            low = 0;
+            high = eles.length;
+            originalLength = high;
+            // if indexInt is negative, add the array length to get the desired value
+            // if indexInt is >= eles.length, set 
+            if ( indexInt < 0 ) {
+                // modulo in case the negative number is greater than eles.length
+                // because javascript negative number modulo is broken, don't need to subtract
+                // the value to get the correct negative number
+                high += (indexInt % high );
+            } else if ( indexInt >= originalLength ) {
+                low = originalLength - 1;
             } else {
-                low = 0;
-                high = eles.length;
-                originalLength = high;
-                // if indexInt is negative, add the array length to get the desired value
-                // if indexInt is >= eles.length, set 
-                if ( indexInt < 0 ) {
-                    // modulo in case the negative number is greater than eles.length
-                    // because javascript negative number modulo is broken, don't need to subtract
-                    // the value to get the correct negative number
-                    high += (indexInt % high );
-                } else if ( indexInt >= originalLength ) {
-                    low = originalLength - 1;
-                } else {
-                    low = indexInt;
-                }
-                newEles = eles.slice(low, high)
-                newEles.addClass("query_check");
-                return newEles;
+                low = indexInt;
             }
-        }
-
-        return function(){
-            var selector = baseSelector(),
-                selected;
-            clearClass('query_check');
-            clearClass('collect_highlight');
-            document.getElementById('collect_error').innerHTML = '';
-            if (selector === ''){
-                document.getElementById('selector_count').innerHTML = '0';
-                document.getElementById('selector_string').value = '';
-                document.getElementById('selector_text').innerHTML = '';
-            } else {
-                selected = selectorElements(selector);
-                selected = addQueryCheck(selected);
-                document.getElementById('selector_count').innerHTML = selected.length;
-                document.getElementById('selector_string').value = selector;
-                document.getElementById('selector_text').innerHTML = selectorText(selected[0]) || "no text";
-            }
-        };
-    })();
-
-    // purge a classname from all elements with it
-    function clearClass(name){
-        var eles = document.getElementsByClassName(name),
-            len = eles.length;
-        // iterate from length to 0 because its a NodeList
-        while ( len-- ){
-            eles[len].classList.remove(name);
+            newEles = eles.slice(low, high)
+            newEles.addClass("query_check");
+            return newEles;
         }
     }
 
@@ -934,141 +939,10 @@ var collect = (function($){
     }
 
     /*
-    given an element, return html for selector text with 
-    "capture"able parts wrapped
-    */
-    function selectorText(element) {
-        var curr, attr, replace_regexp,
-            // match 2+ spaces, newlines, and tabs
-            singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
-            html = cleanOuterHTML(element).replace(singleSpaceRegexp, ' '),
-            // match all opening html tags along with their attributes
-            tags = html.match(/<[^\/].+?>/g),
-            /* !!ERROR!! */
-            text_val = element.textContent.replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
-            attrs = tagAttributes(tags);               
-
-        html = html.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        html = wrapAttributes(html, attrs);
-        // create capture spans with 'text' targets on all text
-        if ( text_val !== '' ) {
-            // concatenate long text with an ellipsis
-            if ( text_val.length > 100 ){
-                text_val = text_val.slice(0, 25) + "..." + text_val.slice(-25);
-            }
-            // strip preceding/trailing spaces
-            text_val = text_val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            text_val = text_val.replace(/(^\s*|[\n\t]+|\s*$)/g, '');
-            var regexp_string = '(?:&gt;\\s*)' + escapeRegExp(text_val) + '(?:\\s*&lt;)',
-                text_replace_regexp = new RegExp(regexp_string, 'g'),
-                replace_string = wrapText(text_val, 'text', '&gt;', '&lt;');
-            html = html.replace(text_replace_regexp, replace_string);
-        }
-        return html;
-    }
-
-    /*
-    @tags is an array of strings of opening html tags
-    eg. <a href="#">
-    returns an array of the unique attributes
-    */
-    function tagAttributes(tags){
-        var attr_regex = /[a-zA-Z\-_]+=('.*?'|".*?")/g,
-            attr_check = {},
-            attrs = [],
-            curr, tagAttrs;
-        if ( tags ) {
-            tagAttrs = tags.join('').match(attr_regex);
-            if ( tagAttrs ) {
-                // add unique attributes to attrs array
-                for ( var p=0, tagLen=tagAttrs.length; p<tagLen; p++ ) {
-                    curr = tagAttrs[p];
-                    if ( !attr_check[curr] ) { 
-                        attrs.push(tagAttrs[p]);
-                        attr_check[curr] = true;
-                    }
-                }
-            }
-        }
-            
-        return attrs;
-    }
-
-    /*
-    given an @html string and an array @attrs, iterate over items in attrs, and replace matched text
-    in html with a wrapped version of that match
-    */
-    function wrapAttributes(html, attrs) {
-        var curr,
-            replace_regexp,
-            attr;
-        // replace attrs with capture spans
-        for ( var i=0, prop_len=attrs.length; i<prop_len; i++ ) {
-            curr = attrs[i];
-            attr = curr.slice(0, curr.indexOf('='));
-            // make sure either start of phrase or a space before to prevent a bad match
-            // eg. title="test" would match data-title="test"
-            replace_regexp = new RegExp("(?:^|\\s)" + escapeRegExp(curr), 'g');
-            // don't include on___ attrs eg onmousemove
-            if ( attr.indexOf('on') === 0 ) {
-                html = html.replace(replace_regexp, '');    
-            } else {
-                // add the preceding space matched by replace_regexp to the replacement string
-                html = html.replace(replace_regexp, " " + wrapText(curr, 'attr-' + attr));    
-            }
-        }
-        return html;
-    }
-
-    // selectorText helpers
-
-    /*
-    returns a string representing the html for the @ele element
-    and its text. Child elements of @ele will have their tags stripped, 
-    returning only their text. 
-    If that text is > 100 characters, concatenates for ease of reading
-    */
-    function cleanOuterHTML(ele){
-        if (!ele) {
-            return '';
-        }
-        var copy = ele.cloneNode(true),
-            // strip unnecessary spaces spit out by some template englines
-            text = copy.textContent.replace(/(\s{2,}|[\n\t]+)/g,' ');
-        copy.classList.remove('query_check', 'collect_highlight');
-        if ( text.length > 100 ){
-            text = text.slice(0, 25) + "..." + text.slice(-25);
-        }
-        copy.innerHTML = text
-        return copy.outerHTML;
-    }
-
-    /*
-    wrap an attribute or the text of an html string 
-    (used in #selector_text div)
-    */
-    function wrapText(ele, val, before, after){
-        // don't include empty properties
-        if ( ele.indexOf('=""') !== -1 ) {
-            return '';
-        }
-        return (before || '') + '<span class="capture no_select" ' + 
-            'title="click to capture ' + val + ' property" data-capture="' +
-            val + '">' + ele + '</span>' + (after || '');
-    }
-
-    // escape a string for a new RegExp call
-    function escapeRegExp(str) {
-        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-    }
-
-    // end selectorText helpers
-
-    /*
     given an html element, create .selector_group elements to represent 
     all of the elements in range (body, @ele]
     */
-    function elementInterface(ele){
+    function makeSelectorGroups(ele){
         var long_selector = '';
         clearClass('collect_highlight');
         if ( !ele ) {
@@ -1119,7 +993,7 @@ var collect = (function($){
     }
 
     /********************
-    END PRIVATE FUNCTIONS
+    END SELECTORS/RULES
     ********************/
 
     /********************
@@ -1196,6 +1070,10 @@ var collect = (function($){
     }
 
     /********************
+        END GROUPS
+    ********************/
+
+    /********************
         STORAGE
     ********************/
 
@@ -1224,7 +1102,12 @@ var collect = (function($){
                 }           
 
                 for ( var r=0, rulesLen=currRules.length; r<rulesLen; r++ ) {
-                    rule = emptyRule(currRules[r]);
+                    rule = {
+                        'name': currRules[r],
+                        'capture': '',
+                        'selector': '',
+                        'index': ''
+                    };
                     rule.incomplete = true;
                     groupRules[rule.name] = rule;
                     if ( i === 0 ) {
@@ -1236,15 +1119,6 @@ var collect = (function($){
             document.getElementById('collect_selectors').innerHTML = selectors;
             chrome.storage.local.set({'rules': storage.rules});
         });
-    }
-
-    function emptyRule(name){
-        return {
-            'name': name,
-            'capture': '',
-            'selector': '',
-            'index': ''
-        }
     }
 
     function saveRule(group, rule){
@@ -1265,6 +1139,10 @@ var collect = (function($){
             chrome.storage.local.set({'rules': rules});
         });  
     }
+
+    /********************
+        END STORAGE
+    ********************/
 
     /********************
         SELECTOR OBJECT
@@ -1296,15 +1174,16 @@ var collect = (function($){
 
     /*
     returns the html for a selector group
+    if first, the toggleable element's won't have class .off
     */
     Selector.prototype.toHTML = function(first){
-        var selector = wrapToggleable(this.tag.toLowerCase(), first);
+        var selector = wrapToggleableHTML(this.tag.toLowerCase(), first);
         if ( this.id ) {
-            selector += wrapToggleable(this.id, first);
+            selector += wrapToggleableHTML(this.id, first);
         }
         if ( this.classes.length ) {
             for ( var pos=0, len=this.classes.length; pos < len; pos++ ) {
-                selector += wrapToggleable(this.classes[pos], first);
+                selector += wrapToggleableHTML(this.classes[pos], first);
             }
         }
 
@@ -1315,13 +1194,176 @@ var collect = (function($){
             "</span>";
     };
 
-    function wrapToggleable(to_wrap, on) {
-        return "<span class='toggleable realselector no_select " + (on ? "":"off") + "'>" + to_wrap + "</span>";
-    }
-
     /********************
     END SELECTOR OBJECT
     ********************/
+
+    /****************
+    GENERAL HTML RETURNING FUNCTIONS
+    ****************/
+
+    function wrapToggleableHTML(to_wrap, on) {
+        return "<span class='toggleable realselector no_select " + (on ? "":"off") + "'>" + to_wrap + "</span>";
+    }
+
+    function pseudoHTML(selector, val) {
+        return "<span class='pseudo toggleable no_select'>:" + 
+            selector + "(<span class='child_toggle no_select' title='options: an+b " + 
+            "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
+            "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
+    }
+
+    /*
+    returns a string representing the html for the @ele element
+    and its text. Child elements of @ele will have their tags stripped, 
+    returning only their text. 
+    If that text is > 100 characters, concatenates for ease of reading
+    */
+    function cleanOuterHTML(ele){
+        if (!ele) {
+            return '';
+        }
+        var copy = ele.cloneNode(true),
+            // strip unnecessary spaces spit out by some template englines
+            text = copy.textContent.replace(/(\s{2,}|[\n\t]+)/g,' ');
+        copy.classList.remove('query_check', 'collect_highlight');
+        if ( text.length > 100 ){
+            text = text.slice(0, 25) + "..." + text.slice(-25);
+        }
+        copy.innerHTML = text
+        return copy.outerHTML;
+    }
+
+    /*
+    given an @html string and an array @attrs, iterate over items in attrs, and replace matched text
+    in html with a wrapped version of that match
+    */
+    function wrapAttributesHTML(html, attrs) {
+        var curr,
+            replace_regexp,
+            attr;
+        // replace attrs with capture spans
+        for ( var i=0, prop_len=attrs.length; i<prop_len; i++ ) {
+            curr = attrs[i];
+            attr = curr.slice(0, curr.indexOf('='));
+            // make sure either start of phrase or a space before to prevent a bad match
+            // eg. title="test" would match data-title="test"
+            replace_regexp = new RegExp("(?:^|\\s)" + escapeRegExp(curr), 'g');
+            // don't include on___ attrs eg onmousemove
+            if ( attr.indexOf('on') === 0 ) {
+                html = html.replace(replace_regexp, '');    
+            } else {
+                // add the preceding space matched by replace_regexp to the replacement string
+                html = html.replace(replace_regexp, " " + wrapTextHTML(curr, 'attr-' + attr));    
+            }
+        }
+        return html;
+    }
+
+    /*
+    wrap an attribute or the text of an html string 
+    (used in #selector_text div)
+    */
+    function wrapTextHTML(ele, val, before, after){
+        // don't include empty properties
+        if ( ele.indexOf('=""') !== -1 ) {
+            return '';
+        }
+        return (before || '') + '<span class="capture no_select" ' + 'title="click to capture ' + val + 
+            ' property" data-capture="' + val + '">' + ele + '</span>' + (after || '');
+    }
+
+    // add interactive identifier for saved selectors
+    function selectorHTML(obj){
+        obj = selectorIsComplete(obj);
+        return '<span class="collect_group no_select">' + 
+            '<span class="' + (obj.incomplete ? 'incomplete_selector' : 'saved_selector') +
+            ' no_select" data-selector="' + obj.selector + 
+            '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
+            '</span><span class="deltog no_select">x</span></span>';
+    }
+
+    function selectorIsComplete(selector_object){
+        if ( selector_object.name === '' || selector_object.selector === ''
+            || selector_object.capture === '' ) {
+            selector_object.incomplete = true;
+        }
+        return selector_object;
+    }   
+
+    /*
+    given an element, return html for selector text with 
+    "capture"able parts wrapped
+    */
+    function selectorTextHTML(element) {
+        if ( element === undefined ) {
+            return '';
+        }
+        var curr, attr, replace_regexp,
+            // match 2+ spaces, newlines, and tabs
+            singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
+            html = cleanOuterHTML(element).replace(singleSpaceRegexp, ' '),
+            // match all opening html tags along with their attributes
+            tags = html.match(/<[^\/].+?>/g),
+            /* !!ERROR!! */
+            text_val = element.textContent.replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
+            attrs = tagAttributes(tags);               
+
+        html = html.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html = wrapAttributesHTML(html, attrs);
+        // create capture spans with 'text' targets on all text
+        if ( text_val !== '' ) {
+            // concatenate long text with an ellipsis
+            if ( text_val.length > 100 ){
+                text_val = text_val.slice(0, 25) + "..." + text_val.slice(-25);
+            }
+            // strip preceding/trailing spaces
+            text_val = text_val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            text_val = text_val.replace(/(^\s*|[\n\t]+|\s*$)/g, '');
+            var regexp_string = '(?:&gt;\\s*)' + escapeRegExp(text_val) + '(?:\\s*&lt;)',
+                text_replace_regexp = new RegExp(regexp_string, 'g'),
+                replace_string = wrapTextHTML(text_val, 'text', '&gt;', '&lt;');
+            html = html.replace(text_replace_regexp, replace_string);
+        }
+        return html;
+    }
+
+    /*
+    @tags is an array of strings of opening html tags
+    eg. <a href="#">
+    returns an array of the unique attributes
+    */
+    function tagAttributes(tags){
+        var attr_regex = /[a-zA-Z\-_]+=('.*?'|".*?")/g,
+            attr_check = {},
+            attrs = [],
+            curr, tagAttrs;
+        if ( tags ) {
+            tagAttrs = tags.join('').match(attr_regex);
+            if ( tagAttrs ) {
+                // add unique attributes to attrs array
+                for ( var p=0, tagLen=tagAttrs.length; p<tagLen; p++ ) {
+                    curr = tagAttrs[p];
+                    if ( !attr_check[curr] ) { 
+                        attrs.push(tagAttrs[p]);
+                        attr_check[curr] = true;
+                    }
+                }
+            }
+        }
+            
+        return attrs;
+    }
+
+    // escape a string for a new RegExp call
+    function escapeRegExp(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    }
+
+    /****************
+    END HTML Functions
+    ****************/
+
     return Collect; 
 })(jQuery);
 
@@ -1329,5 +1371,4 @@ collect.setup();
 
 // attach to window so that only one instance is active at a time
 window.collectMade = true;
-
 }
