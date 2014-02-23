@@ -180,7 +180,7 @@ var collect = (function($){
                 var ele = event.target,
                     parent = $(ele).parents('.selector_group'),
                     html = pseudoHTML('nth-of-type'),
-                    toggleable = parent.children('.toggleable');
+                    toggleable = parent.children('.realselector');
                 parent.children('.pseudo').remove();
                 toggleable.last().after($(html));
                 // make sure the element is on so this selector makes sense
@@ -961,7 +961,7 @@ var collect = (function($){
     /*
     returns the html for a set of "group selectors" used to describe the ele 
     argument's css selector from one step above the body to the element each 
-    group selector conssists of a toggleable span for the element's tag, as well
+    group selector consists of a toggleable span for the element's tag, as well
     as id and any classes if they exist (and a delete button to get rid of that 
     group selector) a toggleable element can be turned on/off
     to test what is selected when it is/isn't included in the query selector
