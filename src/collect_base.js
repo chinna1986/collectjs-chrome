@@ -1244,7 +1244,7 @@ var collect = (function($){
             singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
             hasText = clone.textContent !== "",
             html, attrs, attrsLen,
-            curr, title, text, wrapped;
+            curr, text, wrapped;
         clone.classList.remove('query_check', 'collect_highlight');
 
         if ( hasText ) {
@@ -1253,6 +1253,16 @@ var collect = (function($){
                 innerText = innerText.slice(0, 25) + "..." + innerText.slice(-25);
             }
             clone.innerHTML = innerText;
+        }
+        
+        // strip query string from image's src for appearances
+        if ( clone.hasAttribute('src') ) {
+            var value = clone.getAttribute('src'),
+                query = value.indexOf('?');
+            if ( query !== -1 ) {
+                value = value.slice(0, query);
+            }
+            clone.setAttribute('src', value);
         }
         
         html = clone.outerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');

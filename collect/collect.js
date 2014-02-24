@@ -1254,8 +1254,19 @@ var collect = (function($){
             }
             clone.innerHTML = innerText;
         }
+
+        if ( clone.hasAttribute('src') ) {
+            // strip query string from image's src
+            var value = clone.getAttribute('src'),
+                query = value.indexOf('?');
+            if ( query !== -1 ) {
+                value = value.slice(0, query);
+            }
+            clone.setAttribute('src', value);
+        }
         
         html = clone.outerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        console.log(html);
         attrs = clone.attributes;
         attrsLen = attrs.length;
         
