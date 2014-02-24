@@ -727,6 +727,14 @@ var collect = (function($){
         }
     }
 
+    function selectorIsComplete(selector_object){
+        if ( selector_object.name === '' || selector_object.selector === ''
+            || selector_object.capture === '' ) {
+            selector_object.incomplete = true;
+        }
+        return selector_object;
+    }   
+
     /********************
     END UTILITY FUNCTIONS
     ********************/
@@ -1213,66 +1221,6 @@ var collect = (function($){
             "contenteditable='true'>" + (val || 1 ) + "</span>)</span>";
     }
 
-    /*
-    returns a string representing the html for the @ele element
-    and its text. Child elements of @ele will have their tags stripped, 
-    returning only their text. 
-    If that text is > 100 characters, concatenates for ease of reading
-    */
-    function cleanOuterHTML(ele){
-        if (!ele) {
-            return '';
-        }
-        var copy = ele.cloneNode(true),
-            // strip unnecessary spaces spit out by some template englines
-            text = copy.textContent.replace(/(\s{2,}|[\n\t]+)/g,' ');
-        copy.classList.remove('query_check', 'collect_highlight');
-        if ( text.length > 100 ){
-            text = text.slice(0, 25) + "..." + text.slice(-25);
-        }
-        copy.innerHTML = text
-        return copy.outerHTML;
-    }
-
-    /*
-    given an @html string and an array @attrs, iterate over items in attrs, and replace matched text
-    in html with a wrapped version of that match
-    */
-    function wrapAttributesHTML(html, attrs) {
-        var curr,
-            replace_regexp,
-            attr;
-        // replace attrs with capture spans
-        for ( var i=0, prop_len=attrs.length; i<prop_len; i++ ) {
-            curr = attrs[i];
-            attr = curr.slice(0, curr.indexOf('='));
-            // make sure either start of phrase or a space before to prevent a bad match
-            // eg. title="test" would match data-title="test"
-            replace_regexp = new RegExp("(?:^|\\s)" + escapeRegExp(curr), 'g');
-            // don't include on___ attrs eg onmousemove
-            if ( attr.indexOf('on') === 0 ) {
-                html = html.replace(replace_regexp, '');    
-            } else {
-                // add the preceding space matched by replace_regexp to the replacement string
-                html = html.replace(replace_regexp, " " + wrapTextHTML(curr, 'attr-' + attr));    
-            }
-        }
-        return html;
-    }
-
-    /*
-    wrap an attribute or the text of an html string 
-    (used in #selector_text div)
-    */
-    function wrapTextHTML(ele, val, before, after){
-        // don't include empty properties
-        if ( ele.indexOf('=""') !== -1 ) {
-            return '';
-        }
-        return (before || '') + '<span class="capture no_select" ' + 'title="click to capture ' + val + 
-            ' property" data-capture="' + val + '">' + ele + '</span>' + (after || '');
-    }
-
     // add interactive identifier for saved selectors
     function selectorHTML(obj){
         obj = selectorIsComplete(obj);
@@ -1283,14 +1231,6 @@ var collect = (function($){
             '</span><span class="deltog no_select">x</span></span>';
     }
 
-    function selectorIsComplete(selector_object){
-        if ( selector_object.name === '' || selector_object.selector === ''
-            || selector_object.capture === '' ) {
-            selector_object.incomplete = true;
-        }
-        return selector_object;
-    }   
-
     /*
     given an element, return html for selector text with 
     "capture"able parts wrapped
@@ -1299,65 +1239,56 @@ var collect = (function($){
         if ( element === undefined ) {
             return '';
         }
-        var curr, attr, replace_regexp,
-            // match 2+ spaces, newlines, and tabs
-            singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
-            html = cleanOuterHTML(element).replace(singleSpaceRegexp, ' '),
-            // match all opening html tags along with their attributes
-            tags = html.match(/<[^\/].+?>/g),
-            /* !!ERROR!! */
-            text_val = element.textContent.replace(singleSpaceRegexp, ' ').replace('&','&amp;'),
-            attrs = tagAttributes(tags);               
 
-        html = html.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        html = wrapAttributesHTML(html, attrs);
-        // create capture spans with 'text' targets on all text
-        if ( text_val !== '' ) {
-            // concatenate long text with an ellipsis
-            if ( text_val.length > 100 ){
-                text_val = text_val.slice(0, 25) + "..." + text_val.slice(-25);
+        var clone = element.cloneNode(true),
+            singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
+            hasText = clone.textContent !== "",
+            html, attrs, attrsLen,
+            curr, title, text, wrapped;
+        clone.classList.remove('query_check', 'collect_highlight');
+
+        if ( hasText ) {
+            innerText = clone.textContent.replace(singleSpaceRegexp, ' ');
+            if ( innerText.length > 100 ){
+                innerText = innerText.slice(0, 25) + "..." + innerText.slice(-25);
             }
-            // strip preceding/trailing spaces
-            text_val = text_val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            text_val = text_val.replace(/(^\s*|[\n\t]+|\s*$)/g, '');
-            var regexp_string = '(?:&gt;\\s*)' + escapeRegExp(text_val) + '(?:\\s*&lt;)',
-                text_replace_regexp = new RegExp(regexp_string, 'g'),
-                replace_string = wrapTextHTML(text_val, 'text', '&gt;', '&lt;');
-            html = html.replace(text_replace_regexp, replace_string);
+            clone.innerHTML = innerText;
         }
+        
+        html = clone.outerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        attrs = clone.attributes;
+        attrsLen = attrs.length;
+        
+        for ( var i=0; i<attrsLen; i++ ) {
+            curr = attrs[i];
+            text = attributeText(curr);
+            wrapped = wrapTextHTML(text, 'attr-'+curr.name);
+            html = html.replace(text, wrapped);
+        }
+
+        if ( hasText ) {
+            wrapped = wrapTextHTML(innerText, 'text');
+            html = html.replace(innerText, wrapped);
+        }
+
         return html;
     }
 
-    /*
-    @tags is an array of strings of opening html tags
-    eg. <a href="#">
-    returns an array of the unique attributes
-    */
-    function tagAttributes(tags){
-        var attr_regex = /[a-zA-Z\-_]+=('.*?'|".*?")/g,
-            attr_check = {},
-            attrs = [],
-            curr, tagAttrs;
-        if ( tags ) {
-            tagAttrs = tags.join('').match(attr_regex);
-            if ( tagAttrs ) {
-                // add unique attributes to attrs array
-                for ( var p=0, tagLen=tagAttrs.length; p<tagLen; p++ ) {
-                    curr = tagAttrs[p];
-                    if ( !attr_check[curr] ) { 
-                        attrs.push(tagAttrs[p]);
-                        attr_check[curr] = true;
-                    }
-                }
-            }
-        }
-            
-        return attrs;
+    function attributeText(attr) {
+        return attr.name + "=\"" + attr.value + "\"";
     }
 
-    // escape a string for a new RegExp call
-    function escapeRegExp(str) {
-        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    /*
+    wrap an attribute or the text of an html string 
+    (used in #selector_text div)
+    */
+    function wrapTextHTML(ele, val){
+        // don't include empty properties
+        if ( ele.indexOf('=""') !== -1 ) {
+            return '';
+        }
+        return '<span class="capture no_select" ' + 'title="click to capture ' + val + 
+            ' property" data-capture="' + val + '">' + ele + '</span>';
     }
 
     /****************
