@@ -267,3 +267,57 @@ describe("utility functions", function(){
         })
     });
 });
+
+describe("event helpers", function(){
+    describe("parseSelector", function(){
+        it("identifies the tag", function(){
+            var parsed = parseSelector("a.link");
+            expect(parsed.tag).toEqual("a");
+        });
+        it("identifies an id", function(){
+            var parsed = parseSelector("#identifier");
+            expect(parsed.id).toEqual("#identifier");
+        });
+        it("identifies classes", function(){
+            var parsed = parseSelector("a.link.important");
+            expect(parsed.classes).toEqual([".link", ".important"]);
+        });
+        it("identifies a pseudo-selector", function(){
+            var parsed = parseSelector("a:nth-of-type(1)");
+            expect(parsed.pseudo).toEqual(":nth-of-type(1)");
+        })
+    });
+
+    describe("matchSelector", function(){
+        it("matches tag", function(){
+            var ele = document.createElement("div");
+            expect(matchSelector(ele, "div")).toBe(true);
+        });
+        it("matches id", function(){
+            var ele = document.createElement("div");
+            ele.setAttribute("id", "foobar");
+            expect(matchSelector(ele, "#foobar")).toBe(true); 
+        });
+        it("matches classes", function(){
+            var ele = document.createElement("div");
+            ele.classList.add("one", "two");
+            expect(matchSelector(ele, ".one")).toBe(true);
+            expect(matchSelector(ele, ".two.one")).toBe(true);
+        });
+    });
+
+    describe("captureFunction", function(){
+        it("captures text", function(){
+            var ele = document.createElement("div"),
+                fn = captureFunction({capture: "text"});
+            ele.textContent = "this is a text";
+            expect(fn(ele)).toEqual("this is a text");
+        });
+        it("captures an attribute", function(){
+            var ele = document.createElement("a"),
+                fn = captureFunction({capture: "attr-href"});
+            ele.setAttribute("href", "#");
+            expect(fn(ele)).toEqual("#");
+        });
+    });
+});

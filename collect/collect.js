@@ -512,7 +512,7 @@ if ( !window.collectMade ) {
     function captureFunction(curr){
         if (curr.capture==="text") { 
             return function(ele){
-                return ele.innerText;
+                return ele.textContent;
             };
         } else if (curr.capture.indexOf("attr-")===0) {
             // return substring after first hyphen so that it works with data- attributes
