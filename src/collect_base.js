@@ -274,8 +274,7 @@ if ( !window.collectMade ) {
         event.preventDefault();
         var inputs = document.getElementById('selector_form').getElementsByTagName('input'),
             selector_object = {},
-            activeSelectors = document.getElementsByClassName('active_selector'),
-            active = activeSelectors[0],
+            active = document.getElementsByClassName('active_selector')[0],
             group = currentGroup();
             
         for ( var p=0, len=inputs.length; p<len; p++ ) {
@@ -316,19 +315,17 @@ if ( !window.collectMade ) {
             eles = selectorElements(selector),
             type = document.getElementById('selector_capture').value,
             outString = '',
-            i = 0,
-            len = eles.length,
             attr;
         if ( selector === '' || type === '' ) {
             outString = "No attribute to capture";
         } else if ( type === 'text' ) {
-            for ( ; i<len; i++ ) {
+            for (var i=0, len=eles.length; i<len; i++ ) {
                 outString += "<p>" + (eles[i].textContent) + "</p>";
             }
         } else if ( type.indexOf('attr-') === 0 ) {
             // get everything after attr-
             attr = type.slice(type.indexOf('-')+1);
-            for ( ; i<len; i++ ) {
+            for (var i=0, len=eles.length; i<len; i++ ) {
                 outString += "<p>" + (eles[i].getAttribute(attr)) + "</p>";
             }
         }
@@ -364,7 +361,7 @@ if ( !window.collectMade ) {
     function clearOrLoad(event){
         event.stopPropagation();
         var ele = event.target
-        if ( hasClass(ele, 'saved_selector') || hasClass(ele, 'saved_selector') ) {
+        if ( hasClass(ele, 'saved_selector') ) {
             if ( hasClass(ele, 'active_selector') ) {
                 clearInterface();
             } else {
@@ -521,7 +518,7 @@ if ( !window.collectMade ) {
             // return substring after first hyphen so that it works with data- attributes
             var attribute = curr.capture.slice(curr.capture.indexOf("-")+1);
             return function(ele){
-                    return ele.getAttribute(attribute);
+                return ele.getAttribute(attribute);
             };
         }
     }
@@ -529,7 +526,7 @@ if ( !window.collectMade ) {
     function createGroupEvent(event){
         event.preventDefault();
         var name = prompt("Group Name");
-        if ( name !== '' && name !== null ){
+        if ( name !== null && name !== '' ){
             addGroup(name);
             document.getElementById('collect_selectors').innerHTML = '';
             clearInterface();
@@ -1035,8 +1032,16 @@ if ( !window.collectMade ) {
     get the option element that is currently selected
     */
     function currentGroup(){
-        var currGroup = $('#collect_selector_groups option:selected');
-        return (currGroup.length) ? currGroup.eq(0).val() : '';
+        var groups = document.getElementById('collect_selector_groups'),
+            opts = groups.getElementsByTagName('option'),
+            curr;
+        for ( var i=0, len=opts.length; i<len; i++ ){
+            curr = opts[i];
+            if ( curr.selected ) {
+                return curr.value;
+            }
+        }
+        return '';
     }
 
     function newGroupOption(name, selected){
@@ -1052,6 +1057,10 @@ if ( !window.collectMade ) {
     /********************
         STORAGE
     ********************/
+
+    function getRules(callback){
+        chrome.storage.local.get('rules', callback);
+    }
 
     /*
     create the group and add the rules
@@ -1120,7 +1129,7 @@ if ( !window.collectMade ) {
         SELECTOR OBJECT
     ********************/
     function Selector( ele ){
-        this.tag = ele.tagName;
+        this.tag = ele.tagName.toLowerCase();
         this.id = ele.hasAttribute('id') ? '#' + ele.getAttribute('id') : undefined;
         this.classes = [];
         for ( var i=0, len=ele.classList.length; i<len; i++ ) {
@@ -1149,7 +1158,7 @@ if ( !window.collectMade ) {
     if first, the toggleable element's won't have class .off
     */
     Selector.prototype.toHTML = function(first){
-        var selector = wrapToggleableHTML(this.tag.toLowerCase(), first);
+        var selector = wrapToggleableHTML(this.tag, first);
         if ( this.id ) {
             selector += wrapToggleableHTML(this.id, first);
         }
@@ -1171,7 +1180,7 @@ if ( !window.collectMade ) {
     ****************/
 
     function wrapToggleableHTML(to_wrap, on) {
-        return "<span class='toggleable realselector no_select " + (on ? "":"off") + "'>" + to_wrap + "</span>";
+        return "<span class='toggleable realselector no_select" + (on ? "":" off") + "'>" + to_wrap + "</span>";
     }
 
     function pseudoHTML(selector, val) {
@@ -1248,13 +1257,13 @@ if ( !window.collectMade ) {
     wrap an attribute or the text of an html string 
     (used in #selector_text div)
     */
-    function wrapTextHTML(ele, val){
+    function wrapTextHTML(text, type){
         // don't include empty properties
-        if ( ele.indexOf('=""') !== -1 ) {
+        if ( text.indexOf('=""') !== -1 ) {
             return '';
         }
-        return '<span class="capture no_select" ' + 'title="click to capture ' + val + 
-            ' property" data-capture="' + val + '">' + ele + '</span>';
+        return '<span class="capture no_select" title="click to capture ' + type + 
+            ' property" data-capture="' + type + '">' + text + '</span>';
     }
 
     // attach to window so that only one instance is active at a time
