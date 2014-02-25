@@ -1,586 +1,11 @@
 // check to make sure an interface hasn't already been created
 if ( !window.collectMade ) {
-"use strict";
-var collect = (function($){
-    /***************
-    COLLECT OBJECT
-    ***************/
-    var Collect = {
+    "use strict";
+    var collect = {
         elements: "body *:not(.no_select)",
-        ignoreSelectors: {'.clearfix':true}
-    };
-
-    /***
-    add the interface and turn on events
-    ***/
-    Collect.setup = function(){
-        addInterfaceModal();
-        this.events.permanent();
-        this.events.on();
-    };
-
-    Collect.events = (function(){
-        /*************
-        Event Functions
-        *************/
-        var events_on = true;
-        // turn off events for highlighting/selecting page elements
-        function toggleEvents(event){
-            event.stopPropagation();
-            if ( events_on ) {
-                Collect.events.off();
-                this.textContent = 'Turn On';
-                swapClasses(this, 'con', 'pro');
-                clearClass('query_check');
-                clearClass('collect_highlight');
-                clearClass('saved_preview');
-            } else {
-                Collect.events.on();
-                this.textContent = 'Turn Off';
-                swapClasses(this, 'pro', 'con');
-            }
-            events_on = !events_on;
-        }
-
-        // close the collect interface
-        function removeInterface(event){
-            event.stopPropagation();
-            Collect.events.off();
-            clearClass('query_check');
-            clearClass('collect_highlight');
-            clearClass('saved_preview');
-            // closing, so re-clicking default_icon should create interface again
-            window.collectMade = false;
-            var elesToRemove = ['collect_interface', 'options_interface', 'options_background',
-                'preview_interface', 'preview_background'],
-                curr;
-            for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
-                curr = document.getElementById(elesToRemove[i]);
-                curr.parentElement.removeChild(curr);
-            }
-        }
-
-        // toggle interface between top and bottom of screen
-        function moveInterface(event){
-            event.stopPropagation();
-            var collect_interface = document.getElementById('collect_interface');
-            if ( hasClass(collect_interface, 'attach_top') ) {
-                swapClasses(collect_interface, 'attach_top', 'attach_bottom');
-                this.textContent = 'Move to Top';
-            } else {
-                swapClasses(collect_interface, 'attach_bottom', 'attach_top');
-                this.textContent = 'Move to Bottom';
-            }
-        }
-
-        // select which attribute (or text) to capture desired data from query selected elements
-        function setCaptureVal(event){
-            if ( hasClass(event.target, 'capture') ) {
-                document.getElementById('selector_capture').value = event.target.dataset.capture;    
-            }
-        }
-
-        function stopPropagation(event){
-            if ( hasClass(event.target, 'child_toggle')){
-                event.stopPropagation();    
-            }
-        }
-
-        function verifyPseudoVal(event){
-            event.stopPropagation();
-            // verify that nth-of-type is legitimate input
-            var ele = event.target,
-                text = ele.textContent.toLowerCase(),
-                /* matches nth-of-type selectors:
-                    odd, even, positive integers, an+b, -an+b
-                */
-                child_match = /^(?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)$/;
-            if ( text.match(child_match) === null ) {
-                // if input is bad, reset to 1 and turn the selector off
-                ele.textContent = 1;
-                ele.parentElement.classList.add('off');
-            }
-            updateInterface();
-        }
-
-        function toggleOff(event){
-            if ( hasClass(event.target, 'toggleable')){
-                var ele = event.target,
-                    parent = ele.parentElement,
-                    pseudoElement = parent.getElementsByClassName('pseudo')[0],
-                    childElement = parent.getElementsByClassName('child')[0],
-                    toggleables = parent.getElementsByClassName('realselector'),
-                    toggleableCount = toggleables.length,
-                    offCount = 0;
-
-                /*
-                if there is a pseudo selector and all other parts of a seletor group are turned off,
-                turn off the pseudo selector as well. If turning on a pseudo selector, turn on the
-                first element of the group as well
-                */
-                // toggle .off, then count classes that are off
-                ele.classList.toggle('off');
-                for ( var r=0, len = toggleables.length; r<len; r++ ) {
-                    if ( hasClass(toggleables[r], 'off')){
-                        offCount++;
-                    }
-                }
-                if ( ele !== pseudoElement && ele !== childElement ) {
-                    // turning it off
-                    if ( hasClass(ele, 'off') && toggleableCount == offCount) {
-                        if ( pseudoElement ) {
-                            pseudoElement.classList.add('off');
-                        }
-                        if ( childElement ) {
-                            childElement.classList.add('off');
-                        }
-                    }
-                } else {
-                    if ( pseudoElement === ele  && offCount === toggleableCount ) {
-                        toggleables[0].classList.remove('off');
-                    } else if ( childElement === ele && offCount === toggleableCount ) {
-                        toggleables[0].classList.remove('off');
-                    }
-                }
-                updateInterface();    
-            }
-        }
-
-        function blurUpdate(event){
-            event.preventDefault();
-            updateInterface();
-        }
-
-        function previewSelectorHover(event){
-            var index = 0,
-                ele = event.target,
-                selector;
-            while ( (ele=ele.previousElementSibling) !== null ) {
-                index++;
-            }
-            // + 1 to include the hovered selector
-            selector = baseSelector(index + 1);
-            clearClass('collect_highlight');
-            selectorElements(selector).addClass('collect_highlight');
-        }
-
-        function removeSelectorHover(event){
-            clearClass('collect_highlight');
-        }
-
-        function removeSelectorGroup(event){
-            if ( hasClass(event.target, 'deltog')){
-                $(event.target).parents('.selector_group').remove();
-                updateInterface();
-            }
-        }
-
-        function addPseudoType(event){
-            if ( hasClass(event.target, 'nthtype')){
-                var ele = event.target,
-                    parent = $(ele).parents('.selector_group'),
-                    html = pseudoHTML('nth-of-type'),
-                    toggleable = parent.children('.realselector');
-                parent.children('.pseudo').remove();
-                toggleable.last().after($(html));
-                // make sure the element is on so this selector makes sense
-                toggleable.eq(0).removeClass('off');
-                ele.parentElement.removeChild(ele);
-                updateInterface();
-            }
-        }
-
-        function addOnlyChildren(event){
-            if ( hasClass(event.target, 'onlychild')){
-                var ele = event.target,
-                    parent = $(ele).parents('.selector_group'),
-                    html = "<span class='child toggleable no_select'> &gt;</span>",
-                    toggleable = parent.children('.toggleable');
-                ele.parentElement.removeChild(ele);
-                
-                toggleable.last().after($(html));
-                // make sure the element is on so this selector makes sense
-                toggleable.eq(0).removeClass('off');
-                updateInterface(); 
-            }
-        }
-
-        // create and save an object for the current query selector/capture data
-        function saveRuleEvent(event){
-            event.preventDefault();
-            var inputs = document.getElementById('selector_form').getElementsByTagName('input'),
-                selector_object = {},
-                activeSelectors = document.getElementsByClassName('active_selector'),
-                active = activeSelectors[0],
-                group = currentGroup();
-                
-            for ( var p=0, len=inputs.length; p<len; p++ ) {
-                var curr = inputs[p],
-                    name = curr.getAttribute('name'),
-                    value = curr.value;
-                selector_object[name] = value;
-            }
-
-            // active isn't undefined if you're editing an already saved selector
-            if ( active ){
-                saveRule(group, selector_object);
-
-                // modify name, selector, and capture but not index
-                active.dataset.selector = selector_object.selector;
-                active.dataset.capture = selector_object.capture;
-                active.textContent = selector_object.name;
-                active.classList.remove('active_selector');
-
-                selector_object = selectorIsComplete(selector_object);
-                if ( !selector_object.incomplete ) {
-                    swapClasses(active, 'incomplete_selector', 'saved_selector');
-                } else {
-                    swapClasses(active, 'saved_selector', 'incomplete_selector');
-                }
-            } else {
-                saveRule(group, selector_object);
-                // call last because index needs to be set
-                document.getElementById('collect_selectors').innerHTML += selectorHTML(selector_object);
-            }
-            clearInterface();
-        }
-
-        // output a preview of current selector form values to the preview modal
-        function previewRule(event){
-            event.preventDefault();
-            var selector = document.getElementById('selector_string').value,
-                eles = selectorElements(selector),
-                type = document.getElementById('selector_capture').value,
-                outString = '',
-                i = 0,
-                len = eles.length,
-                attr;
-            if ( selector === '' || type === '' ) {
-                outString = "No attribute to capture";
-            } else if ( type === 'text' ) {
-                for ( ; i<len; i++ ) {
-                    outString += "<p>" + (eles[i].textContent) + "</p>";
-                }
-            } else if ( type.indexOf('attr-') === 0 ) {
-                // get everything after attr-
-                attr = type.slice(type.indexOf('-')+1);
-                for ( ; i<len; i++ ) {
-                    outString += "<p>" + (eles[i].getAttribute(attr)) + "</p>";
-                }
-            }
-            document.getElementById('preview_holder').innerHTML = outString;
-            $("#preview_interface, #preview_background").show();
-        }
-
-        
-        function clearRuleForm(event){
-            event.preventDefault();
-            clearInterface();
-        }
-
-        // remove selector rule from localstorage
-        function deleteRuleEvent(event){
-            event.stopPropagation();
-            if ( hasClass(event.target, 'deltog')){
-                var ele = event.target,
-                    selector_span = ele.previousElementSibling,
-                    selector_name = selector_span.innerHTML;
-                if ( $("#safedelete").is(":checked") ) {
-                    var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
-                    if ( !verifyDelete ) {
-                        return;
-                    }
-                }
-                $(ele).parents('.collect_group').remove();
-                deleteRule(currentGroup(), selector_name);
-            }
-        }
-
-        // load saved selector information into the #selector_form for editing
-        function clearOrLoad(event){
-            event.stopPropagation();
-            var ele = event.target
-            if ( hasClass(ele, 'saved_selector') || hasClass(ele, 'saved_selector') ) {
-                if ( hasClass(ele, 'active_selector') ) {
-                    clearInterface();
-                } else {
-                    loadSelectorGroup(ele);
-                }
-            }
-            
-        }
-        
-        // sets the fields in the #selector_form given an element 
-        // that represents a selector
-        function loadSelectorGroup(ele){
-            var selectorVal = ele.dataset.selector || '',
-                selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
-                name = ele.textContent,
-                index = ele.dataset.index,
-                capture = ele.dataset.capture;
-            document.getElementById('selector_name').value = name;
-            document.getElementById('selector_string').value = selector;
-            document.getElementById('selector_capture').value = capture;
-            document.getElementById('selector_index').value = index;
-            if ( selector !== '' ){
-                document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
-                clearClass("query_check");
-                selectorElements(selector).addClass("query_check");
-            }
-            clearClass('active_selector');
-            ele.classList.add('active_selector');
-            updateInterface();
-        }
-
-        function accurateSelectorGroups(selector){
-            var ele = document.querySelector(selector),
-                selectorParts = selector.split(' '),
-                parseParts = [],
-                html = '',
-                ele_selector, on, currentParse;
-            for ( var i=0, len=selectorParts.length; i<len; i++ ) {
-                parseParts.push(parseSelector(selectorParts[i]));
-            }
-            currentParse = parseParts.pop();
-            // stop generating selector when you get to the body element
-            if ( ele === null ) {
-                alertMessage('no valid elements match selector in page');
-                return '';
-            }
-            while ( ele !== null && ele.tagName !== "BODY" ){
-                on = false;
-                if ( !testSelectorRules(ele) ) {
-                    ele = ele.parentElement;
-                    continue;
-                }
-                ele_selector = new Selector(ele);
-                // check if current element matches what we're looking for
-                if ( currentParse) {
-                    on = matchSelector(ele, currentParse);
-                    if ( on ) {
-                        currentParse = parseParts.pop();
-                    }
-                }
-
-                html = ele_selector.toHTML(on) + ' ' + html;
-                ele = ele.parentElement;
-            }
-            return html;
-
-        }
-
-        /*
-        given a string representing a query selector, return an object containing the parts
-        */
-        function parseSelector(selector){
-            var tagMatch = /^[a-z][\w0-9-]*/i,
-                idMatch = /(?:#)([a-z][\w0-9-]*)/i,
-                classMatches = /(\.[a-z][\w0-9-]*)/ig,
-                // only matching ints instead of all pseudo rules
-                pseudoMatch = /:nth-of-type\((?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)\)/i
-                tag = selector.match(tagMatch),
-                id = selector.match(idMatch),
-                classes = selector.match(classMatches),
-                pseudo = selector.match(pseudoMatch),
-                selectorObject = {};
-            if ( tag !== null ) {
-                selectorObject.tag = tag[0];
-            }
-            if ( id !== null ) {
-                selectorObject.id = id[0];
-            }
-            if ( classes !== null ) {
-                selectorObject.classes = classes;
-            }
-            if ( pseudo !== null ) {
-                selectorObject.pseudo = pseudo[0];
-            }
-            return selectorObject;
-        }
-
-        function matchSelector(ele, selector){
-            if ( (selector.tag && ele.tagName.toLowerCase() !== selector.tag ) ||
-                ( selector.id && ele.getAttribute('id') !== selector.id ) ){
-                return false;
-            }
-            if ( selector.classes ) {
-                for ( var i=0, len=selector.classes.length; i<len; i++ ) {
-                    var curr = selector.classes[i];
-                    // ignore the period in the class name
-                    if ( !hasClass(ele, curr.substr(1))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        function previewGroupEvent(event){
-            event.preventDefault();
-            clearInterface();
-            var outString = '';
-            chrome.storage.local.get('rules', function previewGroupChrome(storage){
-                var host = window.location.hostname,
-                    rules = storage.rules,
-                    group = rules[host][currentGroup()],
-                    curr, results, resultsLen, prop;
-
-                for( var key in group ) {
-                    curr = group[key];
-                    // make sure to only run on completed rules
-                    curr = selectorIsComplete(curr);
-                    if ( !curr.incomplete) {
-                        results = document.querySelectorAll(curr.selector);
-                        resultsLen = results.length;
-                        prop = captureFunction(curr);
-                        outString += "<div class='preview_group'><h2>" + curr.name + 
-                            "(Count: " + resultsLen + ")</h2><ul>";
-                        for (var r=0; r<resultsLen; r++ ) {
-                            var ele = results[r];
-                            ele.classList.add("saved_preview");
-                            outString += "<li>" + prop(ele) + "</li>";
-                        }
-                        outString += "</ul></div>";
-                    }
-                }
-                document.getElementById('preview_holder').innerHTML = outString;
-                $("#preview_interface, #preview_background").show();
-            });
-        }
-
-        function captureFunction(curr){
-            if (curr.capture==="text") { 
-                return function(ele){
-                    return ele.innerText;
-                };
-            } else if (curr.capture.indexOf("attr-")===0) {
-                // return substring after first hyphen so that it works with data- attributes
-                var attribute = curr.capture.slice(curr.capture.indexOf("-")+1);
-                return function(ele){
-                        return ele.getAttribute(attribute);
-                };
-            }
-        }
-
-        function createGroupEvent(event){
-            event.preventDefault();
-            var name = prompt("Group Name");
-            if ( name !== '' && name !== null ){
-                addGroup(name);
-                document.getElementById('collect_selectors').innerHTML = '';
-                clearInterface();
-            }
-        }
-
-        function deleteGroupEvent(event){
-            event.preventDefault();
-            var name = currentGroup();
-            if ( name !== 'default' ) {
-                if ( $("#safedelete").is(":checked") ) {
-                    var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
-                    if ( !verifyDelete ) {
-                        return;
-                    }
-                }
-                $('#collect_selector_groups option:selected').remove();
-                chrome.storage.local.get('rules', function deleteGroupChrome(storage){
-                    var host = window.location.hostname,
-                        rules = storage.rules;
-                    delete rules[host][name];
-                    chrome.storage.local.set({'rules': rules});
-                    loadSavedSelectors();
-                });    
-            } else {
-                var clearRules = confirm("Cannot delete 'default' group, clear rules instead?");
-                if ( clearRules ) {
-                    chrome.storage.local.get('rules', function clearDefaultGroup(storage){
-                        var host = window.location.hostname,
-                            rules = storage.rules;
-                        rules[host][name] = {};
-                        chrome.storage.local.set({'rules': rules});
-                        loadSavedSelectors();
-                    });    
-                }
-            }
-            
-        }
-
-        function getGroupsEvent(event){
-            chrome.runtime.sendMessage({'type': 'groups'}, function getGroupsChrome(response){
-                if ( !response.error ){
-                    addLoadedGroups(response.groups);
-                }
-            });
-        }
-
-        function uploadGroupEvent(event){
-            event.preventDefault();
-            chrome.storage.local.get('rules', function uploadGroupChrome(storage){
-                var host = window.location.hostname,
-                    rules = storage.rules,
-                    groupName = currentGroup(),
-                    group = rules[host][groupName],
-                    uploadObject = {
-                        'host': host,
-                        'name': groupName,
-                        'rules': {}
-                    },
-                    uploadGroups = {},
-                    uploadJSON, curr;
-                // don't upload if the rule hasn't been completed
-                for ( var key in group ) {
-                    curr = group[key];
-                    if ( !curr.incomplete ) {
-                        uploadObject.rules[key] = group[key];
-                    }
-                }
-                uploadJSON = JSON.stringify(uploadObject);
-                chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function uploadResponseChrome(response){
-                    if ( response.error ) {
-                        alertMessage("failed to upload");
-                    } else {
-                        alertMessage("group successfully uploaded");
-                    }
-                });
-            });
-        }
-
-        function loadGroupEvent(event){
-            loadSavedSelectors();
-            clearInterface();
-        }
-
-        function select(event){
-            event.stopPropagation();
-            clearClass('collect_highlight');
-            this.classList.add('collect_highlight');
-        }
-
-        function deselect(event){
-            event.stopPropagation();
-            this.classList.remove('collect_highlight');
-        }
-
-        /*
-        when an element is clicked, setup interface data using clicked element
-        */
-        function querySelector(event){
-            event.stopPropagation();
-            event.preventDefault();
-            if ( this === null ) {
-                return;
-            }
-            if ( !document.getElementsByClassName('.active_selector').length ){
-                clearInterface();
-            }
-            makeSelectorGroups(this);
-        }
-
-        /*************
-        Event Bindings
-        *************/
-
-        var events = {
+        ignoreSelectors: {'.clearfix':true},
+        eventsOn: false,
+        events: {
             permanent: function(){
                 // #control_buttons
                 document.getElementById('off_button').addEventListener('click', toggleEvents, false);
@@ -602,11 +27,12 @@ var collect = (function($){
                 document.getElementById('collect_selector_groups').addEventListener('change', loadGroupEvent, false);
             },
             on: function(){
-                var selectorParts = document.getElementById('selector_parts');
+                collect.eventsOn = true;
                 document.getElementById('selector_text').addEventListener('click', setCaptureVal, false);
                 document.getElementById('selector_index').addEventListener('blur', blurUpdate, false);
                 document.getElementById('collect_selectors').addEventListener('click', clearOrLoad, false);
-                
+
+                var selectorParts = document.getElementById('selector_parts');
                 selectorParts.addEventListener('click', stopPropagation, false);
                 selectorParts.addEventListener('click', toggleOff, false);
                 selectorParts.addEventListener('click', removeSelectorGroup, false);
@@ -618,18 +44,19 @@ var collect = (function($){
                     .on('mouseenter', '.selector_group', previewSelectorHover)
                     .on('mouseleave', '.selector_group', removeSelectorHover)
 
-                $(Collect.elements).on({
+                $(collect.elements).on({
                     mouseenter: select,
                     mouseleave: deselect,
                     click: querySelector
                 });
             },
             off: function(){
-                var selectorParts = document.getElementById('selector_parts');
+                collect.eventsOn = false;
                 document.getElementById('selector_text').removeEventListener('click', setCaptureVal);
                 document.getElementById('selector_index').removeEventListener('blur', blurUpdate);
                 document.getElementById('collect_selectors').removeEventListener('click', clearOrLoad);
 
+                var selectorParts = document.getElementById('selector_parts');
                 selectorParts.removeEventListener('click', stopPropagation);
                 selectorParts.removeEventListener('click', toggleOff);
                 selectorParts.removeEventListener('click', removeSelectorGroup);
@@ -641,19 +68,577 @@ var collect = (function($){
                     .off('mouseenter', '.selector_group', previewSelectorHover)
                     .off('mouseleave', '.selector_group', removeSelectorHover)
 
-                $(Collect.elements).off({
+                $(collect.elements).off({
                     mouseenter: select,
                     mouseleave: deselect,
                     click: querySelector
                 });
             }
-        };
-        return events;
-    })();
+        },
+        /***
+        add the interface and turn on events
+        ***/
+        setup: function(){
+            addInterfaceModal();
+            this.events.permanent();
+            this.events.on();
+        }
+    };
+    collect.setup();
 
-    /***************
-    END COLLECT OBJECT
-    ***************/
+    /*************
+    Event Functions
+    *************/
+    // turn off events for highlighting/selecting page elements
+    function toggleEvents(event){
+        event.stopPropagation();
+        if ( collect.eventsOn ) {
+            collect.events.off();
+            this.textContent = 'Turn On';
+            swapClasses(this, 'con', 'pro');
+            clearClass('query_check');
+            clearClass('collect_highlight');
+            clearClass('saved_preview');
+        } else {
+            collect.events.on();
+            this.textContent = 'Turn Off';
+            swapClasses(this, 'pro', 'con');
+        }
+    }
+
+    // close the collect interface
+    function removeInterface(event){
+        event.stopPropagation();
+        collect.events.off();
+        clearClass('query_check');
+        clearClass('collect_highlight');
+        clearClass('saved_preview');
+        // closing, so re-clicking default_icon should create interface again
+        window.collectMade = false;
+        var elesToRemove = ['collect_interface', 'options_interface', 'options_background',
+            'preview_interface', 'preview_background'],
+            curr;
+        for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
+            curr = document.getElementById(elesToRemove[i]);
+            curr.parentElement.removeChild(curr);
+        }
+    }
+
+    // toggle interface between top and bottom of screen
+    function moveInterface(event){
+        event.stopPropagation();
+        var collect_interface = document.getElementById('collect_interface');
+        if ( hasClass(collect_interface, 'attach_top') ) {
+            swapClasses(collect_interface, 'attach_top', 'attach_bottom');
+            this.textContent = 'Move to Top';
+        } else {
+            swapClasses(collect_interface, 'attach_bottom', 'attach_top');
+            this.textContent = 'Move to Bottom';
+        }
+    }
+
+    // select which attribute (or text) to capture desired data from query selected elements
+    function setCaptureVal(event){
+        if ( hasClass(event.target, 'capture') ) {
+            document.getElementById('selector_capture').value = event.target.dataset.capture;    
+        }
+    }
+
+    function stopPropagation(event){
+        if ( hasClass(event.target, 'child_toggle')){
+            event.stopPropagation();    
+        }
+    }
+
+    function verifyPseudoVal(event){
+        event.stopPropagation();
+        // verify that nth-of-type is legitimate input
+        var ele = event.target,
+            text = ele.textContent.toLowerCase(),
+            /* matches nth-of-type selectors:
+                odd, even, positive integers, an+b, -an+b
+            */
+            child_match = /^(?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)$/;
+        if ( text.match(child_match) === null ) {
+            // if input is bad, reset to 1 and turn the selector off
+            ele.textContent = 1;
+            ele.parentElement.classList.add('off');
+        }
+        updateInterface();
+    }
+
+    function toggleOff(event){
+        if ( hasClass(event.target, 'toggleable')){
+            var ele = event.target,
+                parent = ele.parentElement,
+                pseudoElement = parent.getElementsByClassName('pseudo')[0],
+                childElement = parent.getElementsByClassName('child')[0],
+                toggleables = parent.getElementsByClassName('realselector'),
+                toggleableCount = toggleables.length,
+                offCount = 0;
+
+            /*
+            if there is a pseudo selector and all other parts of a seletor group are turned off,
+            turn off the pseudo selector as well. If turning on a pseudo selector, turn on the
+            first element of the group as well
+            */
+            // toggle .off, then count classes that are off
+            ele.classList.toggle('off');
+            for ( var r=0, len = toggleables.length; r<len; r++ ) {
+                if ( hasClass(toggleables[r], 'off')){
+                    offCount++;
+                }
+            }
+            if ( ele !== pseudoElement && ele !== childElement ) {
+                // turning it off
+                if ( hasClass(ele, 'off') && toggleableCount == offCount) {
+                    if ( pseudoElement ) {
+                        pseudoElement.classList.add('off');
+                    }
+                    if ( childElement ) {
+                        childElement.classList.add('off');
+                    }
+                }
+            } else {
+                if ( pseudoElement === ele  && offCount === toggleableCount ) {
+                    toggleables[0].classList.remove('off');
+                } else if ( childElement === ele && offCount === toggleableCount ) {
+                    toggleables[0].classList.remove('off');
+                }
+            }
+            updateInterface();    
+        }
+    }
+
+    function blurUpdate(event){
+        event.preventDefault();
+        updateInterface();
+    }
+
+    function previewSelectorHover(event){
+        var index = 0,
+            ele = event.target,
+            selector;
+        while ( (ele=ele.previousElementSibling) !== null ) {
+            index++;
+        }
+        // + 1 to include the hovered selector
+        selector = baseSelector(index + 1);
+        clearClass('collect_highlight');
+        selectorElements(selector).addClass('collect_highlight');
+    }
+
+    function removeSelectorHover(event){
+        clearClass('collect_highlight');
+    }
+
+    function removeSelectorGroup(event){
+        if ( hasClass(event.target, 'deltog')){
+            $(event.target).parents('.selector_group').remove();
+            updateInterface();
+        }
+    }
+
+    function addPseudoType(event){
+        if ( hasClass(event.target, 'nthtype')){
+            var ele = event.target,
+                parent = $(ele).parents('.selector_group'),
+                html = pseudoHTML('nth-of-type'),
+                toggleable = parent.children('.realselector');
+            parent.children('.pseudo').remove();
+            toggleable.last().after($(html));
+            // make sure the element is on so this selector makes sense
+            toggleable.eq(0).removeClass('off');
+            ele.parentElement.removeChild(ele);
+            updateInterface();
+        }
+    }
+
+    function addOnlyChildren(event){
+        if ( hasClass(event.target, 'onlychild')){
+            var ele = event.target,
+                parent = $(ele).parents('.selector_group'),
+                html = "<span class='child toggleable no_select'> &gt;</span>",
+                toggleable = parent.children('.toggleable');
+            ele.parentElement.removeChild(ele);
+            
+            toggleable.last().after($(html));
+            // make sure the element is on so this selector makes sense
+            toggleable.eq(0).removeClass('off');
+            updateInterface(); 
+        }
+    }
+
+    // create and save an object for the current query selector/capture data
+    function saveRuleEvent(event){
+        event.preventDefault();
+        var inputs = document.getElementById('selector_form').getElementsByTagName('input'),
+            selector_object = {},
+            activeSelectors = document.getElementsByClassName('active_selector'),
+            active = activeSelectors[0],
+            group = currentGroup();
+            
+        for ( var p=0, len=inputs.length; p<len; p++ ) {
+            var curr = inputs[p],
+                name = curr.getAttribute('name'),
+                value = curr.value;
+            selector_object[name] = value;
+        }
+
+        // active isn't undefined if you're editing an already saved selector
+        if ( active ){
+            saveRule(group, selector_object);
+
+            // modify name, selector, and capture but not index
+            active.dataset.selector = selector_object.selector;
+            active.dataset.capture = selector_object.capture;
+            active.textContent = selector_object.name;
+            active.classList.remove('active_selector');
+
+            selector_object = selectorIsComplete(selector_object);
+            if ( !selector_object.incomplete ) {
+                swapClasses(active, 'incomplete_selector', 'saved_selector');
+            } else {
+                swapClasses(active, 'saved_selector', 'incomplete_selector');
+            }
+        } else {
+            saveRule(group, selector_object);
+            // call last because index needs to be set
+            document.getElementById('collect_selectors').innerHTML += selectorHTML(selector_object);
+        }
+        clearInterface();
+    }
+
+    // output a preview of current selector form values to the preview modal
+    function previewRule(event){
+        event.preventDefault();
+        var selector = document.getElementById('selector_string').value,
+            eles = selectorElements(selector),
+            type = document.getElementById('selector_capture').value,
+            outString = '',
+            i = 0,
+            len = eles.length,
+            attr;
+        if ( selector === '' || type === '' ) {
+            outString = "No attribute to capture";
+        } else if ( type === 'text' ) {
+            for ( ; i<len; i++ ) {
+                outString += "<p>" + (eles[i].textContent) + "</p>";
+            }
+        } else if ( type.indexOf('attr-') === 0 ) {
+            // get everything after attr-
+            attr = type.slice(type.indexOf('-')+1);
+            for ( ; i<len; i++ ) {
+                outString += "<p>" + (eles[i].getAttribute(attr)) + "</p>";
+            }
+        }
+        document.getElementById('preview_holder').innerHTML = outString;
+        $("#preview_interface, #preview_background").show();
+    }
+
+    
+    function clearRuleForm(event){
+        event.preventDefault();
+        clearInterface();
+    }
+
+    // remove selector rule from localstorage
+    function deleteRuleEvent(event){
+        event.stopPropagation();
+        if ( hasClass(event.target, 'deltog')){
+            var ele = event.target,
+                selector_span = ele.previousElementSibling,
+                selector_name = selector_span.innerHTML;
+            if ( $("#safedelete").is(":checked") ) {
+                var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
+                if ( !verifyDelete ) {
+                    return;
+                }
+            }
+            $(ele).parents('.collect_group').remove();
+            deleteRule(currentGroup(), selector_name);
+        }
+    }
+
+    // load saved selector information into the #selector_form for editing
+    function clearOrLoad(event){
+        event.stopPropagation();
+        var ele = event.target
+        if ( hasClass(ele, 'saved_selector') || hasClass(ele, 'saved_selector') ) {
+            if ( hasClass(ele, 'active_selector') ) {
+                clearInterface();
+            } else {
+                loadSelectorGroup(ele);
+            }
+        }
+        
+    }
+    
+    // sets the fields in the #selector_form given an element 
+    // that represents a selector
+    function loadSelectorGroup(ele){
+        var selectorVal = ele.dataset.selector || '',
+            selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
+            name = ele.textContent,
+            index = ele.dataset.index,
+            capture = ele.dataset.capture;
+        document.getElementById('selector_name').value = name;
+        document.getElementById('selector_string').value = selector;
+        document.getElementById('selector_capture').value = capture;
+        document.getElementById('selector_index').value = index;
+        if ( selector !== '' ){
+            document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
+            clearClass("query_check");
+            selectorElements(selector).addClass("query_check");
+        }
+        clearClass('active_selector');
+        ele.classList.add('active_selector');
+        updateInterface();
+    }
+
+    function accurateSelectorGroups(selector){
+        var ele = document.querySelector(selector),
+            selectorParts = selector.split(' '),
+            parseParts = [],
+            html = '',
+            ele_selector, on, currentParse;
+        for ( var i=0, len=selectorParts.length; i<len; i++ ) {
+            parseParts.push(parseSelector(selectorParts[i]));
+        }
+        currentParse = parseParts.pop();
+        // stop generating selector when you get to the body element
+        if ( ele === null ) {
+            alertMessage('no valid elements match selector in page');
+            return '';
+        }
+        while ( ele !== null && ele.tagName !== "BODY" ){
+            on = false;
+            if ( !testSelectorRules(ele) ) {
+                ele = ele.parentElement;
+                continue;
+            }
+            ele_selector = new Selector(ele);
+            // check if current element matches what we're looking for
+            if ( currentParse) {
+                on = matchSelector(ele, currentParse);
+                if ( on ) {
+                    currentParse = parseParts.pop();
+                }
+            }
+
+            html = ele_selector.toHTML(on) + ' ' + html;
+            ele = ele.parentElement;
+        }
+        return html;
+
+    }
+
+    /*
+    given a string representing a query selector, return an object containing the parts
+    */
+    function parseSelector(selector){
+        var tagMatch = /^[a-z][\w0-9-]*/i,
+            idMatch = /(?:#)([a-z][\w0-9-]*)/i,
+            classMatches = /(\.[a-z][\w0-9-]*)/ig,
+            // only matching ints instead of all pseudo rules
+            pseudoMatch = /:nth-of-type\((?:odd|even|-?\d+n(?:\s*(?:\+|-)\s*\d+)?|\d+)\)/i
+            tag = selector.match(tagMatch),
+            id = selector.match(idMatch),
+            classes = selector.match(classMatches),
+            pseudo = selector.match(pseudoMatch),
+            selectorObject = {};
+        if ( tag !== null ) {
+            selectorObject.tag = tag[0];
+        }
+        if ( id !== null ) {
+            selectorObject.id = id[0];
+        }
+        if ( classes !== null ) {
+            selectorObject.classes = classes;
+        }
+        if ( pseudo !== null ) {
+            selectorObject.pseudo = pseudo[0];
+        }
+        return selectorObject;
+    }
+
+    function matchSelector(ele, selector){
+        if ( (selector.tag && ele.tagName.toLowerCase() !== selector.tag ) ||
+            ( selector.id && ele.getAttribute('id') !== selector.id ) ){
+            return false;
+        }
+        if ( selector.classes ) {
+            for ( var i=0, len=selector.classes.length; i<len; i++ ) {
+                var curr = selector.classes[i];
+                // ignore the period in the class name
+                if ( !hasClass(ele, curr.substr(1))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function previewGroupEvent(event){
+        event.preventDefault();
+        clearInterface();
+        var outString = '';
+        chrome.storage.local.get('rules', function previewGroupChrome(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                group = rules[host][currentGroup()],
+                curr, results, resultsLen, prop;
+
+            for( var key in group ) {
+                curr = group[key];
+                // make sure to only run on completed rules
+                curr = selectorIsComplete(curr);
+                if ( !curr.incomplete) {
+                    results = document.querySelectorAll(curr.selector);
+                    resultsLen = results.length;
+                    prop = captureFunction(curr);
+                    outString += "<div class='preview_group'><h2>" + curr.name + 
+                        "(Count: " + resultsLen + ")</h2><ul>";
+                    for (var r=0; r<resultsLen; r++ ) {
+                        var ele = results[r];
+                        ele.classList.add("saved_preview");
+                        outString += "<li>" + prop(ele) + "</li>";
+                    }
+                    outString += "</ul></div>";
+                }
+            }
+            document.getElementById('preview_holder').innerHTML = outString;
+            $("#preview_interface, #preview_background").show();
+        });
+    }
+
+    function captureFunction(curr){
+        if (curr.capture==="text") { 
+            return function(ele){
+                return ele.innerText;
+            };
+        } else if (curr.capture.indexOf("attr-")===0) {
+            // return substring after first hyphen so that it works with data- attributes
+            var attribute = curr.capture.slice(curr.capture.indexOf("-")+1);
+            return function(ele){
+                    return ele.getAttribute(attribute);
+            };
+        }
+    }
+
+    function createGroupEvent(event){
+        event.preventDefault();
+        var name = prompt("Group Name");
+        if ( name !== '' && name !== null ){
+            addGroup(name);
+            document.getElementById('collect_selectors').innerHTML = '';
+            clearInterface();
+        }
+    }
+
+    function deleteGroupEvent(event){
+        event.preventDefault();
+        var name = currentGroup();
+        if ( name !== 'default' ) {
+            if ( $("#safedelete").is(":checked") ) {
+                var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
+                if ( !verifyDelete ) {
+                    return;
+                }
+            }
+            $('#collect_selector_groups option:selected').remove();
+            chrome.storage.local.get('rules', function deleteGroupChrome(storage){
+                var host = window.location.hostname,
+                    rules = storage.rules;
+                delete rules[host][name];
+                chrome.storage.local.set({'rules': rules});
+                loadSavedSelectors();
+            });    
+        } else {
+            var clearRules = confirm("Cannot delete 'default' group, clear rules instead?");
+            if ( clearRules ) {
+                chrome.storage.local.get('rules', function clearDefaultGroup(storage){
+                    var host = window.location.hostname,
+                        rules = storage.rules;
+                    rules[host][name] = {};
+                    chrome.storage.local.set({'rules': rules});
+                    loadSavedSelectors();
+                });    
+            }
+        }
+        
+    }
+
+    function getGroupsEvent(event){
+        chrome.runtime.sendMessage({'type': 'groups'}, function getGroupsChrome(response){
+            if ( !response.error ){
+                addLoadedGroups(response.groups);
+            }
+        });
+    }
+
+    function uploadGroupEvent(event){
+        event.preventDefault();
+        chrome.storage.local.get('rules', function uploadGroupChrome(storage){
+            var host = window.location.hostname,
+                rules = storage.rules,
+                groupName = currentGroup(),
+                group = rules[host][groupName],
+                uploadObject = {
+                    'host': host,
+                    'name': groupName,
+                    'rules': {}
+                },
+                uploadGroups = {},
+                uploadJSON, curr;
+            // don't upload if the rule hasn't been completed
+            for ( var key in group ) {
+                curr = group[key];
+                if ( !curr.incomplete ) {
+                    uploadObject.rules[key] = group[key];
+                }
+            }
+            uploadJSON = JSON.stringify(uploadObject);
+            chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON}, function uploadResponseChrome(response){
+                if ( response.error ) {
+                    alertMessage("failed to upload");
+                } else {
+                    alertMessage("group successfully uploaded");
+                }
+            });
+        });
+    }
+
+    function loadGroupEvent(event){
+        loadSavedSelectors();
+        clearInterface();
+    }
+
+    function select(event){
+        event.stopPropagation();
+        clearClass('collect_highlight');
+        this.classList.add('collect_highlight');
+    }
+
+    function deselect(event){
+        event.stopPropagation();
+        this.classList.remove('collect_highlight');
+    }
+
+    /*
+    when an element is clicked, setup interface data using clicked element
+    */
+    function querySelector(event){
+        event.stopPropagation();
+        event.preventDefault();
+        if ( this === null ) {
+            return;
+        }
+        if ( !document.getElementsByClassName('.active_selector').length ){
+            clearInterface();
+        }
+        makeSelectorGroups(this);
+    }
 
     /********************
     UTILITY FUNCTIONS
@@ -714,7 +699,6 @@ var collect = (function($){
         for ( var i=0; i<len; i++ ) {
             eles[i].removeEventListener(type, fn);
         }
-        
     }
 
     /*
@@ -734,10 +718,6 @@ var collect = (function($){
         }
         return selector_object;
     }   
-
-    /********************
-    END UTILITY FUNCTIONS
-    ********************/
 
     /********************
     INTERFACE FUNCTIONS
@@ -806,10 +786,6 @@ var collect = (function($){
         addEvents(previewTogglers, 'click', togglePreview);
     }
 
-    /********************
-    END INTERFACE FUNCTIONS
-    ********************/
-
     /*********************
         SELECTORS/RULES
     *********************/
@@ -827,7 +803,7 @@ var collect = (function($){
         }
         return true;
     }
-    
+
     /*
     iterates over selector group elements and builds a string based on 
     toggleable elements that are not 'off'
@@ -864,7 +840,7 @@ var collect = (function($){
         selector += ':not(.no_select)';
         return $(selector);
     }
-   
+
     /*
     uses #selector_index to exclude values from getting query_check
     positive values remove elements from beginning of the eles array
@@ -1001,10 +977,6 @@ var collect = (function($){
     }
 
     /********************
-    END SELECTORS/RULES
-    ********************/
-
-    /********************
         GROUPS
     ********************/
 
@@ -1078,10 +1050,6 @@ var collect = (function($){
     }
 
     /********************
-        END GROUPS
-    ********************/
-
-    /********************
         STORAGE
     ********************/
 
@@ -1149,10 +1117,6 @@ var collect = (function($){
     }
 
     /********************
-        END STORAGE
-    ********************/
-
-    /********************
         SELECTOR OBJECT
     ********************/
     function Selector( ele ){
@@ -1174,7 +1138,7 @@ var collect = (function($){
     Selector.prototype.removeCommon = function(){
         var classLength = this.classes.length;
         while ( classLength-- ){
-            if ( Collect.ignoreSelectors[this.classes[classLength]] === true ) {
+            if ( collect.ignoreSelectors[this.classes[classLength]] === true ) {
                 this.classes.splice(classLength, 1);
             }
         }
@@ -1201,10 +1165,6 @@ var collect = (function($){
             "<span class='deltog no_select'>x</span>"+
             "</span>";
     };
-
-    /********************
-    END SELECTOR OBJECT
-    ********************/
 
     /****************
     GENERAL HTML RETURNING FUNCTIONS
@@ -1241,48 +1201,45 @@ var collect = (function($){
         }
 
         var clone = element.cloneNode(true),
-            singleSpaceRegexp = /(\s{2,}|[\n\t]+)/g,
-            hasText = clone.textContent !== "",
-            html, attrs, attrsLen,
-            curr, title, text, wrapped;
-        clone.classList.remove('query_check', 'collect_highlight');
-
-        if ( hasText ) {
-            innerText = clone.textContent.replace(singleSpaceRegexp, ' ');
-            if ( innerText.length > 100 ){
-                innerText = innerText.slice(0, 25) + "..." + innerText.slice(-25);
-            }
-            clone.innerHTML = innerText;
+            html, attrs, curr, text;
+        clone = cleanElement(clone);
+        
+        html = clone.outerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        attrs = clone.attributes;
+        
+        for ( var i=0, len =attrs.length; i<len; i++ ) {
+            curr = attrs[i];
+            text = attributeText(curr);
+            html = html.replace(text, wrapTextHTML(text, 'attr-'+curr.name));
         }
 
-        if ( clone.hasAttribute('src') ) {
-            // strip query string from image's src
-            var value = clone.getAttribute('src'),
+        if ( clone.textContent !== "" ) {
+            text = clone.textContent;
+            html = html.replace(text, wrapTextHTML(text, 'text'));
+        }
+
+        return html;
+    }
+
+    function cleanElement(ele){
+        ele.classList.remove('query_check', 'collect_highlight');
+        if ( ele.hasAttribute('src') ) {
+            var value = ele.getAttribute('src'),
                 query = value.indexOf('?');
             if ( query !== -1 ) {
                 value = value.slice(0, query);
             }
-            clone.setAttribute('src', value);
+            ele.setAttribute('src', value);
         }
-        
-        html = clone.outerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        console.log(html);
-        attrs = clone.attributes;
-        attrsLen = attrs.length;
-        
-        for ( var i=0; i<attrsLen; i++ ) {
-            curr = attrs[i];
-            text = attributeText(curr);
-            wrapped = wrapTextHTML(text, 'attr-'+curr.name);
-            html = html.replace(text, wrapped);
+        if ( ele.textContent !== "" ) {
+            innerText = ele.textContent.replace(/(\s{2,}|[\n\t]+)/g, ' ');
+            if ( innerText.length > 100 ){
+                innerText = innerText.slice(0, 25) + "..." + innerText.slice(-25);
+            }
+            ele.innerHTML = innerText;
         }
 
-        if ( hasText ) {
-            wrapped = wrapTextHTML(innerText, 'text');
-            html = html.replace(innerText, wrapped);
-        }
-
-        return html;
+        return ele;
     }
 
     function attributeText(attr) {
@@ -1302,15 +1259,6 @@ var collect = (function($){
             ' property" data-capture="' + val + '">' + ele + '</span>';
     }
 
-    /****************
-    END HTML Functions
-    ****************/
-
-    return Collect; 
-})(jQuery);
-
-collect.setup();
-
-// attach to window so that only one instance is active at a time
-window.collectMade = true;
+    // attach to window so that only one instance is active at a time
+    window.collectMade = true;
 }
