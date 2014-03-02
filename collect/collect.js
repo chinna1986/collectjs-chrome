@@ -66,6 +66,10 @@ if ( !window.collectMade ) {
                 selectorParts.removeEventListener('click', removeSelectorGroup);
                 selectorParts.removeEventListener('click', addPseudoType);
                 selectorParts.removeEventListener('click', addOnlyChildren);
+
+                $('#collect_selectors')
+                    .off('mouseenter', '.saved_selector', previewSavedSelector)
+                    .off('mouseleave', '.saved_selector', unpreviewSavedSelector);
                 
                 $('#selector_parts')
                     .off('blur', '.child_toggle', verifyPseudoVal)
@@ -349,14 +353,18 @@ if ( !window.collectMade ) {
         if ( hasClass(event.target, 'deltog')){
             var ele = event.target,
                 selector_span = ele.previousElementSibling,
-                selector_name = selector_span.innerHTML;
+                selector_name = selector_span.innerHTML,
+                selector_group = $(ele).parents('.collect_group');
             if ( $("#safedelete").is(":checked") ) {
                 var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
                 if ( !verifyDelete ) {
                     return;
                 }
             }
-            $(ele).parents('.collect_group').remove();
+            if ( selector_span.classList.contains('active_selector')) {
+                clearInterface();
+            }
+            selector_group.remove();
             deleteRule(currentGroup(), selector_name);
         }
     }
@@ -477,6 +485,7 @@ if ( !window.collectMade ) {
 
     function previewSavedSelector(event){
         if ( hasClass(event.target, 'saved_selector')){
+            clearClass("query_check");
             var ele = event.target,
                 selector = ele.dataset.selector;
             addClass("query_check", document.querySelectorAll(selector));
@@ -486,6 +495,7 @@ if ( !window.collectMade ) {
     function unpreviewSavedSelector(event){
         if ( hasClass(event.target, 'saved_selector')){
             clearClass("query_check");
+            updateInterface();
         }   
     }
 
