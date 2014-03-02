@@ -379,27 +379,16 @@ if ( !window.collectMade ) {
     // that represents a selector
     function loadSelectorGroup(ele){
         var selectorVal = ele.dataset.selector || '',
-            selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
-            selected = selectorElements(selector);
+            selector = decodeURIComponent(selectorVal.replace(/\+/g, ' '));
         
-        document.getElementById('collect_error').innerHTML = '';
         document.getElementById('selector_name').value = ele.textContent || '';
         document.getElementById('selector_capture').value = ele.dataset.capture || '';
         document.getElementById('selector_index').value = ele.dataset.index || '';
-        document.getElementById('selector_string').value = selector;
-        document.getElementById('selector_count').innerHTML = selected.length || 0;
-        document.getElementById('selector_text').innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
         document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
 
         clearClass('active_selector');
-        clearClass('query_check');
-        clearClass('collect_highlight');
-
-        if ( selected.length ) {
-            addClass('query_check', selected);
-        }     
-
         ele.classList.add('active_selector');
+        updateInterface(selector)
     }
 
 
@@ -903,18 +892,15 @@ if ( !window.collectMade ) {
     positive values remove elements from beginning of the eles array
     negative values remove elements from the end of the eles array
     */
-    function updateInterface(){
-        var selector = baseSelector(),
+    function updateInterface(selector){
+        var selector = selector || baseSelector(),
             selected =selectorElements(selector);
-
         document.getElementById('selector_count').innerHTML = selected.length || 0;
-        document.getElementById('selector_string').innerHTML = selector;
+        document.getElementById('selector_string').value = selector;
         document.getElementById('selector_text').innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
         document.getElementById('collect_error').innerHTML = '';
-
         clearClass('query_check');
         clearClass('collect_highlight');
-
         if ( selected.length ) {
             addClass("query_check", selected);
         }
