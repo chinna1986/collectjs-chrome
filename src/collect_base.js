@@ -393,11 +393,12 @@ if ( !window.collectMade ) {
         updateInterface();
     }
 
-    function accurateSelectorGroups(selector){
+    function accurateSelectorGroups(selector, parent){
         var ele = document.querySelector(selector),
             selectorParts = selector.split(' '),
             parseParts = [],
             html = '',
+            stopParent = parent ? parent.parentElement : document.body;
             ele_selector, on, currentParse;
         for ( var i=0, len=selectorParts.length; i<len; i++ ) {
             parseParts.push(parseSelector(selectorParts[i]));
@@ -408,7 +409,7 @@ if ( !window.collectMade ) {
             alertMessage('no valid elements match selector in page');
             return '';
         }
-        while ( ele !== null && ele.tagName !== "BODY" ){
+        while ( ele !== null && ele !== stopParent ){
             on = false;
             if ( !testSelectorRules(ele) ) {
                 ele = ele.parentElement;
@@ -946,18 +947,21 @@ if ( !window.collectMade ) {
     as id and any classes if they exist (and a delete button to get rid of that 
     group selector) a toggleable element can be turned on/off
     to test what is selected when it is/isn't included in the query selector
+    if a parent element is passed, that is the last element that should be included in the selector
+    (so it will stop when you reach that element's parent), otherwise stop when you reach the body
     */
-    function elementSelector(ele) {
+    function elementSelector(ele, parent) {
         var ele_selector,
             selector = '',
             count = 0,
-            first = true;
+            first = true,
+            stopParent =  parent ? parent.parentElement : document.body;
         // stop generating selector when you get to the body element
         if ( ele === null ) {
             alertMessage('no valid elements match selector in page');
             return '';
         }
-        while ( ele !== null && ele.tagName !== "BODY" ){
+        while ( ele !== null && ele !== stopParent ){
             if ( !testSelectorRules(ele) ) {
                 ele = ele.parentElement;
                 continue;
