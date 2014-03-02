@@ -39,6 +39,10 @@ if ( !window.collectMade ) {
                 selectorParts.addEventListener('click', addPseudoType, false);
                 selectorParts.addEventListener('click', addOnlyChildren, false);
 
+                $('#collect_selectors')
+                    .on('mouseenter', '.saved_selector', previewSavedSelector)
+                    .on('mouseleave', '.saved_selector', unpreviewSavedSelector);
+
                 $('#selector_parts')
                     .on('blur', '.child_toggle', verifyPseudoVal)
                     .on('mouseenter', '.selector_group', previewSelectorHover)
@@ -178,7 +182,7 @@ if ( !window.collectMade ) {
                 offCount = 0;
 
             /*
-            if there is a pseudo selector and all other parts of a seletor group are turned off,
+            if there is a pseudo selector and all other parts of a selector group are turned off,
             turn off the pseudo selector as well. If turning on a pseudo selector, turn on the
             first element of the group as well
             */
@@ -225,7 +229,7 @@ if ( !window.collectMade ) {
         // + 1 to include the hovered selector
         selector = baseSelector(index + 1);
         clearClass('collect_highlight');
-        selectorElements(selector).addClass('collect_highlight');
+        addClass('collect_highlight', selectorElements(selector));
     }
 
     function removeSelectorHover(event){
@@ -376,29 +380,35 @@ if ( !window.collectMade ) {
     function loadSelectorGroup(ele){
         var selectorVal = ele.dataset.selector || '',
             selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
-            name = ele.textContent,
-            index = ele.dataset.index,
-            capture = ele.dataset.capture;
-        document.getElementById('selector_name').value = name;
+            selected = selectorElements(selector);
+        
+        document.getElementById('collect_error').innerHTML = '';
+        document.getElementById('selector_name').value = ele.textContent || '';
+        document.getElementById('selector_capture').value = ele.dataset.capture || '';
+        document.getElementById('selector_index').value = ele.dataset.index || '';
         document.getElementById('selector_string').value = selector;
-        document.getElementById('selector_capture').value = capture;
-        document.getElementById('selector_index').value = index;
-        if ( selector !== '' ){
-            document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
-            clearClass("query_check");
-            selectorElements(selector).addClass("query_check");
-        }
+        document.getElementById('selector_count').innerHTML = selected.length || 0;
+        document.getElementById('selector_text').innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
+        document.getElementById('selector_parts').innerHTML = accurateSelectorGroups(selector);
+
         clearClass('active_selector');
+        clearClass('query_check');
+        clearClass('collect_highlight');
+
+        if ( selected.length ) {
+            addClass('query_check', selected);
+        }     
+
         ele.classList.add('active_selector');
-        updateInterface();
     }
+
 
     function accurateSelectorGroups(selector, parent){
         var ele = document.querySelector(selector),
             selectorParts = selector.split(' '),
             parseParts = [],
             html = '',
-            stopParent = parent ? parent.parentElement : document.body;
+            stopParent = parent ? parent.parentElement : document.body,
             ele_selector, on, currentParse;
         for ( var i=0, len=selectorParts.length; i<len; i++ ) {
             parseParts.push(parseSelector(selectorParts[i]));
@@ -428,7 +438,6 @@ if ( !window.collectMade ) {
             ele = ele.parentElement;
         }
         return html;
-
     }
 
     /*
@@ -475,6 +484,20 @@ if ( !window.collectMade ) {
             }
         }
         return true;
+    }
+
+    function previewSavedSelector(event){
+        if ( hasClass(event.target, 'saved_selector')){
+            var ele = event.target,
+                selector = ele.dataset.selector;
+            addClass("query_check", document.querySelectorAll(selector));
+        }
+    }
+
+    function unpreviewSavedSelector(event){
+        if ( hasClass(event.target, 'saved_selector')){
+            clearClass("query_check");
+        }   
     }
 
     function previewGroupEvent(event){
@@ -657,6 +680,14 @@ if ( !window.collectMade ) {
         }
     }
 
+    function addClass(name, eles){
+        eles = Array.prototype.slice.call(eles);
+        var len = eles.length;
+        for ( var i=0; i<len; i++ ) {
+            eles[i].classList.add(name);
+        }
+    }
+
     // utility function to swap two classes
     function swapClasses(ele, oldClass, newClass){
         ele.classList.remove(oldClass);
@@ -682,7 +713,6 @@ if ( !window.collectMade ) {
         eles = Array.prototype.slice.call(eles);
         var len = eles.length;
         for ( var i=0; i<len; i++ ) {
-
             eles[i].addEventListener(type, fn, false);
         }
     }
@@ -832,52 +862,21 @@ if ( !window.collectMade ) {
     and return jquery array
     */
     function selectorElements(selector) {
+        if ( selector === '' ) {
+            return [];
+        }
+        var index = document.getElementById('selector_index').value,
+            indexInt = parseInt(index, 10),
+            eles, low, high, originalLength;
         if ( $('#visible').is(':checked') ) {
             selector += ':visible';
         }
+
         selector += ':not(.no_select)';
-        return $(selector);
-    }
-
-    /*
-    uses #selector_index to exclude values from getting query_check
-    positive values remove elements from beginning of the eles array
-    negative values remove elements from the end of the eles array
-    */
-    function updateInterface(){
-        var selectorCount = document.getElementById('selector_count'),
-            selectorString = document.getElementById('selector_string'),
-            selectorText = document.getElementById('selector_text'),
-            selector = baseSelector(),
-            selected;
-
-        clearClass('query_check');
-        clearClass('collect_highlight');
-        document.getElementById('collect_error').innerHTML = '';
-        if (selector === ''){
-            selectorCount.innerHTML = '0';
-            selectorString.value = '';
-            selectorText.innerHTML = '';
-        } else {
-            selected = addQueryCheckClass( selectorElements(selector) );
-            selectorCount.innerHTML = selected.length;
-            selectorString.value = selector;
-            selectorText.innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
-        }
-    }
-
-    /*
-    given an array of elements, add .query_check to each and returns the array
-    if #selector_index has a value, slice array based on rules before adding class and return
-    sliced array
-    */
-    function addQueryCheckClass(eles){
-        var index = document.getElementById('selector_index').value,
-            indexInt = parseInt(index, 10),
-            newEles, low, high, originalLength;
+        eles = document.querySelectorAll(selector);
+        
         // if index is undefined, add to all elements
         if ( isNaN(indexInt) ) {
-            eles.addClass("query_check");
             return eles;
         } else {
             low = 0;
@@ -895,11 +894,32 @@ if ( !window.collectMade ) {
             } else {
                 low = indexInt;
             }
-            newEles = eles.slice(low, high)
-            newEles.addClass("query_check");
-            return newEles;
+            return eles.slice(low, high);
+        }       
+    }
+
+    /*
+    uses #selector_index to exclude values from getting query_check
+    positive values remove elements from beginning of the eles array
+    negative values remove elements from the end of the eles array
+    */
+    function updateInterface(){
+        var selector = baseSelector(),
+            selected =selectorElements(selector);
+
+        document.getElementById('selector_count').innerHTML = selected.length || 0;
+        document.getElementById('selector_string').innerHTML = selector;
+        document.getElementById('selector_text').innerHTML = selectorTextHTML(selected[0]) || "no elements match selector";
+        document.getElementById('collect_error').innerHTML = '';
+
+        clearClass('query_check');
+        clearClass('collect_highlight');
+
+        if ( selected.length ) {
+            addClass("query_check", selected);
         }
     }
+
 
     // reset the form part of the interface
     function clearInterface(){
