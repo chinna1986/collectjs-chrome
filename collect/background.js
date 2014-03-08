@@ -15,10 +15,11 @@ chrome.storage.local.get(null, function(storage) {
 chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.insertCSS(null, {file: "css/interface.css"});
     chrome.tabs.executeScript(null, {file: "jquery.js"}, function(){
-        chrome.tabs.executeScript(null, {file: "collect.js"});    
+        chrome.tabs.executeScript(null, {file: "selector.js"}, function(){
+            chrome.tabs.executeScript(null, {file: "collect.js"});    
+        });
     });
 });
-
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
     if ( message ) {

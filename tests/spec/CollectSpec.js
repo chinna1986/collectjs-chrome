@@ -2,102 +2,7 @@ describe("collect", function(){
 
 });
 
-describe("Selector", function(){
-    describe("constructor", function(){
-        var ele;
-        beforeEach(function(){
-            ele = document.createElement("div");
-        });
-        it("sets tag name", function(){
-            var s = new Selector(ele);
-            expect(s.tag).toEqual("div");
-            
-        });
-        it("sets id", function(){
-            ele.setAttribute("id", "foobar");
-            var s = new Selector(ele);
-            expect(s.id).toEqual("#foobar");
-        });
-        it("sets classes", function(){
-            ele.classList.add("one", "two", "three");
-            var s = new Selector(ele);
-            expect(s.classes).toEqual([".one", ".two", ".three"]); 
-        });
-        it("ignores collect_highlight and query_check classes", function(){
-            ele.classList.add("one", "collect_highlight", "query_check");
-            var s = new Selector(ele);
-            expect(s.classes).toEqual([".one"]); 
-        });
-        it("removeCommon removes classes", function(){
-            ele.classList.add("one", "clearfix");
-            var s = new Selector(ele);
-            expect(s.classes).toEqual([".one"]); 
-        });
-    });
-
-    describe("toHTML", function(){
-        var ele;
-        beforeEach(function(){
-            ele = document.createElement("div");
-        });
-
-        it("returns expected html for off", function(){
-            var s = new Selector(ele),
-                html = "<span class='selector_group no_select'>" +
-                "<span class='toggleable realselector no_select off'>div</span>" +
-                "<span class='nthtype no_select' title='add the nth-of-type pseudo selector'>+t</span>" + 
-                "<span class='onlychild no_select' title='next selector must be direct child (&gt; in css)'>&gt;</span>" + 
-                "<span class='deltog no_select'>x</span></span>";
-            expect(s.toHTML()).toEqual(html);
-        });
-
-        it("returns expected html for off", function(){
-            var s = new Selector(ele),
-                html = "<span class='selector_group no_select'>" +
-                "<span class='toggleable realselector no_select'>div</span>" +
-                "<span class='nthtype no_select' title='add the nth-of-type pseudo selector'>+t</span>" + 
-                "<span class='deltog no_select'>x</span></span>";
-            expect(s.toHTML(true)).toEqual(html);
-        });
-    });
-});
-
 describe("html functions", function(){
-    describe("wrapToggleableHTML", function(){
-        it("works for on=true", function(){
-            var html = "<span class='toggleable realselector no_select'>test</span>";
-            expect(wrapToggleableHTML("test", true)).toEqual(html);
-        });
-        it("works for on=false", function(){
-            var html = "<span class='toggleable realselector no_select off'>test</span>";
-            expect(wrapToggleableHTML("test", false)).toEqual(html);
-        });
-        it("works for on=undefined", function(){
-            var html = "<span class='toggleable realselector no_select off'>test</span>";
-            expect(wrapToggleableHTML("test")).toEqual(html);
-        });
-    });
-
-    describe("pseudoHTML", function(){
-        it("sets correct selector", function(){
-            var typeHTML = "<span class='pseudo toggleable no_select'>:nth-of-type(<span class='child_toggle no_select' title='options: an+b " + 
-                    "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
-                    "contenteditable='true'>1</span>)</span>",
-                childHTML = "<span class='pseudo toggleable no_select'>:nth-child(<span class='child_toggle no_select' title='options: an+b " + 
-                    "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
-                    "contenteditable='true'>1</span>)</span>";
-            expect(pseudoHTML('nth-of-type')).toEqual(typeHTML);
-            expect(pseudoHTML('nth-child')).toEqual(childHTML);
-        });
-        it("sets val if provided", function(){
-            var typeHTML = "<span class='pseudo toggleable no_select'>:nth-of-type(<span class='child_toggle no_select' title='options: an+b " + 
-                    "(a & b are integers), a positive integer (1,2,3...), odd, even'" + 
-                    "contenteditable='true'>even</span>)</span>";
-            expect(pseudoHTML('nth-of-type', 'even')).toEqual(typeHTML);
-        });
-        
-    });
-
     describe("selectorHTML", function(){
         var selectorObj;
         beforeEach(function(){
@@ -269,43 +174,6 @@ describe("utility functions", function(){
 });
 
 describe("event helpers", function(){
-    describe("parseSelector", function(){
-        it("identifies the tag", function(){
-            var parsed = parseSelector("a.link");
-            expect(parsed.tag).toEqual("a");
-        });
-        it("identifies an id", function(){
-            var parsed = parseSelector("#identifier");
-            expect(parsed.id).toEqual("#identifier");
-        });
-        it("identifies classes", function(){
-            var parsed = parseSelector("a.link.important");
-            expect(parsed.classes).toEqual([".link", ".important"]);
-        });
-        it("identifies a pseudo-selector", function(){
-            var parsed = parseSelector("a:nth-of-type(1)");
-            expect(parsed.pseudo).toEqual(":nth-of-type(1)");
-        })
-    });
-
-    describe("matchSelector", function(){
-        it("matches tag", function(){
-            var ele = document.createElement("div");
-            expect(matchSelector(ele, "div")).toBe(true);
-        });
-        it("matches id", function(){
-            var ele = document.createElement("div");
-            ele.setAttribute("id", "foobar");
-            expect(matchSelector(ele, "#foobar")).toBe(true); 
-        });
-        it("matches classes", function(){
-            var ele = document.createElement("div");
-            ele.classList.add("one", "two");
-            expect(matchSelector(ele, ".one")).toBe(true);
-            expect(matchSelector(ele, ".two.one")).toBe(true);
-        });
-    });
-
     describe("captureFunction", function(){
         it("captures text", function(){
             var ele = document.createElement("div"),
