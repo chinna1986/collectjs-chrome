@@ -3,7 +3,7 @@ describe("collect", function(){
 });
 
 describe("html functions", function(){
-    describe("selectorHTML", function(){
+    describe("savedSelectorHTML", function(){
         var selectorObj;
         beforeEach(function(){
             selectorObj = {
@@ -17,14 +17,14 @@ describe("html functions", function(){
             var html = '<span class="collect_group no_select">' + 
                 '<span class="saved_selector no_select" data-selector="a" data-capture="attr-href"' +
                 ' data-index=""">link</span><span class="deltog no_select">x</span></span>';
-            expect(selectorHTML(selectorObj)).toEqual(html);
+            expect(savedSelectorHTML(selectorObj)).toEqual(html);
         });
         it("sets incomplete_selector class when incomplete", function(){
            selectorObj.selector = '';
            var html = '<span class="collect_group no_select">' + 
                 '<span class="incomplete_selector no_select" data-selector="" data-capture="attr-href"' +
                 ' data-index=""">link</span><span class="deltog no_select">x</span></span>';
-            expect(selectorHTML(selectorObj)).toEqual(html);
+            expect(savedSelectorHTML(selectorObj)).toEqual(html);
         });
     });
 
@@ -43,7 +43,7 @@ describe("html functions", function(){
             expect(ele.getAttribute("src")).toEqual("http://www.example.com/");
         });
         it("removes unwanted classes", function(){
-            ele.classList.add("query_check", "keeper", "collect_highlight");
+            ele.classList.add("queryCheck", "keeper", "collectHighlight");
             ele = cleanElement(ele);
             expect(ele.className).toEqual("keeper");
         });
@@ -122,7 +122,7 @@ describe("utility functions", function(){
     });
 
     describe("addNoSelect", function(){
-        it("adds .no_select class to all elements in eles", function(){
+        it("adds .noSelect class to all elements in eles", function(){
             var holder = document.createElement("div"),
                 holderEles;
             for ( var i=0; i<20; i++ ){
@@ -131,7 +131,7 @@ describe("utility functions", function(){
             document.body.appendChild(holder);
             holderEles = holder.getElementsByTagName("div");
             addNoSelect(holderEles);
-            expect(holder.getElementsByClassName("no_select").length).toEqual(20);
+            expect(holder.getElementsByClassName("noSelect").length).toEqual(20);
             document.body.removeChild(holder);
         });
     });

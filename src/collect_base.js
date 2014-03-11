@@ -204,7 +204,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "{{src/selector.html}}";
+    div.innerHTML = "{{src/collect.html}}";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -324,9 +324,6 @@ function selectorIsComplete(selector_object){
 /*
 
 stuff that can possibly be reused
-
-// #control_buttons
-document.getElementById('close_selector').addEventListener('click', removeInterface, false);
 
 // rules for #form_buttons
 document.getElementById('collect_save').addEventListener('click', saveRuleEvent, false);
@@ -533,7 +530,7 @@ function previewGroupEvent(event){
         $("#preview_interface, #preview_background").show();
     });
 }
-
+*/
 function captureFunction(curr){
     if (curr.capture==="text") { 
         return function(ele){
@@ -547,7 +544,7 @@ function captureFunction(curr){
         };
     }
 }
-
+/*
 function createGroupEvent(event){
     event.preventDefault();
     var name = prompt("Group Name");
@@ -795,7 +792,7 @@ function deleteRule(group, name){
         chrome.storage.local.set({'rules': rules});
     });  
 }
-
+*/
 //GENERAL HTML RETURNING FUNCTIONS
 // add interactive identifier for saved selectors
 function savedSelectorHTML(obj){
@@ -844,7 +841,7 @@ function cleanElement(ele){
         ele.setAttribute('src', value);
     }
     if ( ele.textContent !== "" ) {
-        innerText = ele.textContent.replace(/(\s{2,}|[\n\t]+)/g, ' ');
+        var innerText = ele.textContent.replace(/(\s{2,}|[\n\t]+)/g, ' ');
         if ( innerText.length > 100 ){
             innerText = innerText.slice(0, 25) + "..." + innerText.slice(-25);
         }
@@ -868,4 +865,4 @@ function wrapTextHTML(text, type){
     return '<span class="capture no_select" title="click to capture ' + type + 
         ' property" data-capture="' + type + '">' + text + '</span>';
 }
-*/
+
