@@ -7,7 +7,10 @@
   .selectorGroup * {
     font-size: 16px; }
   .selectorGroup .toggleable {
+    color: #222;
     border-bottom: 1px solid #777; }
+  .selectorGroup .toggleable.off {
+    color: #ccc; }
   .selectorGroup .deltog, .selectorGroup .nthtype, .selectorGroup .onlychild {
     font-weight: bold;
     padding: 0 3px 0 2px;
@@ -15,9 +18,6 @@
 
 .selectorGroup:hover .deltog, .selectorGroup:hover .onlychild, .selectorGroup:hover .nthtype {
   color: #777; }
-
-.off {
-  color: #ccc; }
 
 #collectjs {
   z-index: 100;
@@ -36,6 +36,8 @@
 
 #parentGroup {
   display: inline-block; }
+  #parentGroup .parentSelector {
+    display: inline-block; }
 
 #collectButtons {
   width: 30%;

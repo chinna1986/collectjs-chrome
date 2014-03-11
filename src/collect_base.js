@@ -151,14 +151,18 @@ var SelectorHolder = {
             parent: document.getElementById("parentSelector")
         }
         this.turnOn();
+        this.interfaceEvents();
+        this.bubbleEvents();
+    },
+    interfaceEvents: function(){
         document.getElementById("setParent").addEventListener("click", function(event){
             SelectorHolder.setParent();
         }, false);
         document.getElementById("removeParent").addEventListener("click", function(event){
             SelectorHolder.removeParent();
         }, false);
-        this.bubbleEvents();
-    },
+        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
+    }
     /*
     events that bubble up from selector elements, but interact with the interface
     */
@@ -222,6 +226,20 @@ function highlightElement(event){
 function unhighlightElement(event){
     this.classList.remove("collectHighlight");
 }
+
+function removeInterface(event){
+    event.stopPropagation();
+    SelectorHolder.turnOff();
+    clearClass('queryCheck');
+    clearClass('collectHighlight');
+    var elesToRemove = ["collectjs"],
+        curr;
+    for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
+        curr = document.getElementById(elesToRemove[i]);
+        curr.parentElement.removeChild(curr);
+    }
+}
+
 
 SelectorHolder.setup();
 

@@ -19,7 +19,12 @@ $gold: #FFD700;
     }
 
     .toggleable{
+        color: #222;
         border-bottom: 1px solid #777;   
+    }
+
+    .toggleable.off{
+        color: #ccc;
     }
 
     .deltog, .nthtype, .onlychild{
@@ -35,9 +40,7 @@ $gold: #FFD700;
     }
 }
 
-.off{
-    color: #ccc;
-}
+
 
 #collectjs{
     z-index:100;
@@ -58,6 +61,10 @@ $gold: #FFD700;
 
 #parentGroup{
     display: inline-block;
+
+    .parentSelector{
+        display: inline-block;
+    }
 }
 
 #collectButtons{
