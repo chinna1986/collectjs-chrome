@@ -158,11 +158,16 @@ var SelectorHolder = {
     interfaceEvents: function(){
         document.getElementById("setParent").addEventListener("click", function(event){
             SelectorHolder.setParent();
+            document.getElementById("parentGroup").classList.remove("show");
+            document.getElementById("collectTabs").classList.remove("pushed");
         }, false);
         document.getElementById("removeParent").addEventListener("click", function(event){
             SelectorHolder.removeParent();
+            document.getElementById("parentGroup").classList.remove("show");
+            document.getElementById("collectTabs").classList.remove("pushed");
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
+        addEvents(document.querySelectorAll("#collectTabs .tab a"), 'click', toggleTab);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -230,6 +235,7 @@ function unhighlightElement(event){
 
 function removeInterface(event){
     event.stopPropagation();
+    event.preventDefault();
     SelectorHolder.turnOff();
     clearClass('queryCheck');
     clearClass('collectHighlight');
@@ -241,6 +247,21 @@ function removeInterface(event){
     }
 }
 
+function toggleTab(event){
+    event.preventDefault();
+    event.stopPropagation();
+    var target = this.dataset.for,
+        ele = document.getElementById(target);
+    if ( ele.classList.contains("show") ) {
+        document.getElementById("collectTabs").classList.remove("pushed");
+        ele.classList.remove("show");
+    } else {
+        document.getElementById("collectTabs").classList.add("pushed");
+        ele.classList.add("show");
+    }
+
+    
+}
 
 SelectorHolder.setup();
 

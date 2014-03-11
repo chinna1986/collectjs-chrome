@@ -34,10 +34,8 @@
   width: 60%;
   display: inline-block; }
 
-#parentGroup {
+#parentSelector {
   display: inline-block; }
-  #parentGroup .parentSelector {
-    display: inline-block; }
 
 #collectButtons {
   width: 30%;
@@ -54,18 +52,35 @@
   top: -26px;
   height: 25px;
   right: 0;
-  background: #abcdef;
+  background: gold;
+  color: #000;
   padding: 0;
-  margin: 0; }
+  margin: 0;
+  border-top: 1px solid #777; }
   #collectTabs .tab {
     border-left: 1px solid #222;
-    display: inline-block; }
-    #collectTabs .tab button {
-      border: 0;
-      height: 25px;
-      border-color: #fff;
-      border-width: 0 1px;
-      border-style: solid; }
+    display: inline-block;
+    padding: 0 10px; }
+    #collectTabs .tab a {
+      text-decoration: none;
+      color: #000; }
+
+#collectTabs.pushed {
+  top: -76px; }
+
+#tabGroups {
+  position: absolute;
+  top: -51px;
+  right: 0; }
+  #tabGroups div {
+    position: absolute;
+    right: 0;
+    background: #489675;
+    width: 500px;
+    display: none;
+    height: 50px; }
+  #tabGroups .show {
+    display: block; }
 
 /* _options.scss */
 /* options modal */

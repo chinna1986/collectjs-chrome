@@ -59,12 +59,8 @@ $gold: #FFD700;
     display: inline-block;
 }
 
-#parentGroup{
+#parentSelector{
     display: inline-block;
-
-    .parentSelector{
-        display: inline-block;
-    }
 }
 
 #collectButtons{
@@ -84,21 +80,44 @@ $gold: #FFD700;
     top: -26px;
     height: 25px;
     right: 0;
-    background: #abcdef;
+    background: $gold;
+    color: #000;
     padding: 0;
     margin: 0;
+    border-top: 1px solid #777;
 
     .tab{
         border-left: 1px solid #222;
         display: inline-block;
+        padding: 0 10px;
 
-        button{
-            border: 0;
-            height: 25px;
-            border-color: #fff;
-            border-width: 0 1px;
-            border-style: solid;
+        a{
+            text-decoration: none;
+            color: #000;
         }
+    }
+}
+
+#collectTabs.pushed{
+    top: -76px;
+}
+
+#tabGroups{
+    position: absolute;
+    top: -51px;
+    right: 0;
+
+     div{
+        position: absolute;
+        right: 0;
+        background: $green;
+        width: 500px;
+        display: none;
+        height: 50px;
+    }
+
+    .show{
+        display: block;
     }
 }
 

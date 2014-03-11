@@ -158,11 +158,16 @@ var SelectorHolder = {
     interfaceEvents: function(){
         document.getElementById("setParent").addEventListener("click", function(event){
             SelectorHolder.setParent();
+            document.getElementById("parentGroup").classList.remove("show");
+            document.getElementById("collectTabs").classList.remove("pushed");
         }, false);
         document.getElementById("removeParent").addEventListener("click", function(event){
             SelectorHolder.removeParent();
+            document.getElementById("parentGroup").classList.remove("show");
+            document.getElementById("collectTabs").classList.remove("pushed");
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
+        addEvents(document.querySelectorAll("#collectTabs .tab a"), 'click', toggleTab);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -204,7 +209,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\" class=\"noSelect\">    <div id=\"selectorHolder\" class=\"noSelect\"></div></div><div id=\"selectorText\" class=\"noSelect\"></div><div id=\"collectTabs\">    <div class=\"tab\" id=\"parentGroup\" class=\"noSelect\">        <button id=\"setParent\" class=\"collectButton noSelect\">Set Parent</button>        <button id=\"removeParent\" class=\"collectButton noSelect\">Remove Parent</button>        <div id=\"parentSelector\" class=\"noSelect\"></div>    </div>    <div class=\"tab\">        <button id=\"closeCollect\">X</button>    </div>    </div>";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorText\"></div><div id=\"collectTabs\">    <div class=\"tab\">    <a href=\"#\" id=\"parentTab\" data-for=\"parentGroup\">Parent</a>    <div id=\"parentSelector\"></div>    </div>    <div class=\"tab\">    <a href=\"#\" id=\"optionTab\" data-for=\"optionGroup\">Options</a>    </div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\"> <div id=\"parentGroup\" >        <button id=\"setParent\" class=\"collectButton\">Set Parent</button>        <button id=\"removeParent\" class=\"collectButton\">Remove Parent</button>    </div>    <div id=\"optionGroup\">    </div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -230,6 +235,7 @@ function unhighlightElement(event){
 
 function removeInterface(event){
     event.stopPropagation();
+    event.preventDefault();
     SelectorHolder.turnOff();
     clearClass('queryCheck');
     clearClass('collectHighlight');
@@ -241,6 +247,21 @@ function removeInterface(event){
     }
 }
 
+function toggleTab(event){
+    event.preventDefault();
+    event.stopPropagation();
+    var target = this.dataset.for,
+        ele = document.getElementById(target);
+    if ( ele.classList.contains("show") ) {
+        document.getElementById("collectTabs").classList.remove("pushed");
+        ele.classList.remove("show");
+    } else {
+        document.getElementById("collectTabs").classList.add("pushed");
+        ele.classList.add("show");
+    }
+
+    
+}
 
 SelectorHolder.setup();
 
