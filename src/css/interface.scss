@@ -6,6 +6,7 @@ $light-gray: #efefef;
 $dark-gray: #444444;
 $gray: #CCCCCC;
 $gold: #FFD700;
+$white: #ffffff;
 
 .selectorGroup{
     display: inline-block;
@@ -30,7 +31,7 @@ $gold: #FFD700;
     .deltog, .nthtype, .onlychild{
         font-weight: bold;
         padding: 0 3px 0 2px;
-        color: #fff;
+        color: $white;
     }
 }
 
@@ -49,7 +50,7 @@ $gold: #FFD700;
     width: 100%;
     height: 50px;
     border-top: 1px solid #444;
-    background: #fff;
+    background: $white;
     font-size: 20px;
     font-family: sans-serif;
 }
@@ -76,7 +77,7 @@ $gold: #FFD700;
 }
 
 #collectTabs{
-    position: absolute;
+    position: absolute;    
     top: -26px;
     height: 25px;
     right: 0;
@@ -85,16 +86,34 @@ $gold: #FFD700;
     padding: 0;
     margin: 0;
     border-top: 1px solid #777;
+    word-spacing: -6px;
 
     .tab{
         border-left: 1px solid #222;
         display: inline-block;
-        padding: 0 10px;
+        padding: 0 5px;
+        line-height: 25px;
 
-        a{
-            text-decoration: none;
-            color: #000;
+        div{
+            display: inline-block;
         }
+    }
+
+    .active{
+        background: $white;
+    }
+
+    .toggle, #closeCollect{
+        cursor: pointer;
+    }
+
+    #toggleParent{
+        background: $gold;
+        cursor: pointer;
+        border: 0;
+        font-weight: bolder;
+        font-size: 24px;
+        line-height: 18px;
     }
 }
 

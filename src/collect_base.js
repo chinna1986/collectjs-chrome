@@ -9,6 +9,10 @@ var SelectorHolder = {
     family: undefined,
     parentSelector: undefined,
     eles: [],
+    options: {
+        activeTab: undefined,
+        activeGroup: undefined
+    },
     /*
     create a SelectorFamily given a css selector string
     */
@@ -58,12 +62,13 @@ var SelectorHolder = {
         this.parentSelector = this.selector();
         if ( this.parentSelector  === "") {
             this.parentSelector = undefined;
-            return;
+            return false;
         }
         // parent to select elements from is the first element in the page matching the selector
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
+        return true;
     },
     /*
     remove parent & parentSelector, attaches events to all non-.noSelect elements
@@ -156,18 +161,19 @@ var SelectorHolder = {
         this.bubbleEvents();
     },
     interfaceEvents: function(){
-        document.getElementById("setParent").addEventListener("click", function(event){
-            SelectorHolder.setParent();
-            document.getElementById("parentGroup").classList.remove("show");
-            document.getElementById("collectTabs").classList.remove("pushed");
-        }, false);
-        document.getElementById("removeParent").addEventListener("click", function(event){
-            SelectorHolder.removeParent();
-            document.getElementById("parentGroup").classList.remove("show");
-            document.getElementById("collectTabs").classList.remove("pushed");
+        document.getElementById("toggleParent").addEventListener("click", function(event){
+            if ( SelectorHolder.parentSelector === undefined ) {
+                var parentSet = SelectorHolder.setParent();
+                if ( parentSet ) {
+                    this.textContent = "-";    
+                }
+            } else {
+                this.textContent = "+";
+                SelectorHolder.removeParent();
+            }
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
-        addEvents(document.querySelectorAll("#collectTabs .tab a"), 'click', toggleTab);
+        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -250,17 +256,35 @@ function removeInterface(event){
 function toggleTab(event){
     event.preventDefault();
     event.stopPropagation();
-    var target = this.dataset.for,
-        ele = document.getElementById(target);
-    if ( ele.classList.contains("show") ) {
-        document.getElementById("collectTabs").classList.remove("pushed");
-        ele.classList.remove("show");
+    if ( this.classList.contains("active") ){
+        hideActive();
     } else {
-        document.getElementById("collectTabs").classList.add("pushed");
-        ele.classList.add("show");
+        showActive(this);
     }
+    this.classList.toggle("active");
+}
 
-    
+function showActive(ele){
+    // if one is already shown, hide that first
+    hideActive();
+    var groupID = ele.dataset.for,
+        group = document.getElementById(groupID);
+    SelectorHolder.options.activeTab = ele;
+    SelectorHolder.options.activeGroup = group;
+    group.classList.add("show");
+    document.getElementById("collectTabs").classList.add("pushed");
+}
+
+function hideActive(){
+    if ( SelectorHolder.options.activeGroup ) {
+        SelectorHolder.options.activeGroup.classList.remove("show");
+    }
+    if ( SelectorHolder.options.activeTab ) {
+        SelectorHolder.options.activeTab.classList.remove("active");
+    }
+    SelectorHolder.options.activeTab = undefined;
+    SelectorHolder.options.activeGroup = undefined;
+    document.getElementById("collectTabs").classList.remove("pushed");
 }
 
 SelectorHolder.setup();
@@ -341,6 +365,8 @@ function selectorIsComplete(selector_object){
     }
     return selector_object;
 }   
+
+
 
 /*
 

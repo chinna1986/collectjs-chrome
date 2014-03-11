@@ -2,22 +2,23 @@
     <div id="selectorHolder"></div>
 </div>
 <div id="selectorText"></div>
-<div id="collectTabs">
-    <div class="tab">
-    	<a href="#" id="parentTab" data-for="parentGroup">Parent</a>
-    	<div id="parentSelector"></div>
-    </div>
-    <div class="tab">
-    	<a href="#" id="optionTab" data-for="optionGroup">Options</a>
-    </div>
-    <div class="tab" id="closeCollect">X</div>
-</div>
-<div id="tabGroups">
- 	<div id="parentGroup" >
-        <button id="setParent" class="collectButton">Set Parent</button>
-        <button id="removeParent" class="collectButton">Remove Parent</button>
-    </div>
-    <div id="optionGroup">
-
-    </div>
-</div>
+<!--<div id="collectOptions">-->
+	<div id="collectTabs">
+	    <div class="tab">
+	    	<span>Parent</span>
+	    	<span id="parentSelector"></span>
+	    	<button id="toggleParent">+</button>
+	    </div>
+	    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
+	    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
+	    <div class="tab" id="closeCollect">X</div>
+	</div>
+	<div id="tabGroups">
+	    <div id="optionGroup">
+	    	option
+	    </div>
+	    <div id="ruleGroup">
+	    	rule
+	    </div>
+	</div>
+<!--</div>-->
