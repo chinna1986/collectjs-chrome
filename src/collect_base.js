@@ -80,10 +80,10 @@ var SelectorHolder = {
     store elements with eventlisteners in this.ele
     */
     turnOn: function(){
-        var top = this.parent || document.body,
+        var prefix = this.parent ? this.parentSelector : "body",
             curr;
         this.turnOff();
-        this.eles = top.querySelectorAll("*:not(.noSelect)");
+        this.eles = document.querySelectorAll(prefix + " *:not(.noSelect)");
         for ( var i=0, len=this.eles.length; i<len; i++ ) {
             curr = this.eles[i];
             curr.addEventListener('click', createSelectorFamily, false);
@@ -124,8 +124,8 @@ var SelectorHolder = {
         var selectorString = this.selector();
         clearClass("queryCheck");
         if ( selectorString !== "" ) {
-            var attacher = this.parent || document.body,
-                elements = attacher.querySelectorAll(selectorString);
+            var prefix = this.parent ? this.parentSelector : "body",
+                elements = document.querySelectorAll(prefix + " " + selectorString);
             for ( var i=0, len=elements.length; i<len; i++ ) {
                 elements[i].classList.add("queryCheck");
             }
@@ -157,9 +157,12 @@ var SelectorHolder = {
         document.getElementById("removeParent").addEventListener("click", function(event){
             SelectorHolder.removeParent();
         }, false);
-        this.interfaceEvents();
+        this.bubbleEvents();
     },
-    interfaceEvents: function(){
+    /*
+    events that bubble up from selector elements, but interact with the interface
+    */
+    bubbleEvents: function(){
         /*
         events that bubble up to the interface
         */
@@ -170,7 +173,7 @@ var SelectorHolder = {
             }
         }
 
-        function removeSelectorElement(event){
+        function removeSelectorFromFamily(event){
             if ( event.target.classList.contains("deltog")) {
                 event.stopPropagation();
                 // .selectorGroup is the parent
@@ -182,13 +185,12 @@ var SelectorHolder = {
                         break;
                     }
                 }
-                parent.parentElement.removeChild(parent);
                 SelectorHolder.updateSelectorText();
                 SelectorHolder.testSelector();
             }
         }
         this.html.family.addEventListener("click", update, false);
-        this.html.family.addEventListener("click", removeSelectorElement, false);
+        this.html.family.addEventListener("click", removeSelectorFromFamily, false);
 
     }
 };
@@ -200,6 +202,7 @@ function addInterface(){
     div.innerHTML = "{{src/selector.html}}";
     
     document.body.appendChild(div);
+    addNoSelect(div.querySelectorAll("*"));
 }
 
 /******************
