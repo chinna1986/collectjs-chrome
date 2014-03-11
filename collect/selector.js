@@ -6,7 +6,7 @@ ele is the child element you want to build a selector from
 parent is the most senior element you want to build a selector up to
 */
 function SelectorFamily(ele, parent){
-    this.parent = parent || document.body;
+    this.parent = parent;
     this.selectors;
     this.ele = document.createElement("div");
     this.ele.classList.add("selectorFamily", "noSelect");
@@ -18,12 +18,15 @@ Populates the selectors array with Selectors from ele to parent (ignoring docume
 Order is from most senior element to provided ele
 */
 SelectorFamily.prototype.buildFamily = function(ele){
-    var stopAt = this.parent,
-        sel;
+    var sel;
     // reset selectors before generating
     this.selectors = [];
-    while ( ele !== null && ele !== stopAt ) {
-        this.selectors.push(new Selector(ele));
+    while ( ele !== null && ele.tagName !== "BODY" ) {
+        sel = new Selector(ele);
+        if ( this.parent && sel.matches(this.parent)) {
+            break;
+        }
+        this.selectors.push(sel);
         ele = ele.parentElement;
     }
     this.selectors.reverse();
@@ -159,8 +162,7 @@ Selector.prototype.addNthofType = function(){
 }
 
 Selector.prototype.setupElements = function(){
-    var curr,
-        nthtype, onlylchild, deltog;
+    var curr, deltog;
     this.ele = document.createElement("div");
     this.ele.classList.add("selectorGroup", "noSelect");
     this.ele.appendChild(this.tag.ele);
@@ -171,14 +173,18 @@ Selector.prototype.setupElements = function(){
         curr = this.classes[i];
         this.ele.appendChild(curr.ele);
     }
-    div = document.createElement("div");
+
     this.nthtypeCreator = selectorSpan("+t", ["nthtype"], "add the nth-of-type pseudo selector"),
-    //this.onlychildCreator = selectorSpan(">", ["onlychild"], "next selector must be direct child (> in css)"),
-    deltog = selectorSpan("x", ["deltog"]);
     this.ele.appendChild(this.nthtypeCreator);
-    //this.ele.appendChild(this.onlychildCreator);
-    this.ele.appendChild(deltog);
     this.nthtypeCreator.addEventListener('click', createNthofType.bind(this), false);
+
+    deltog = selectorSpan("x", ["deltog"]);
+    this.ele.appendChild(deltog);
+    deltog.addEventListener('click', removeSelectorGroup, false);
+    //this.onlychildCreator = selectorSpan(">", ["onlychild"], "next selector must be direct child (> in css)"),
+    //this.ele.appendChild(this.onlychildCreator);
+    
+    
 }
 
 Selector.prototype.setAll = function(bool){
@@ -297,6 +303,11 @@ Selector.prototype.toString = function(){
 function createNthofType(event){
     event.stopPropagation();
     this.addNthofType();
+}
+
+function removeSelectorGroup(event){
+    var parent = this.parentElement;
+    parent.parentElement.removeChild(parent);
 }
 
 /*********************************

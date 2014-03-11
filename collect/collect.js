@@ -7,17 +7,16 @@ var SelectorHolder = {
     relevant html elements
     */
     family: undefined,
-    parent: undefined,
     parentSelector: undefined,
     eles: [],
     /*
     create a SelectorFamily given a css selector string
     */
     buildFamily: function(selector){
-        var attacher = this.parent || document.body;
-            element = attacher.querySelector(selector);
+        var prefix = this.parentSelector ? this.parentSelector : "body",
+            element = document.querySelector(prefix + " " + selector);
         if ( element ) {
-            var family = new SelectorFamily(element, this.parent);
+            var family = new SelectorFamily(element, this.parentSelector);
             family.matchSelector(selector);
             this.setFamily(family);
         }
@@ -48,7 +47,7 @@ var SelectorHolder = {
     set the text of the SelectorFamily's selector string in the interface
     */
     updateSelectorText: function(){
-        var selectorString = (this.parent ? this.parentSelector + " ": "") + this.selector();
+        var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + this.selector();
         this.html.text.textContent = selectorString;
     },
     /*
@@ -57,8 +56,11 @@ var SelectorHolder = {
     */
     setParent: function(){
         this.parentSelector = this.selector();
+        if ( this.parentSelector  === "") {
+            this.parentSelector = undefined;
+            return;
+        }
         // parent to select elements from is the first element in the page matching the selector
-        this.parent = document.querySelector(this.parentSelector);
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
@@ -67,20 +69,19 @@ var SelectorHolder = {
     remove parent & parentSelector, attaches events to all non-.noSelect elements
     */
     removeParent: function(){
-        this.parent = undefined;
         this.parentSelector = undefined;
         this.html.parent.textContent = "";
         this.clearFamily();
         this.turnOn();
     },
     /*
-    adds events listeners based on whether or not this.parent is set
+    adds events listeners based on whether or not this.parentSelector is set
     if it is, only add them to children of that element, otherwise add them to all elements
     that don't have the noSelect class
     store elements with eventlisteners in this.ele
     */
     turnOn: function(){
-        var prefix = this.parent ? this.parentSelector : "body",
+        var prefix = this.parentSelector ? this.parentSelector : "body",
             curr;
         this.turnOff();
         this.eles = document.querySelectorAll(prefix + " *:not(.noSelect)");
@@ -124,7 +125,7 @@ var SelectorHolder = {
         var selectorString = this.selector();
         clearClass("queryCheck");
         if ( selectorString !== "" ) {
-            var prefix = this.parent ? this.parentSelector : "body",
+            var prefix = this.parentSelector ? this.parentSelector : "body",
                 elements = document.querySelectorAll(prefix + " " + selectorString);
             for ( var i=0, len=elements.length; i<len; i++ ) {
                 elements[i].classList.add("queryCheck");
@@ -151,13 +152,17 @@ var SelectorHolder = {
             parent: document.getElementById("parentSelector")
         }
         this.turnOn();
+        this.interfaceEvents();
+        this.bubbleEvents();
+    },
+    interfaceEvents: function(){
         document.getElementById("setParent").addEventListener("click", function(event){
             SelectorHolder.setParent();
         }, false);
         document.getElementById("removeParent").addEventListener("click", function(event){
             SelectorHolder.removeParent();
         }, false);
-        this.bubbleEvents();
+        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -199,7 +204,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\" class=\"noSelect\">    <div id=\"selectorHolder\" class=\"noSelect\"></div></div><div id=\"selectorText\" class=\"noSelect\"></div><div id=\"parentGroup\" class=\"noSelect\">    <button id=\"setParent\" class=\"collectButton noSelect\">Set Parent</button>    <button id=\"removeParent\" class=\"collectButton noSelect\">Remove Parent</button>    <div id=\"parentSelector\" class=\"noSelect\"></div></div><div id=\"collectButtons\">    <button id=\"closeCollect\">X</button></div>";
+    div.innerHTML = "<div id=\"collectMain\" class=\"noSelect\">    <div id=\"selectorHolder\" class=\"noSelect\"></div></div><div id=\"selectorText\" class=\"noSelect\"></div><div id=\"collectTabs\">    <div class=\"tab\" id=\"parentGroup\" class=\"noSelect\">        <button id=\"setParent\" class=\"collectButton noSelect\">Set Parent</button>        <button id=\"removeParent\" class=\"collectButton noSelect\">Remove Parent</button>        <div id=\"parentSelector\" class=\"noSelect\"></div>    </div>    <div class=\"tab\">        <button id=\"closeCollect\">X</button>    </div>    </div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -211,7 +216,7 @@ function addInterface(){
 function createSelectorFamily(event){
     event.stopPropagation();
     event.preventDefault();
-    var family = new SelectorFamily(this, SelectorHolder.parent);
+    var family = new SelectorFamily(this, SelectorHolder.parentSelector);
     SelectorHolder.setFamily(family);
 }
 
@@ -222,6 +227,20 @@ function highlightElement(event){
 function unhighlightElement(event){
     this.classList.remove("collectHighlight");
 }
+
+function removeInterface(event){
+    event.stopPropagation();
+    SelectorHolder.turnOff();
+    clearClass('queryCheck');
+    clearClass('collectHighlight');
+    var elesToRemove = ["collectjs"],
+        curr;
+    for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
+        curr = document.getElementById(elesToRemove[i]);
+        curr.parentElement.removeChild(curr);
+    }
+}
+
 
 SelectorHolder.setup();
 

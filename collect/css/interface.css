@@ -49,6 +49,24 @@
   top: -25px;
   padding: 0 5px; }
 
+#collectTabs {
+  position: absolute;
+  top: -26px;
+  height: 25px;
+  right: 0;
+  background: #abcdef;
+  padding: 0;
+  margin: 0; }
+  #collectTabs .tab {
+    border-left: 1px solid #222;
+    display: inline-block; }
+    #collectTabs .tab button {
+      border: 0;
+      height: 25px;
+      border-color: #fff;
+      border-width: 0 1px;
+      border-style: solid; }
+
 /* _options.scss */
 /* options modal */
 #options_interface, #preview_interface {

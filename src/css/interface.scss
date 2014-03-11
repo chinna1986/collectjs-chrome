@@ -79,5 +79,28 @@ $gold: #FFD700;
     padding: 0 5px;
 }
 
+#collectTabs{
+    position: absolute;
+    top: -26px;
+    height: 25px;
+    right: 0;
+    background: #abcdef;
+    padding: 0;
+    margin: 0;
+
+    .tab{
+        border-left: 1px solid #222;
+        display: inline-block;
+
+        button{
+            border: 0;
+            height: 25px;
+            border-color: #fff;
+            border-width: 0 1px;
+            border-style: solid;
+        }
+    }
+}
+
 @import 'options';
 @import 'page';
