@@ -256,12 +256,17 @@ function removeInterface(event){
 function toggleTab(event){
     event.preventDefault();
     event.stopPropagation();
+    var title;
     if ( this.classList.contains("active") ){
+        this.classList.remove("active");
+        title = "Use the current selector as a parent selector for a group";
         hideActive();
     } else {
+        this.classList.add("active");
+        title = "Remove the current parent selector";
         showActive(this);
     }
-    this.classList.toggle("active");
+    document.getElementById("toggleParent").setAttribute("title", title);
 }
 
 function showActive(ele){

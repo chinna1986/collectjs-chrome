@@ -215,7 +215,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorText\"></div><!--<div id=\"collectOptions\">--><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <span id=\"parentSelector\"></span>    <button id=\"toggleParent\">+</button>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    option    </div>    <div id=\"ruleGroup\">    rule    </div></div><!--</div>-->";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorText\"></div><!--<div id=\"collectOptions\">--><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"Use the current selector as a parent selector for a group\">+</button>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    option    </div>    <div id=\"ruleGroup\">    rule    </div></div><!--</div>-->";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -256,12 +256,17 @@ function removeInterface(event){
 function toggleTab(event){
     event.preventDefault();
     event.stopPropagation();
+    var title;
     if ( this.classList.contains("active") ){
+        this.classList.remove("active");
+        title = "Use the current selector as a parent selector for a group";
         hideActive();
     } else {
+        this.classList.add("active");
+        title = "Remove the current parent selector";
         showActive(this);
     }
-    this.classList.toggle("active");
+    document.getElementById("toggleParent").setAttribute("title", title);
 }
 
 function showActive(ele){
