@@ -1,8 +1,8 @@
 "use strict";
 /*********************************
-            SELECTORHOLDER
+            COLLECT
 *********************************/
-var SelectorHolder = {
+var Collect = {
     /*
     relevant html elements
     */
@@ -26,7 +26,7 @@ var SelectorHolder = {
         }
     },
     /*
-    setup SelectorHolder interface given a SelectorFamily object
+    setup Collect interface given a SelectorFamily object
     */
     setFamily: function(family){
         this.family = family;
@@ -55,7 +55,7 @@ var SelectorHolder = {
         this.html.text.textContent = selectorString;
     },
     /*
-    sets SelectorHolder.parent, stores the selector in parentSelector and turns on events for only    
+    sets Collect.parent, stores the selector in parentSelector and turns on events for only    
     the elements whose parent is the first element matching the selector
     */
     setParent: function(){
@@ -162,14 +162,14 @@ var SelectorHolder = {
     },
     interfaceEvents: function(){
         document.getElementById("toggleParent").addEventListener("click", function(event){
-            if ( SelectorHolder.parentSelector === undefined ) {
-                var parentSet = SelectorHolder.setParent();
+            if ( Collect.parentSelector === undefined ) {
+                var parentSet = Collect.setParent();
                 if ( parentSet ) {
                     this.textContent = "-";    
                 }
             } else {
                 this.textContent = "+";
-                SelectorHolder.removeParent();
+                Collect.removeParent();
             }
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
@@ -184,8 +184,8 @@ var SelectorHolder = {
         */
         function update(event){
             if ( event.target.classList.contains("toggleable") ) {
-                SelectorHolder.updateSelectorText();
-                SelectorHolder.testSelector();    
+                Collect.updateSelectorText();
+                Collect.testSelector();    
             }
         }
 
@@ -197,12 +197,12 @@ var SelectorHolder = {
                     groups = document.getElementsByClassName("selectorGroup");
                 for ( var i=0, len=groups.length; i<len; i++ ) {
                     if ( groups[i] === parent ) {
-                        SelectorHolder.family.removeElement(i);
+                        Collect.family.removeElement(i);
                         break;
                     }
                 }
-                SelectorHolder.updateSelectorText();
-                SelectorHolder.testSelector();
+                Collect.updateSelectorText();
+                Collect.testSelector();
             }
         }
         this.html.family.addEventListener("click", update, false);
@@ -227,8 +227,8 @@ function addInterface(){
 function createSelectorFamily(event){
     event.stopPropagation();
     event.preventDefault();
-    var family = new SelectorFamily(this, SelectorHolder.parentSelector);
-    SelectorHolder.setFamily(family);
+    var family = new SelectorFamily(this, Collect.parentSelector);
+    Collect.setFamily(family);
 }
 
 function highlightElement(event){
@@ -242,7 +242,7 @@ function unhighlightElement(event){
 function removeInterface(event){
     event.stopPropagation();
     event.preventDefault();
-    SelectorHolder.turnOff();
+    Collect.turnOff();
     clearClass('queryCheck');
     clearClass('collectHighlight');
     var elesToRemove = ["collectjs"],
@@ -269,25 +269,25 @@ function showActive(ele){
     hideActive();
     var groupID = ele.dataset.for,
         group = document.getElementById(groupID);
-    SelectorHolder.options.activeTab = ele;
-    SelectorHolder.options.activeGroup = group;
+    Collect.options.activeTab = ele;
+    Collect.options.activeGroup = group;
     group.classList.add("show");
     document.getElementById("collectTabs").classList.add("pushed");
 }
 
 function hideActive(){
-    if ( SelectorHolder.options.activeGroup ) {
-        SelectorHolder.options.activeGroup.classList.remove("show");
+    if ( Collect.options.activeGroup ) {
+        Collect.options.activeGroup.classList.remove("show");
     }
-    if ( SelectorHolder.options.activeTab ) {
-        SelectorHolder.options.activeTab.classList.remove("active");
+    if ( Collect.options.activeTab ) {
+        Collect.options.activeTab.classList.remove("active");
     }
-    SelectorHolder.options.activeTab = undefined;
-    SelectorHolder.options.activeGroup = undefined;
+    Collect.options.activeTab = undefined;
+    Collect.options.activeGroup = undefined;
     document.getElementById("collectTabs").classList.remove("pushed");
 }
 
-SelectorHolder.setup();
+Collect.setup();
 
 /*********** OLD STUFF ***************/
 
