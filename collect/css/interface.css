@@ -1,3 +1,19 @@
+/* Interface */
+#collectjs {
+  z-index: 100;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  border-top: 1px solid #444;
+  background: white;
+  font-size: 20px;
+  font-family: sans-serif; }
+  #collectjs .topbar {
+    position: absolute;
+    bottom: 50px; }
+
+/* Selector */
 .selectorGroup {
   display: inline-block;
   white-space: nowrap;
@@ -19,39 +35,29 @@
 .selectorGroup:hover .deltog, .selectorGroup:hover .onlychild, .selectorGroup:hover .nthtype {
   color: #777; }
 
-#collectjs {
-  z-index: 100;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  height: 50px;
-  border-top: 1px solid #444;
-  background: white;
-  font-size: 20px;
-  font-family: sans-serif; }
+/* Preview */
+#selectorPreview {
+  left: 0;
+  min-width: 250px;
+  border-width: 1px 1px 0 0;
+  border-style: solid;
+  border-color: #777;
+  padding: 5px;
+  background: white; }
+  #selectorPreview div {
+    display: inline-block; }
+  #selectorPreview #selectorText {
+    margin-right: 15px; }
 
-#collectMain {
-  width: 60%;
-  display: inline-block; }
+#saveRule {
+  display: none; }
 
-#parentSelector {
-  display: inline-block; }
-
-#collectButtons {
-  width: 30%;
-  display: inline-block; }
-
-#selectorText {
-  background: white;
-  position: absolute;
-  top: -25px;
-  padding: 0 5px; }
+/* Options */
+#collectOptions {
+  right: 0; }
 
 #collectTabs {
-  position: absolute;
-  top: -26px;
-  height: 25px;
-  right: 0;
+  height: 30px;
   background: gold;
   color: #000;
   padding: 0;
@@ -63,37 +69,55 @@
     border-left: 1px solid #222;
     display: inline-block;
     padding: 0 5px;
-    line-height: 25px; }
+    line-height: 30px; }
     #collectTabs .tab div {
       display: inline-block; }
   #collectTabs .active {
     background: white; }
   #collectTabs .toggle, #collectTabs #closeCollect {
     cursor: pointer; }
-  #collectTabs #toggleParent {
-    background: gold;
-    cursor: pointer;
-    border: 0;
-    font-weight: bolder;
-    font-size: 24px;
-    line-height: 18px; }
 
-#collectTabs.pushed {
-  top: -76px; }
+#toggleParent {
+  /*background: $gold;*/
+  cursor: pointer;
+  /*border: 0;*/
+  border-radius: 20px;
+  font-weight: bolder;
+  font-size: 24px;
+  line-height: 18px; }
+
+#parentSelector {
+  display: inline-block; }
+
+#collectButtons {
+  width: 30%;
+  display: inline-block; }
+
+#collectOptions {
+  position: absolute;
+  bottom: 25px; }
 
 #tabGroups {
   position: absolute;
-  top: -51px;
-  right: 0; }
+  bottom: 31px;
+  background: white; }
   #tabGroups div {
-    position: absolute;
-    right: 0;
-    background: #489675;
+    border-top: 1px solid #222;
+    border-left: 1px solid #222;
     width: 500px;
-    display: none;
-    height: 50px; }
+    display: none; }
   #tabGroups .show {
     display: block; }
+
+#optionGroup {
+  height: 250px; }
+
+#ruleGroup {
+  height: 50px; }
+
+/* ruleModal */
+#ruleModal {
+  display: none; }
 
 /* _options.scss */
 /* options modal */

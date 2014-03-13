@@ -135,11 +135,13 @@ var Collect = {
             for ( var i=0, len=elements.length; i<len; i++ ) {
                 elements[i].classList.add("queryCheck");
             }
+            document.getElementById("selectorCount").textContent = "Count: " + elements.length;
             return {
                 count: elements.length,
                 first: elements[0]
             };
         } else {
+            document.getElementById("selectorCount").textContent = 0;
             return {
                 count: 0,
                 first: undefined
@@ -277,7 +279,6 @@ function showActive(ele){
     Collect.options.activeTab = ele;
     Collect.options.activeGroup = group;
     group.classList.add("show");
-    document.getElementById("collectTabs").classList.add("pushed");
 }
 
 function hideActive(){
@@ -289,7 +290,6 @@ function hideActive(){
     }
     Collect.options.activeTab = undefined;
     Collect.options.activeGroup = undefined;
-    document.getElementById("collectTabs").classList.remove("pushed");
 }
 
 Collect.setup();
@@ -371,218 +371,6 @@ function selectorIsComplete(selector_object){
     return selector_object;
 }   
 
-
-
-/*
-
-stuff that can possibly be reused
-
-// rules for #form_buttons
-document.getElementById('collect_save').addEventListener('click', saveRuleEvent, false);
-document.getElementById('collect_clear_form').addEventListener('click', clearRuleForm, false);
-document.getElementById('collect_preview').addEventListener('click', previewRule, false);
-
-// group events
-document.getElementById('collect_selectors').addEventListener('click', deleteRuleEvent, false);
-document.getElementById('collect_preview_saved').addEventListener('click', previewGroupEvent, false);
-document.getElementById('collect_new_group').addEventListener('click', createGroupEvent, false);
-document.getElementById('collect_get_groups').addEventListener('click', getGroupsEvent, false);
-document.getElementById('collect_delete_group').addEventListener('click', deleteGroupEvent, false);
-document.getElementById('collect_upload_group').addEventListener('click', uploadGroupEvent, false);
-document.getElementById('collect_selector_groups').addEventListener('change', loadGroupEvent, false);
-
-
-//Event Functions
-
-// close the collect interface
-function removeInterface(event){
-    event.stopPropagation();
-    collect.events.off();
-    clearClass('queryCheck');
-    clearClass('collectHighlight');
-    clearClass('saved_preview');
-    // closing, so re-clicking default_icon should create interface again
-    window.collectMade = false;
-    var elesToRemove = ['collect_interface', 'options_interface', 'options_background',
-        'preview_interface', 'preview_background'],
-        curr;
-    for ( var i=0, len=elesToRemove.length; i<len; i++ ) {
-        curr = document.getElementById(elesToRemove[i]);
-        curr.parentElement.removeChild(curr);
-    }
-}
-
-// create and save an object for the current query selector/capture data
-function saveRuleEvent(event){
-    event.preventDefault();
-    var inputs = document.getElementById('selector_form').getElementsByTagName('input'),
-        selector_object = {},
-        active = document.getElementsByClassName('active_selector')[0],
-        group = currentGroup();
-        
-    for ( var p=0, len=inputs.length; p<len; p++ ) {
-        var curr = inputs[p],
-            name = curr.getAttribute('name'),
-            value = curr.value;
-        selector_object[name] = value;
-    }
-
-    // active isn't undefined if you're editing an already saved selector
-    if ( active ){
-        saveRule(group, selector_object);
-
-        // modify name, selector, and capture but not index
-        active.dataset.selector = selector_object.selector;
-        active.dataset.capture = selector_object.capture;
-        active.textContent = selector_object.name;
-        active.classList.remove('active_selector');
-
-        selector_object = selectorIsComplete(selector_object);
-        if ( !selector_object.incomplete ) {
-            swapClasses(active, 'incomplete_selector', 'saved_selector');
-        } else {
-            swapClasses(active, 'saved_selector', 'incomplete_selector');
-        }
-    } else {
-        saveRule(group, selector_object);
-        // call last because index needs to be set
-        document.getElementById('collect_selectors').innerHTML += savedSelectorHTML(selector_object);
-    }
-    clearInterface();
-}
-
-// output a preview of current selector form values to the preview modal
-function previewRule(event){
-    event.preventDefault();
-    var selector = document.getElementById('selector_string').value,
-        eles = selectorElements(selector),
-        type = document.getElementById('selector_capture').value,
-        outString = '',
-        attr;
-    if ( selector === '' || type === '' ) {
-        outString = "No attribute to capture";
-    } else if ( type === 'text' ) {
-        for (var i=0, len=eles.length; i<len; i++ ) {
-            outString += "<p>" + (eles[i].textContent) + "</p>";
-        }
-    } else if ( type.indexOf('attr-') === 0 ) {
-        // get everything after attr-
-        attr = type.slice(type.indexOf('-')+1);
-        for (var i=0, len=eles.length; i<len; i++ ) {
-            outString += "<p>" + (eles[i].getAttribute(attr)) + "</p>";
-        }
-    }
-    document.getElementById('preview_holder').innerHTML = outString;
-    $("#preview_interface, #preview_background").show();
-}
-
-
-function clearRuleForm(event){
-    event.preventDefault();
-    clearInterface();
-}
-
-// remove selector rule from localstorage
-function deleteRuleEvent(event){
-    event.stopPropagation();
-    if ( hasClass(event.target, 'deltog')){
-        var ele = event.target,
-            selector_span = ele.previousElementSibling,
-            selector_name = selector_span.innerHTML,
-            selector_group = $(ele).parents('.collect_group');
-        if ( $("#safedelete").is(":checked") ) {
-            var verifyDelete = confirm("Confirm you want to delete rule \"" + selector_name + "\"");
-            if ( !verifyDelete ) {
-                return;
-            }
-        }
-        if ( selector_span.classList.contains('active_selector')) {
-            clearInterface();
-        }
-        selector_group.remove();
-        deleteRule(currentGroup(), selector_name);
-    }
-}
-
-// load saved selector information into the #selector_form for editing
-function clearOrLoad(event){
-    event.stopPropagation();
-    var ele = event.target
-    if ( hasClass(ele, 'saved_selector') ) {
-        if ( hasClass(ele, 'active_selector') ) {
-            clearInterface();
-        } else {
-            loadSelectorGroup(ele);
-        }
-    }
-    
-}
-
-// sets the fields in the #selector_form given an element 
-// that represents a selector
-function loadSelectorGroup(ele){
-    var selectorVal = ele.dataset.selector || '',
-        selector = decodeURIComponent(selectorVal.replace(/\+/g, ' ')),
-        family = Collect.selectors.buildFamily(selector);
-
-    document.getElementById('selector_name').value = ele.textContent || '';
-    document.getElementById('selector_capture').value = ele.dataset.capture || '';
-    document.getElementById('selector_index').value = ele.dataset.index || '';
-
-    clearClass('active_selector');
-    ele.classList.add('active_selector');
-    updateInterface(selector)
-}
-
-function previewSavedSelector(event){
-    if ( hasClass(event.target, 'saved_selector')){
-        clearClass("queryCheck");
-        var ele = event.target,
-            selector = ele.dataset.selector;
-        addClass("queryCheck", document.querySelectorAll(selector));
-    }
-}
-
-function unpreviewSavedSelector(event){
-    if ( hasClass(event.target, 'saved_selector')){
-        clearClass("queryCheck");
-        updateInterface();
-    }   
-}
-
-function previewGroupEvent(event){
-    event.preventDefault();
-    clearInterface();
-    var outString = '';
-    chrome.storage.local.get('rules', function previewGroupChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules,
-            group = rules[host][currentGroup()],
-            curr, results, resultsLen, prop;
-
-        for( var key in group ) {
-            curr = group[key];
-            // make sure to only run on completed rules
-            curr = selectorIsComplete(curr);
-            if ( !curr.incomplete) {
-                results = document.querySelectorAll(curr.selector);
-                resultsLen = results.length;
-                prop = captureFunction(curr);
-                outString += "<div class='preview_group'><h2>" + curr.name + 
-                    "(Count: " + resultsLen + ")</h2><ul>";
-                for (var r=0; r<resultsLen; r++ ) {
-                    var ele = results[r];
-                    ele.classList.add("saved_preview");
-                    outString += "<li>" + prop(ele) + "</li>";
-                }
-                outString += "</ul></div>";
-            }
-        }
-        document.getElementById('preview_holder').innerHTML = outString;
-        $("#preview_interface, #preview_background").show();
-    });
-}
-*/
 function captureFunction(curr){
     if (curr.capture==="text") { 
         return function(ele){
@@ -597,114 +385,6 @@ function captureFunction(curr){
     }
 }
 /*
-function createGroupEvent(event){
-    event.preventDefault();
-    var name = prompt("Group Name");
-    if ( name !== null && name !== '' ){
-        addGroup(name);
-        document.getElementById('collect_selectors').innerHTML = '';
-        clearInterface();
-    }
-}
-
-function deleteGroupEvent(event){
-    event.preventDefault();
-    var name = currentGroup();
-    if ( name !== 'default' ) {
-        if ( $("#safedelete").is(":checked") ) {
-            var verifyDelete = confirm("Confirm you want to delete group \"" + name + "\"");
-            if ( !verifyDelete ) {
-                return;
-            }
-        }
-        $('#collect_selector_groups option:selected').remove();
-        chrome.storage.local.get('rules', function deleteGroupChrome(storage){
-            var host = window.location.hostname,
-                rules = storage.rules;
-            delete rules[host][name];
-            chrome.storage.local.set({'rules': rules});
-            loadSavedSelectors();
-        });    
-    } else {
-        var clearRules = confirm("Cannot delete 'default' group, clear rules instead?");
-        if ( clearRules ) {
-            chrome.storage.local.get('rules', function clearDefaultGroup(storage){
-                var host = window.location.hostname,
-                    rules = storage.rules;
-                rules[host][name] = {};
-                chrome.storage.local.set({'rules': rules});
-                loadSavedSelectors();
-            });    
-        }
-    }
-    
-}
-
-function getGroupsEvent(event){
-    chrome.runtime.sendMessage({'type': 'groups'}, function getGroupsChrome(response){
-        if ( !response.error ){
-            addLoadedGroups(response.groups);
-        }
-    });
-}
-
-function uploadGroupEvent(event){
-    event.preventDefault();
-    chrome.storage.local.get('rules', function uploadGroupChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules,
-            groupName = currentGroup(),
-            group = rules[host][groupName],
-            uploadObject = {
-                'host': host,
-                'name': groupName,
-                'rules': {}
-            },
-            uploadGroups = {},
-            uploadJSON, curr;
-        // don't upload if the rule hasn't been completed
-        for ( var key in group ) {
-            curr = group[key];
-            if ( !curr.incomplete ) {
-                uploadObject.rules[key] = group[key];
-            }
-        }
-        uploadJSON = JSON.stringify(uploadObject);
-        chrome.runtime.sendMessage({'type': 'upload', 'msg': uploadJSON});
-    });
-}
-
-function loadGroupEvent(event){
-    loadSavedSelectors();
-    clearInterface();
-}
-
-function select(event){
-    event.stopPropagation();
-    clearClass('collectHighlight');
-    this.classList.add('collectHighlight');
-}
-
-function deselect(event){
-    event.stopPropagation();
-    this.classList.remove('collectHighlight');
-}
-
-
-//when an element is clicked, setup interface data using clicked element
-function querySelector(event){
-    event.stopPropagation();
-    event.preventDefault();
-    if ( this === null ) {
-        return;
-    }
-    if ( !document.getElementsByClassName('.active_selector').length ){
-        clearInterface();
-    }
-
-    var family = new SelectorFamily(this)
-}
-
 //GROUPS
 
 //create option elements for each of the groups for the current site
@@ -780,10 +460,6 @@ function newGroupOption(name, selected){
 }
 
 //    STORAGE
-function getRules(callback){
-    chrome.storage.local.get('rules', callback);
-}
-
 //create the group and add the rules
 //currently overrides if there is an existing group with that name
 function addLoadedGroups(groups){
