@@ -177,13 +177,13 @@ describe("event helpers", function(){
     describe("captureFunction", function(){
         it("captures text", function(){
             var ele = document.createElement("div"),
-                fn = captureFunction({capture: "text"});
+                fn = captureFunction("text");
             ele.textContent = "this is a text";
             expect(fn(ele)).toEqual("this is a text");
         });
         it("captures an attribute", function(){
             var ele = document.createElement("a"),
-                fn = captureFunction({capture: "attr-href"});
+                fn = captureFunction("attr-href");
             ele.setAttribute("href", "#");
             expect(fn(ele)).toEqual("#");
         });

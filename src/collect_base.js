@@ -9,6 +9,7 @@ var Collect = {
     family: undefined,
     parentSelector: undefined,
     eles: [],
+    not: ":not(.noSelect)",
     options: {
         activeTab: undefined,
         activeGroup: undefined
@@ -17,8 +18,7 @@ var Collect = {
     create a SelectorFamily given a css selector string
     */
     buildFamily: function(selector){
-        var prefix = this.parentSelector ? this.parentSelector : "body",
-            element = document.querySelector(prefix + " " + selector);
+        var element = this.selectorElements(true);
         if ( element ) {
             var family = new SelectorFamily(element, this.parentSelector);
             family.matchSelector(selector);
@@ -85,7 +85,7 @@ var Collect = {
         var prefix = this.parentSelector ? this.parentSelector : "body",
             curr;
         this.turnOff();
-        this.eles = document.querySelectorAll(prefix + " *:not(.noSelect)");
+        this.eles = document.querySelectorAll(prefix + " *" + this.not);
         for ( var i=0, len=this.eles.length; i<len; i++ ) {
             curr = this.eles[i];
             curr.addEventListener('click', createSelectorFamily, false);
@@ -119,22 +119,35 @@ var Collect = {
         return this.family.toString();
     },
     /*
+    return the currently selected string with the parent selector, if one is selected
+    */
+    selectorElements: function(one){
+        var selector = this.selector(),
+            longSelector;
+        if ( selector === "") {
+            return ( one ? undefined : []);
+        }
+        longSelector = (this.parentSelector ? this.parentSelector: "body") + " " + selector + this.not;
+
+        if ( one ) {
+            return document.querySelector(longSelector);
+        } else {
+            return document.querySelectorAll(longSelector);    
+        }
+    },
+    /*
     returns the first element matching the current selector as well as how many total elements
     match the selector string
     */
     testSelector: function(){
-        var selectorString = this.selector();
         clearClass("queryCheck");
-        if ( selectorString !== "" ) {
-            var prefix = this.parentSelector ? this.parentSelector : "body",
-                elements = document.querySelectorAll(prefix + " " + selectorString);
-            for ( var i=0, len=elements.length; i<len; i++ ) {
-                elements[i].classList.add("queryCheck");
-            }
-            document.getElementById("selectorCount").textContent = "Count: " + elements.length;
-        } else {
-            document.getElementById("selectorCount").textContent = "";
+        var elements = this.selectorElements(),
+            count;
+        for ( var i=0, len=elements.length; i<len; i++ ) {
+            elements[i].classList.add("queryCheck");
         }
+        count = elements.length ? "Count: " + elements.length : "";
+        document.getElementById("selectorCount").textContent = count;
     },
     /*
     messy proof of concept
@@ -154,10 +167,12 @@ var Collect = {
         // preview
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
         document.getElementById("addParent").addEventListener("click", addParentEvent, false);
-        document.getElementById("saveSelector").addEventListener("click", saveSelector, false);
+        document.getElementById("saveSelector").addEventListener("click", saveRuleModal, false);
 
         // rule preview
         document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
+        document.getElementById("closeRuleModal").addEventListener("click", hideRuleModal, false);
+        document.getElementById("saveRule").addEventListener("click", hideRuleModal, false);
 
         // tabs
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
@@ -259,18 +274,41 @@ function removeSelectorEvent(event){
     Collect.clearFamily();
 }
 
-function saveSelector(event){
-    var selector = Collect.selector(),
-        ele = document.querySelector(selector),
-        html;
+function saveRuleModal(event){
+    var ele = Collect.selectorElements(true),
+        ruleHTML = document.getElementById("ruleHTML"),
+        html, capture;
     if ( ele ) {
         html = selectorTextHTML(ele)
-        document.getElementById("rulePreview").innerHTML = html;
+        ruleHTML.innerHTML = html;
+        capture = ruleHTML.getElementsByClassName("capture");
+        addEvents(capture, "click", capturePreview);
         document.getElementById("ruleHolder").style.display = "block";
     }
 }
 
+function capturePreview(event){
+    if ( !this.classList.contains("selected") ){
+        clearClass("selected");
+        var elements = Collect.selectorElements(),
+            fn = captureFunction(this.dataset.capture),
+            previewHTML = "";
+        for ( var i=0, len=elements.length; i<len; i++ ) {
+            previewHTML += "<p>" + fn(elements[i]) + "</p>";
+        }
+        this.classList.add("selected");
+        document.getElementById("rulePreview").innerHTML = previewHTML;
+    } else {
+        document.getElementById("rulePreview").innerHTML = "";
+        this.classList.remove("selected");
+    }
+    
+}
+
 function hideRuleModal(event){
+    document.getElementById("rulePreview").innerHTML = "";
+    document.getElementById("ruleHTML").innerHTML = "";
+    document.getElementById("ruleName").value = "";
     document.getElementById("ruleHolder").style.display = "none";
 }
 
@@ -291,11 +329,9 @@ function toggleTab(event){
     event.stopPropagation();
     if ( this.classList.contains("active") ){
         this.classList.remove("active");
-
         hideActive();
     } else {
         this.classList.add("active");
-
         showActive(this);
     }
 }
@@ -400,14 +436,14 @@ function selectorIsComplete(selector_object){
     return selector_object;
 }   
 
-function captureFunction(curr){
-    if (curr.capture==="text") { 
+function captureFunction(capture){
+    if (capture==="text") { 
         return function(ele){
             return ele.textContent;
         };
-    } else if (curr.capture.indexOf("attr-")===0) {
+    } else if (capture.indexOf("attr-")===0) {
         // return substring after first hyphen so that it works with data- attributes
-        var attribute = curr.capture.slice(curr.capture.indexOf("-")+1);
+        var attribute = capture.slice(capture.indexOf("-")+1);
         return function(ele){
             return ele.getAttribute(attribute);
         };

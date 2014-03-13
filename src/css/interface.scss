@@ -9,8 +9,12 @@ $gold: #FFD700;
 $dark-gold: #E0BD00;
 $white: #ffffff;
 
-/* Interface */
+/* general */
+body{
+    margin: 0;
+}
 
+/* Interface */
 #collectjs{
     z-index:100;
     position: fixed;
@@ -203,6 +207,35 @@ $white: #ffffff;
     padding: 25px;
     background: $white;
     border: 1px solid $dark-gray;
+
+    > div{
+        margin-bottom: 10px;
+    }
+
+    .capture{
+        background: #ddd;
+        padding: 2px;
+        cursor: pointer; 
+    }
+
+    .selected{
+        background: $light-green;
+    }
+}
+
+#rulePreview{
+    font-size: 16px;
+    overflow-y: scroll;
+    height: 200px;
+    border: 2px inset;
+
+    p{
+        margin-bottom: 5px;
+        padding: 2px 15px;
+    }
+    p:nth-of-type(even){
+        background: $light-gray;
+    }
 }
 
 @import 'options';

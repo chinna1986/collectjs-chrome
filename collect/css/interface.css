@@ -1,3 +1,7 @@
+/* general */
+body {
+  margin: 0; }
+
 /* Interface */
 #collectjs {
   z-index: 100;
@@ -143,6 +147,25 @@
   padding: 25px;
   background: white;
   border: 1px solid #444444; }
+  #ruleModal > div {
+    margin-bottom: 10px; }
+  #ruleModal .capture {
+    background: #ddd;
+    padding: 2px;
+    cursor: pointer; }
+  #ruleModal .selected {
+    background: #bddbce; }
+
+#rulePreview {
+  font-size: 16px;
+  overflow-y: scroll;
+  height: 200px;
+  border: 2px inset; }
+  #rulePreview p {
+    margin-bottom: 5px;
+    padding: 2px 15px; }
+  #rulePreview p:nth-of-type(even) {
+    background: #efefef; }
 
 /* _options.scss */
 /* options modal */
@@ -212,10 +235,10 @@
 
 .queryCheck {
   background: rgba(255, 215, 0, 0.25) !important;
-  border: 1px solid yellow; }
+  border: 1px solid yellow !important; }
   .queryCheck * {
     background: rgba(255, 215, 0, 0.25) !important;
-    border: 1px solid yellow; }
+    border: 1px solid yellow !important; }
   .queryCheck .queryCheck {
     background: rgba(255, 215, 0, 0.75) !important; }
 

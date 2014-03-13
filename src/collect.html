@@ -16,12 +16,12 @@
 	    	<span>Parent</span>
 	    	<section id="parentWrapper">
 	    		<span id="parentSelector"></span>
-	    		<button id="removeParent">X</button>
+	    		<button id="removeParent">&times;</button>
     		</section>
 	    </div>
 	    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
 	    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
-	    <div class="tab" id="closeCollect" title="remove parent selector">x</div>
+	    <div class="tab" id="closeCollect" title="remove parent selector">&times;</div>
 	</div>
 	<div id="tabGroups">
 	    <div id="optionGroup">
@@ -33,7 +33,15 @@
 <div id="ruleHolder">
 	<div id="ruleBackground"></div>
 	<div id="ruleModal">
-		<div id="rulePreview">
+		<div>
+			<label for="ruleName">Name:</label>
+			<input id="ruleName" name="ruleName" type="text"></input>
+		</div>
+		<div id="ruleHTML"></div>
+		<div id="rulePreview"></div>
+		<div id="ruleButtons">
+			<button id="saveRule">Save</button>
+			<button id="closeRuleModal">Close</button>
 		</div>
 	</div>
 </div>
