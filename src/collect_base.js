@@ -39,13 +39,11 @@ var Collect = {
             this.html.family.appendChild(this.family.ele);
             this.testSelector();
         }
+        document.getElementById('selectorButtons').style.display = "inline-block";
     },
     clearFamily: function(){
         this.family = undefined;
-        while (this.html.family.lastChild) {
-            this.html.family.removeChild(this.html.family.lastChild);
-        }
-        this.html.text.textContent = '';
+        resetInterface();
     },
     /*
     set the text of the SelectorFamily's selector string in the interface
@@ -136,16 +134,8 @@ var Collect = {
                 elements[i].classList.add("queryCheck");
             }
             document.getElementById("selectorCount").textContent = "Count: " + elements.length;
-            return {
-                count: elements.length,
-                first: elements[0]
-            };
         } else {
-            document.getElementById("selectorCount").textContent = 0;
-            return {
-                count: 0,
-                first: undefined
-            };
+            document.getElementById("selectorCount").textContent = "";
         }
     },
     /*
@@ -176,6 +166,8 @@ var Collect = {
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+
+        document.getElementById("clearSelector").addEventListener('click', removeSelector, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -223,6 +215,17 @@ function addInterface(){
     addNoSelect(div.querySelectorAll("*"));
 }
 
+function resetInterface(){
+    clearClass("queryCheck");
+    document.getElementById("selectorCount").textContent = "";
+    var family = Collect.html.family;
+    while (family.lastChild) {
+        family.removeChild(family.lastChild);
+    }
+    Collect.html.text.textContent = '';
+    document.getElementById('selectorButtons').style.display = "none";
+}
+
 /******************
     EVENTS
 ******************/
@@ -253,6 +256,12 @@ function removeInterface(event){
         curr = document.getElementById(elesToRemove[i]);
         curr.parentElement.removeChild(curr);
     }
+}
+
+function removeSelector(event){
+    event.stopPropagation();
+    event.preventDefault();
+    Collect.clearFamily();
 }
 
 function toggleTab(event){

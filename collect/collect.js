@@ -39,13 +39,11 @@ var Collect = {
             this.html.family.appendChild(this.family.ele);
             this.testSelector();
         }
+        document.getElementById('selectorButtons').style.display = "inline-block";
     },
     clearFamily: function(){
         this.family = undefined;
-        while (this.html.family.lastChild) {
-            this.html.family.removeChild(this.html.family.lastChild);
-        }
-        this.html.text.textContent = '';
+        resetInterface();
     },
     /*
     set the text of the SelectorFamily's selector string in the interface
@@ -136,16 +134,8 @@ var Collect = {
                 elements[i].classList.add("queryCheck");
             }
             document.getElementById("selectorCount").textContent = "Count: " + elements.length;
-            return {
-                count: elements.length,
-                first: elements[0]
-            };
         } else {
-            document.getElementById("selectorCount").textContent = 0;
-            return {
-                count: 0,
-                first: undefined
-            };
+            document.getElementById("selectorCount").textContent = "";
         }
     },
     /*
@@ -176,6 +166,8 @@ var Collect = {
         }, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+
+        document.getElementById("clearSelector").addEventListener('click', removeSelector, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -217,10 +209,21 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><div id=\"selectorText\"></div><div id=\"selectorCount\"></div><button id=\"saveRule\">Save Rule</button></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"Use the current selector as a parent selector for a group\">+</button>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    </div>    <div id=\"ruleGroup\">    </div></div></div><div id=\"ruleModal\"><div id=\"rulePreview\"></div></div>";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"Use the current selector as a parent selector for a group\">+</button>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    </div>    <div id=\"ruleGroup\">    </div></div></div><div id=\"ruleModal\"><div id=\"rulePreview\"></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
+}
+
+function resetInterface(){
+    clearClass("queryCheck");
+    document.getElementById("selectorCount").textContent = "";
+    var family = Collect.html.family;
+    while (family.lastChild) {
+        family.removeChild(family.lastChild);
+    }
+    Collect.html.text.textContent = '';
+    document.getElementById('selectorButtons').style.display = "none";
 }
 
 /******************
@@ -253,6 +256,12 @@ function removeInterface(event){
         curr = document.getElementById(elesToRemove[i]);
         curr.parentElement.removeChild(curr);
     }
+}
+
+function removeSelector(event){
+    event.stopPropagation();
+    event.preventDefault();
+    Collect.clearFamily();
 }
 
 function toggleTab(event){

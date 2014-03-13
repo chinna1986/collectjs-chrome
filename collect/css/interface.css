@@ -44,12 +44,10 @@
   border-color: #777;
   padding: 5px;
   background: white; }
-  #selectorPreview div {
-    display: inline-block; }
   #selectorPreview #selectorText {
     margin-right: 15px; }
 
-#saveRule {
+#selectorButtons {
   display: none; }
 
 /* Options */
