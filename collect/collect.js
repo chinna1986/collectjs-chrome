@@ -60,13 +60,11 @@ var Collect = {
         this.parentSelector = this.selector();
         if ( this.parentSelector  === "") {
             this.parentSelector = undefined;
-            return false;
         }
         // parent to select elements from is the first element in the page matching the selector
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
-        return true;
     },
     /*
     remove parent & parentSelector, attaches events to all non-.noSelect elements
@@ -153,21 +151,18 @@ var Collect = {
         this.bubbleEvents();
     },
     interfaceEvents: function(){
-        document.getElementById("toggleParent").addEventListener("click", function(event){
-            if ( Collect.parentSelector === undefined ) {
-                var parentSet = Collect.setParent();
-                if ( parentSet ) {
-                    this.textContent = "-";    
-                }
-            } else {
-                this.textContent = "+";
-                Collect.removeParent();
-            }
-        }, false);
-        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
-        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        // preview
+        document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
+        document.getElementById("addParent").addEventListener("click", addParentEvent, false);
+        document.getElementById("saveSelector").addEventListener("click", saveSelector, false);
 
-        document.getElementById("clearSelector").addEventListener('click', removeSelector, false);
+        // rule preview
+        document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
+
+        // tabs
+        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
+        document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -209,7 +204,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"Use the current selector as a parent selector for a group\">+</button>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\">X</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    </div>    <div id=\"ruleGroup\">    </div></div></div><div id=\"ruleModal\"><div id=\"rulePreview\"></div></div>";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Parent</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">X</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">x</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    </div>    <div id=\"ruleGroup\">    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div id=\"rulePreview\"></div></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -258,26 +253,51 @@ function removeInterface(event){
     }
 }
 
-function removeSelector(event){
+function removeSelectorEvent(event){
     event.stopPropagation();
     event.preventDefault();
     Collect.clearFamily();
 }
 
+function saveSelector(event){
+    var selector = Collect.selector(),
+        ele = document.querySelector(selector),
+        html;
+    if ( ele ) {
+        html = selectorTextHTML(ele)
+        document.getElementById("rulePreview").innerHTML = html;
+        document.getElementById("ruleHolder").style.display = "block";
+    }
+}
+
+function hideRuleModal(event){
+    document.getElementById("ruleHolder").style.display = "none";
+}
+
+function addParentEvent(event){
+    event.preventDefault();
+    Collect.setParent();
+    document.getElementById("parentWrapper").style.display = "inline";
+}
+
+function removeParentEvent(event){
+    event.preventDefault();
+    Collect.removeParent();
+    document.getElementById("parentWrapper").style.display = "none";
+}
+
 function toggleTab(event){
     event.preventDefault();
     event.stopPropagation();
-    var title;
     if ( this.classList.contains("active") ){
         this.classList.remove("active");
-        title = "Use the current selector as a parent selector for a group";
+
         hideActive();
     } else {
         this.classList.add("active");
-        title = "Remove the current parent selector";
+
         showActive(this);
     }
-    document.getElementById("toggleParent").setAttribute("title", title);
 }
 
 function showActive(ele){

@@ -60,13 +60,11 @@ var Collect = {
         this.parentSelector = this.selector();
         if ( this.parentSelector  === "") {
             this.parentSelector = undefined;
-            return false;
         }
         // parent to select elements from is the first element in the page matching the selector
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
-        return true;
     },
     /*
     remove parent & parentSelector, attaches events to all non-.noSelect elements
@@ -153,21 +151,18 @@ var Collect = {
         this.bubbleEvents();
     },
     interfaceEvents: function(){
-        document.getElementById("toggleParent").addEventListener("click", function(event){
-            if ( Collect.parentSelector === undefined ) {
-                var parentSet = Collect.setParent();
-                if ( parentSet ) {
-                    this.textContent = "-";    
-                }
-            } else {
-                this.textContent = "+";
-                Collect.removeParent();
-            }
-        }, false);
-        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
-        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        // preview
+        document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
+        document.getElementById("addParent").addEventListener("click", addParentEvent, false);
+        document.getElementById("saveSelector").addEventListener("click", saveSelector, false);
 
-        document.getElementById("clearSelector").addEventListener('click', removeSelector, false);
+        // rule preview
+        document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
+
+        // tabs
+        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
+        document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -258,26 +253,51 @@ function removeInterface(event){
     }
 }
 
-function removeSelector(event){
+function removeSelectorEvent(event){
     event.stopPropagation();
     event.preventDefault();
     Collect.clearFamily();
 }
 
+function saveSelector(event){
+    var selector = Collect.selector(),
+        ele = document.querySelector(selector),
+        html;
+    if ( ele ) {
+        html = selectorTextHTML(ele)
+        document.getElementById("rulePreview").innerHTML = html;
+        document.getElementById("ruleHolder").style.display = "block";
+    }
+}
+
+function hideRuleModal(event){
+    document.getElementById("ruleHolder").style.display = "none";
+}
+
+function addParentEvent(event){
+    event.preventDefault();
+    Collect.setParent();
+    document.getElementById("parentWrapper").style.display = "inline";
+}
+
+function removeParentEvent(event){
+    event.preventDefault();
+    Collect.removeParent();
+    document.getElementById("parentWrapper").style.display = "none";
+}
+
 function toggleTab(event){
     event.preventDefault();
     event.stopPropagation();
-    var title;
     if ( this.classList.contains("active") ){
         this.classList.remove("active");
-        title = "Use the current selector as a parent selector for a group";
+
         hideActive();
     } else {
         this.classList.add("active");
-        title = "Remove the current parent selector";
+
         showActive(this);
     }
-    document.getElementById("toggleParent").setAttribute("title", title);
 }
 
 function showActive(ele){
