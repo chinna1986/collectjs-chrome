@@ -179,7 +179,8 @@ var Collect = {
             }
 
             if ( storage.sites[host].indices[window.location.href] ) {
-                document.getElementById("addIndex").classList.add("set");
+                document.getElementById("indexTab").classList.add("set");
+                document.getElementById("addIndex").checked = true;
             }
         });
     },
@@ -278,10 +279,11 @@ function unhighlightElement(event){
 }
 
 function toggleIndex(event){
-    var tab = this;
+    
     chrome.storage.local.get("sites", function(storage){
         var host = window.location.hostname,
-            url = window.location.href;
+            url = window.location.href,
+            tab = document.getElementById("indexTab");
         // adding
         if ( !tab.classList.contains("set")) {
             // set right away, remove if there is an error

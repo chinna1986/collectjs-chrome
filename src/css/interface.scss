@@ -90,11 +90,16 @@ body{
 
 /* Options */
 #collectOptions{
+    position: absolute;
+    bottom: 25px;
     right: 0;
 }
 
 #collectTabs{
+    position: absolute;
+    top: -30px;
     height: 30px;
+    right: 0;
     background: $gold;
     color: #000;
     padding: 0;
@@ -155,17 +160,10 @@ body{
     display: inline-block;
 }
 
-#collectOptions{
-    position: absolute;
-    bottom: 25px;
-}
-
 #tabGroups{
-    position: absolute;
-    right: 0;
-    bottom: 30px;
     background: $white;
-
+    font-size: 16px;
+    min-width: 500px;
     .group{
         border-color: $dark-gray;
         border-style: solid;
