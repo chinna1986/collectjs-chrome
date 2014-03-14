@@ -14,6 +14,8 @@ var Collect = {
         activeTab: undefined,
         activeGroup: undefined
     },
+    activeRule: {},
+    rules: {},
     /*
     create a SelectorFamily given a css selector string
     */
@@ -159,19 +161,29 @@ var Collect = {
             text: document.getElementById("selectorText"),
             parent: document.getElementById("parentSelector")
         }
+        // make sure there is a rules object for the current hostname
+        setupHostname();
+        this.buildRules();
         this.turnOn();
         this.interfaceEvents();
         this.bubbleEvents();
+    },
+    buildRules: function(){
+        chrome.storage.local.get('rules', function loadRulesChrome(storage){
+            var host = window.location.hostname;
+            Collect.rules = storage.rules[host];
+        });
     },
     interfaceEvents: function(){
         // preview
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
         document.getElementById("addParent").addEventListener("click", addParentEvent, false);
-        document.getElementById("saveSelector").addEventListener("click", saveRuleModal, false);
+        document.getElementById("saveSelector").addEventListener("click", showRuleModal, false);
 
         // rule preview
         document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
         document.getElementById("closeRuleModal").addEventListener("click", hideRuleModal, false);
+        document.getElementById("saveRule").addEventListener("click", saveRuleEvent, false);
 
         // tabs
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
@@ -218,7 +230,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Parent</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\">    </div>    <div id=\"ruleGroup\">    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Parent</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -273,7 +285,7 @@ function removeSelectorEvent(event){
     Collect.clearFamily();
 }
 
-function saveRuleModal(event){
+function showRuleModal(event){
     var ele = Collect.selectorElements(true),
         ruleHTML = document.getElementById("ruleHTML"),
         html, capture;
@@ -290,14 +302,17 @@ function capturePreview(event){
     if ( !this.classList.contains("selected") ){
         clearClass("selected");
         var elements = Collect.selectorElements(),
-            fn = captureFunction(this.dataset.capture),
+            capture = this.dataset.capture,
+            fn = captureFunction(capture),
             previewHTML = "";
+        Collect.activeRule.capture = capture;
         for ( var i=0, len=elements.length; i<len; i++ ) {
             previewHTML += "<p>" + fn(elements[i]) + "</p>";
         }
         this.classList.add("selected");
         document.getElementById("rulePreview").innerHTML = previewHTML;
     } else {
+        Collect.activeRule.capture = undefined;
         document.getElementById("rulePreview").innerHTML = "";
         this.classList.remove("selected");
     }
@@ -305,10 +320,85 @@ function capturePreview(event){
 }
 
 function hideRuleModal(event){
+    hideModal();
+}
+
+function hideModal(){
     document.getElementById("rulePreview").innerHTML = "";
     document.getElementById("ruleHTML").innerHTML = "";
     document.getElementById("ruleName").value = "";
     document.getElementById("ruleHolder").style.display = "none";
+}
+
+function saveRuleEvent(event){
+    var name = document.getElementById("ruleName").value,
+        selector = document.getElementById("selectorText").textContent,
+        capture = Collect.activeRule.capture,
+        rule;
+    if ( name === "") {
+        return;
+    }
+    if ( selector === "" ) {
+        return;
+    }
+    if ( capture === undefined ) {
+        return;
+    }
+    rule = {
+        name: name,
+        capture: capture,
+        selector: selector
+    };
+    saveRule(rule);
+    hideModal();
+    resetInterface();
+    document.getElementById("savedRuleHolder").appendChild(ruleHTML(rule));
+}
+
+
+function ruleHTML(obj){
+    var span = document.createElement("span"),
+        nametag = document.createElement("span"),
+        deltog = document.createElement("span");
+    span.dataset.selector = obj.selector;
+    span.dataset.name = obj.name;
+    span.dataset.capture;
+
+    span.classList.add("collectGroup", "noSelect");
+    nametag.classList.add("savedSelector", "noSelect");
+    deltog.classList.add("deltog", "noSelect");
+
+    span.appendChild(nametag);
+    span.appendChild(deltog);
+
+    nametag.textContent = obj.name;
+    deltog.innerHTML = "&times;"
+
+    nametag.addEventListener("mouseenter", previewSavedRule, false);
+    nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
+    deltog.addEventListener("click", deleteRuleEvent, false);
+    
+    return span;
+}
+
+function previewSavedRule(event){
+    clearClass("queryCheck");
+    clearClass("collectHighlight");
+    var parent = this.parentElement,
+        selector = parent.dataset.selector,
+        elements = document.querySelectorAll(selector+Collect.not);
+    addClass("savedPreview", elements);
+}
+
+function unpreviewSavedRule(event){
+    clearClass("savedPreview");
+}
+
+function deleteRuleEvent(event){
+    var parent = this.parentElement,
+        rule = parent.dataset.name;
+    deleteRule(rule.name);
+    parent.parentElement.removeChild(parent);
 }
 
 function addParentEvent(event){
@@ -358,14 +448,12 @@ function hideActive(){
 
 Collect.setup();
 
-/*********** OLD STUFF ***************/
-
 /********************
 UTILITY FUNCTIONS
 ********************/
 
 // check if an element has a class
-function hasClass(ele, name){
+function hasClass(ele, name){   
     return ele.classList.contains(name);
 }
 
@@ -448,153 +536,39 @@ function captureFunction(capture){
         };
     }
 }
-/*
-//GROUPS
-
-//create option elements for each of the groups for the current site
-function loadGroups(){
-    chrome.storage.local.get('rules', function loadGroupsChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules,
-            groups = rules[host],
-            parent = document.getElementById('collect_selector_groups');
-        // instantiate if it doesn't exist
-        if ( groups === undefined ) {
-            rules[host] = {'default': {}};
-            chrome.storage.local.set({'rules': rules});
-            groups = rules[host];
-        }
-        for ( var key in groups ) {
-            parent.appendChild(newGroupOption(key));
-        }
-        loadSavedSelectors();
-    });
-}
-
-function loadSavedSelectors(){
-    chrome.storage.local.get('rules', function loadSavedChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules,
-            groupName = currentGroup(),
-            group = rules[host][groupName],
-            selectors = '';
-        for ( var key in group ) {
-            selectors += savedSelectorHTML(group[key]);
-        }
-        document.getElementById('collect_selectors').innerHTML = selectors;
-    })
-}
-
-function addGroup(name){
-    chrome.storage.local.get('rules', function addGroupChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules,
-            groups = rules[host],
-            parent = document.getElementById('collect_selector_groups');
-        // don't override if it already exists
-        if ( groups[name] === undefined ) {
-            rules[host][name] = {}
-            chrome.storage.local.set({'rules': rules});
-            parent.appendChild(newGroupOption(name, true));
-        }
-    });
-}
-//get the option element that is currently selected
-function currentGroup(){
-    var groups = document.getElementById('collect_selector_groups'),
-        opts = groups.getElementsByTagName('option'),
-        curr;
-    for ( var i=0, len=opts.length; i<len; i++ ){
-        curr = opts[i];
-        if ( curr.selected ) {
-            return curr.value;
-        }
-    }
-    return '';
-}
-
-function newGroupOption(name, selected){
-    var option = document.createElement('option');
-    if ( selected ) {
-        option.setAttribute('selected','selected');
-    }
-    option.innerHTML = name;
-    option.setAttribute('value', name);
-    return option;
-}
 
 //    STORAGE
-//create the group and add the rules
-//currently overrides if there is an existing group with that name
-function addLoadedGroups(groups){
-    chrome.storage.local.get('rules', function setLoadedRules(storage){
+function setupHostname(){
+    chrome.storage.local.get('rules', function setupHostnameChrome(storage){
         var host = window.location.hostname,
-            parent = document.getElementById('collect_selector_groups'),
-            len = groups.length,
-            selectors = '',
-            groupRules, curr, currName, currRules, rule;
-
-        for ( var i=0; i<len; i++ ) {
-            curr = groups[i];
-            currName = curr.name;
-            currRules = curr.rules;
-            groupRules = storage.rules[host][currName];
-            // only create group if it doesn't already exist
-            if ( groupRules === undefined ) {
-                groupRules = {};
-                // set select option to selected for first group
-                parent.appendChild(newGroupOption(currName, (i===0)));
-            }           
-
-            for ( var r=0, rulesLen=currRules.length; r<rulesLen; r++ ) {
-                rule = {
-                    'name': currRules[r],
-                    'capture': '',
-                    'selector': '',
-                    'index': ''
-                };
-                rule.incomplete = true;
-                groupRules[rule.name] = rule;
-                if ( i === 0 ) {
-                    selectors += savedSelectorHTML(rule);
-                }    
-            }
-            storage.rules[host][currName] = groupRules;
+            rules = storage.rules;
+        if ( !rules[host] ) {
+            rules[host] = {}
+            chrome.storage.local.set({'rules': rules});    
         }
-        document.getElementById('collect_selectors').innerHTML = selectors;
-        chrome.storage.local.set({'rules': storage.rules});
     });
 }
 
-function saveRule(group, rule){
+function saveRule(rule){
     chrome.storage.local.get('rules', function saveRuleChrome(storage){
         var host = window.location.hostname,
             rules = storage.rules,
             name = rule.name;
-        rules[host][group][name] = rule;
+        rules[host][name] = rule;
         chrome.storage.local.set({'rules': rules});
     });
 }
 
-function deleteRule(group, name){
+function deleteRule(name){
     chrome.storage.local.get('rules', function deleteRuleChrome(storage){
         var host = window.location.hostname,
             rules = storage.rules;
-        delete rules[host][group][name];
+        delete rules[host][name];
         chrome.storage.local.set({'rules': rules});
     });  
 }
-*/
+
 //GENERAL HTML RETURNING FUNCTIONS
-// add interactive identifier for saved selectors
-function savedSelectorHTML(obj){
-    obj = selectorIsComplete(obj);
-    return '<span class="collect_group no_select">' + 
-        '<span class="' + (obj.incomplete ? 'incomplete_selector' : 'saved_selector') +
-        ' no_select" data-selector="' + obj.selector + 
-        '" data-capture="' + obj.capture + '" data-index="' + obj.index + '"">' + obj.name + 
-        '</span><span class="deltog no_select">x</span></span>';
-}
 
 //given an element, return html for selector text with 
 //"capture"able parts wrapped
