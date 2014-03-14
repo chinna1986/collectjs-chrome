@@ -163,15 +163,24 @@ var Collect = {
         }
         // make sure there is a rules object for the current hostname
         setupHostname();
-        this.buildRules();
+        this.loadSavedItems();
         this.turnOn();
         this.interfaceEvents();
         this.bubbleEvents();
     },
-    buildRules: function(){
-        chrome.storage.local.get('rules', function loadRulesChrome(storage){
-            var host = window.location.hostname;
-            Collect.rules = storage.rules[host];
+    loadSavedItems: function(){
+        chrome.storage.local.get('sites', function loadRulesChrome(storage){
+            var host = window.location.hostname,
+                holder = document.getElementById("savedRuleHolder")
+            // rules
+            Collect.rules = storage.sites[host].rules;
+            for (var key in Collect.rules){
+                holder.appendChild(ruleHTML(Collect.rules[key]));
+            }
+
+            if ( storage.sites[host].indices[window.location.href] ) {
+                document.getElementById("addIndex").classList.add("set");
+            }
         });
     },
     interfaceEvents: function(){
@@ -187,8 +196,11 @@ var Collect = {
 
         // tabs
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
+
+        
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -230,7 +242,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Parent</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
+    div.innerHTML = "<div id=\"collectMain\">    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><span id=\"selectorCount\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"clearSelector\">Clear</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Parent</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab\" id=\"addIndex\">Index Page</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -264,6 +276,41 @@ function highlightElement(event){
 function unhighlightElement(event){
     this.classList.remove("collectHighlight");
 }
+
+function toggleIndex(event){
+    var tab = this;
+    chrome.storage.local.get("sites", function(storage){
+        var host = window.location.hostname,
+            url = window.location.href;
+        // adding
+        if ( !tab.classList.contains("set")) {
+            // set right away, remove if there is an error
+            tab.classList.add("set");
+            chrome.runtime.sendMessage({'type': 'addindex', 'url': url}, function addIndexChrome(response){
+                if ( !response.error ){
+                    storage.sites[host].indices[url] = true;
+                    chrome.storage.local.set({"sites": storage.sites});
+                } else {
+                    tab.classList.remove("set");
+                }
+            });
+        }
+        // removing
+        else {
+            // remove right away, reset if there is an error
+            tab.classList.remove("set");
+            delete storage.sites[host].indices[url];
+            chrome.runtime.sendMessage({'type': 'removeindex', 'url': url}, function removeIndexChrome(response){
+                if ( !response.error ){
+                    chrome.storage.local.set({"sites": storage.sites});
+                } else {
+                    tab.classList.add("set");
+                }
+            });
+        }
+    });
+}
+
 
 function removeInterface(event){
     event.stopPropagation();
@@ -396,8 +443,8 @@ function unpreviewSavedRule(event){
 
 function deleteRuleEvent(event){
     var parent = this.parentElement,
-        rule = parent.dataset.name;
-    deleteRule(rule.name);
+        name = parent.dataset.name;
+    deleteRule(name);
     parent.parentElement.removeChild(parent);
 }
 
@@ -539,32 +586,35 @@ function captureFunction(capture){
 
 //    STORAGE
 function setupHostname(){
-    chrome.storage.local.get('rules', function setupHostnameChrome(storage){
-        var host = window.location.hostname,
-            rules = storage.rules;
-        if ( !rules[host] ) {
-            rules[host] = {}
-            chrome.storage.local.set({'rules': rules});    
-        }
+    chrome.storage.local.get("sites", function setupHostnameChrome(storage){
+        var host = window.location.hostname;
+        if ( ! storage.sites[host] ) {
+            storage.sites[host] = {
+                rules: {},
+                indices: {}
+            };
+            chrome.storage.local.set({'sites': storage.sites});
+        }        
     });
 }
 
 function saveRule(rule){
-    chrome.storage.local.get('rules', function saveRuleChrome(storage){
+    chrome.storage.local.get('sites', function saveRuleChrome(storage){
         var host = window.location.hostname,
-            rules = storage.rules,
+            site = storage.sites[host],
             name = rule.name;
-        rules[host][name] = rule;
-        chrome.storage.local.set({'rules': rules});
+        site.rules[name] = rule;
+        storage.sites[host] = site;
+        chrome.storage.local.set({'sites': storage.sites});
     });
 }
 
 function deleteRule(name){
-    chrome.storage.local.get('rules', function deleteRuleChrome(storage){
+    chrome.storage.local.get('sites', function deleteRuleChrome(storage){
         var host = window.location.hostname,
-            rules = storage.rules;
-        delete rules[host][name];
-        chrome.storage.local.set({'rules': rules});
+            sites = storage.sites;
+        delete sites[host].rules[name];
+        chrome.storage.local.set({'sites': sites});
     });  
 }
 

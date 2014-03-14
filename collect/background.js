@@ -3,8 +3,8 @@ CollectJS background page
 */
 
 chrome.storage.local.get(null, function(storage) {
-    if ( !storage.rules ) {
-        chrome.storage.local.set({"rules": {}});
+    if ( !storage.sites ) {
+        chrome.storage.local.set({"sites": {}});
     }
 });
 
@@ -20,18 +20,24 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
     if ( message ) {
         switch ( message.type ) {
             case "upload":
-                uploadData(message.msg, sendResponse);
+                xhr("POST", "http://localhost:5000/upload", message.msg, sendResponse, true);
                 // return true so sendResponse does not become invalid
                 // http://developer.chrome.com/extensions/runtime.html#event-onMessage
+                return true;
+            case "addindex":
+                xhr("GET", "http://localhost:5000/addindex", "name="+message.url, sendResponse);
+                return true;
+            case "removeindex":
+                xhr("GET", "http://localhost:5000/removeindex", "name="+message.url, sendResponse);
                 return true;
         }
     }
 });
 
-function uploadData(data, callback){
+// basic ajax request that returns data from server on success, otherwise object with error=true
+function xhr(type, url, data, callback, json){
     // url is the endpoint that you're uploading the collect rules to
-    var url = "http://localhost:5000/upload",
-        xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest();
 
     xhr.onload = function(event){
         var resp = JSON.parse(xhr.responseText);
@@ -41,8 +47,14 @@ function uploadData(data, callback){
         callback({"error": true});
     }
 
-    xhr.open("POST", url);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(data);
+    if ( type === "GET" ) {
+        xhr.open("GET", url + "?" + data);
+        xhr.send();
+    } else if ( type === "POST") {
+        if ( json ) {
+            xhr.setRequestHeader("Content-Type", "application/json");
+        }
+        xhr.open("POST", url);
+        xhr.send(data);
+    }
 }
-
