@@ -17,6 +17,10 @@ body {
     position: absolute;
     bottom: 30px; }
 
+/* main */
+#selectorHolder {
+  display: inline-block; }
+
 /* Selector */
 .selectorGroup {
   display: inline-block;
@@ -53,6 +57,13 @@ body {
 
 #selectorButtons {
   display: none; }
+  #selectorButtons button {
+    cursor: pointer;
+    padding: 3px 5px;
+    background: white;
+    border: 0; }
+  #selectorButtons button:hover {
+    background: #efefef; }
 
 /* Options */
 #collectOptions {

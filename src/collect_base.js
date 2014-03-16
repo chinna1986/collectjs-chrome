@@ -148,7 +148,7 @@ var Collect = {
         for ( var i=0, len=elements.length; i<len; i++ ) {
             elements[i].classList.add("queryCheck");
         }
-        count = elements.length ? "Count: " + elements.length : "";
+        count = elements.length ? elements.length : "";
         document.getElementById("selectorCount").textContent = count;
     },
     /*
@@ -453,12 +453,14 @@ function deleteRuleEvent(event){
 function addParentEvent(event){
     event.preventDefault();
     Collect.setParent();
+    document.getElementById("addParent").style.display = "none";
     document.getElementById("parentWrapper").style.display = "inline";
 }
 
 function removeParentEvent(event){
     event.preventDefault();
     Collect.removeParent();
+    document.getElementById("addParent").style.display = "inline";
     document.getElementById("parentWrapper").style.display = "none";
 }
 

@@ -1,13 +1,13 @@
 <div id="collectMain">
+	<span id="selectorCount" title="number of elements current selector matches"></span>
     <div id="selectorHolder"></div>
 </div>
 <div id="selectorPreview" class="topbar">
 	<span id="selectorText"></span>
-	<span id="selectorCount"></span>
 	<div id="selectorButtons">
 		<button id="saveSelector">Save</button>
+		<button id="addParent" title="Use the current selector as a parent selector">Set Parent</button>
 		<button id="clearSelector">Clear</button>
-		<button id="addParent" title="Use the current selector as a parent selector">Parent</button>
 	</div>
 </div>
 <div id="collectOptions" class="topbar">
@@ -21,7 +21,7 @@
 	    </div>
 	    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
 	    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
-	    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index Pages</div>
+	    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index</div>
 	    <div class="tab" id="closeCollect" title="remove parent selector">&times;</div>
 	</div>
 	<div id="tabGroups">

@@ -33,6 +33,12 @@ body{
 
 }
 
+/* main */
+
+#selectorHolder{
+    display: inline-block;
+}
+
 /* Selector */
 
 .selectorGroup{
@@ -86,6 +92,17 @@ body{
 
 #selectorButtons{
     display: none;
+
+    button{
+        cursor: pointer;
+        padding: 3px 5px;
+        background: $white;
+        border: 0;
+    }
+
+    button:hover{
+        background: $light-gray;
+    }
 }
 
 /* Options */
