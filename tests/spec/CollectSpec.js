@@ -3,33 +3,21 @@ describe("collect", function(){
 });
 
 describe("html functions", function(){
-    describe("savedSelectorHTML", function(){
+    describe("ruleHTML", function(){
         var selectorObj;
         beforeEach(function(){
             selectorObj = {
                 name: 'link',
                 selector: 'a',
-                capture: 'attr-href',
-                index: ''
+                capture: 'attr-href'
             };
         });
         it("sets saved_selector class when complete", function(){
-            var html = '<span class="collect_group no_select">' + 
-                '<span class="saved_selector no_select" data-selector="a" data-capture="attr-href"' +
-                ' data-index=""">link</span><span class="deltog no_select">x</span></span>';
-            expect(savedSelectorHTML(selectorObj)).toEqual(html);
+            var html = '<span data-selector="a" data-name="link" class="collectGroup noSelect">' +
+                '<span class="savedSelector noSelect">link</span>' +
+                '<span class="deltog noSelect">×</span></span>';
+            expect(ruleHTML(selectorObj).outerHTML).toEqual(html);
         });
-        it("sets incomplete_selector class when incomplete", function(){
-           selectorObj.selector = '';
-           var html = '<span class="collect_group no_select">' + 
-                '<span class="incomplete_selector no_select" data-selector="" data-capture="attr-href"' +
-                ' data-index=""">link</span><span class="deltog no_select">x</span></span>';
-            expect(savedSelectorHTML(selectorObj)).toEqual(html);
-        });
-    });
-
-    describe("selectorTextHTML", function(){
-
     });
 
     describe("cleanElement", function(){

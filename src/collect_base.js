@@ -16,6 +16,7 @@ var Collect = {
     },
     activeRule: {},
     rules: {},
+    indexPage: false,
     /*
     create a SelectorFamily given a css selector string
     */
@@ -179,6 +180,7 @@ var Collect = {
             }
 
             if ( storage.sites[host].indices[window.location.href] ) {
+                Collect.indexPage= true;
                 document.getElementById("indexTab").classList.add("set");
                 document.getElementById("addIndex").checked = true;
             }
@@ -336,12 +338,12 @@ function removeSelectorEvent(event){
 
 function showRuleModal(event){
     var ele = Collect.selectorElements(true),
-        ruleHTML = document.getElementById("ruleHTML"),
+        rule = document.getElementById("ruleHTML"),
         html, capture;
     if ( ele ) {
         html = selectorTextHTML(ele)
-        ruleHTML.innerHTML = html;
-        capture = ruleHTML.getElementsByClassName("capture");
+        rule.innerHTML = html;
+        capture = rule.getElementsByClassName("capture");
         addEvents(capture, "click", capturePreview);
         document.getElementById("ruleHolder").style.display = "block";
     }
@@ -396,7 +398,8 @@ function saveRuleEvent(event){
     rule = {
         name: name,
         capture: capture,
-        selector: selector
+        selector: selector,
+        index: Collect.indexPage
     };
     saveRule(rule);
     hideModal();
