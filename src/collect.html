@@ -1,39 +1,41 @@
+<div id="topbar">
+	<div id="selectorPreview" class="topbarGroup">
+		<span id="selectorText"></span>
+		<div id="selectorButtons">
+			<button id="saveSelector">Save</button>
+			<button id="addParent" title="Use the current selector as a parent selector">Set Parent</button>
+			<button id="clearSelector">Clear</button>
+		</div>
+	</div>
+	<div id="collectOptions" class="topbarGroup">
+		<div id="collectTabs">
+		    <div class="tab">
+		    	<span>Parent</span>
+		    	<section id="parentWrapper">
+		    		<span id="parentSelector"></span>
+		    		<button id="removeParent">&times;</button>
+	    		</section>
+		    </div>
+		    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
+		    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
+		    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index</div>
+		    <div class="tab" id="closeCollect" title="remove parent selector">&times;</div>
+		</div>
+		<div id="tabGroups">
+		    <div id="optionGroup" class="group">
+		    </div>
+		    <div id="ruleGroup" class="group">
+		    	<div id="savedRuleHolder"></div>
+		    </div>
+		    <div id="indexGroup" class="group">
+		    	<label for="addIndex">Index Page:</label><input type="checkbox" id="addIndex">
+		    </div>
+		</div>
+	</div>
+</div>
 <div id="collectMain">
 	<span id="selectorCount" title="number of elements current selector matches"></span>
     <div id="selectorHolder"></div>
-</div>
-<div id="selectorPreview" class="topbar">
-	<span id="selectorText"></span>
-	<div id="selectorButtons">
-		<button id="saveSelector">Save</button>
-		<button id="addParent" title="Use the current selector as a parent selector">Set Parent</button>
-		<button id="clearSelector">Clear</button>
-	</div>
-</div>
-<div id="collectOptions" class="topbar">
-	<div id="collectTabs">
-	    <div class="tab">
-	    	<span>Parent</span>
-	    	<section id="parentWrapper">
-	    		<span id="parentSelector"></span>
-	    		<button id="removeParent">&times;</button>
-    		</section>
-	    </div>
-	    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
-	    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
-	    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index</div>
-	    <div class="tab" id="closeCollect" title="remove parent selector">&times;</div>
-	</div>
-	<div id="tabGroups">
-	    <div id="optionGroup" class="group">
-	    </div>
-	    <div id="ruleGroup" class="group">
-	    	<div id="savedRuleHolder"></div>
-	    </div>
-	    <div id="indexGroup" class="group">
-	    	<label for="addIndex">Index Page:</label><input type="checkbox" id="addIndex">
-	    </div>
-	</div>
 </div>
 <div id="ruleHolder">
 	<div id="ruleBackground"></div>

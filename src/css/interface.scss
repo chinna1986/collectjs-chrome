@@ -25,57 +25,18 @@ body{
     background: $white;
     font-size: 20px;
     font-family: sans-serif;
-
-    .topbar{
-        position: absolute;
-        bottom: 30px;
-    }
-
 }
 
-/* main */
-
-#selectorHolder{
-    display: inline-block;
-}
-
-/* Selector */
-
-.selectorGroup{
-    display: inline-block;
-    white-space: nowrap;
-    padding: 2px 0 0 2px;
+#topbar{
     position: relative;
-    cursor: pointer;   
 
-    *{
-        font-size: 16px;
-    }
-
-    .toggleable{
-        color: $dark-gray;
-        border-bottom: 1px solid #777;   
-    }
-
-    .toggleable.off{
-        color: #ccc;
-    }
-
-    .deltog, .nthtype, .onlychild{
-        font-weight: bold;
-        padding: 0 3px 0 2px;
-        color: $white;
-    }
-}
-
-.selectorGroup:hover{
-    .deltog, .onlychild, .nthtype{
-        color: #777;
+    .topbarGroup{
+        position: absolute;
+        bottom: 0;
     }
 }
 
 /* Preview */
-
 #selectorPreview{
     left: 0;
     min-width: 250px;
@@ -107,8 +68,6 @@ body{
 
 /* Options */
 #collectOptions{
-    position: absolute;
-    bottom: 25px;
     right: 0;
 }
 
@@ -218,6 +177,47 @@ body{
     }
 }
 
+/* main */
+
+#selectorHolder{
+    display: inline-block;
+}
+
+/* Selector */
+
+.selectorGroup{
+    display: inline-block;
+    white-space: nowrap;
+    padding: 2px 0 0 2px;
+    position: relative;
+    cursor: pointer;   
+
+    *{
+        font-size: 16px;
+    }
+
+    .toggleable{
+        color: $dark-gray;
+        border-bottom: 1px solid #777;   
+    }
+
+    .toggleable.off{
+        color: #ccc;
+    }
+
+    .deltog, .nthtype, .onlychild{
+        font-weight: bold;
+        padding: 0 3px 0 2px;
+        color: $white;
+    }
+}
+
+.selectorGroup:hover{
+    .deltog, .onlychild, .nthtype{
+        color: #777;
+    }
+}
+
 /* ruleModal */
 
 #ruleHolder{
@@ -275,5 +275,4 @@ body{
     }
 }
 
-@import 'options';
 @import 'page';

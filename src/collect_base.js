@@ -144,6 +144,7 @@ var Collect = {
     */
     testSelector: function(){
         clearClass("queryCheck");
+        clearClass("collectHighlight");
         var elements = this.selectorElements(),
             count;
         for ( var i=0, len=elements.length; i<len; i++ ) {

@@ -16,6 +16,7 @@ var Collect = {
     },
     activeRule: {},
     rules: {},
+    indexPage: false,
     /*
     create a SelectorFamily given a css selector string
     */
@@ -143,6 +144,7 @@ var Collect = {
     */
     testSelector: function(){
         clearClass("queryCheck");
+        clearClass("collectHighlight");
         var elements = this.selectorElements(),
             count;
         for ( var i=0, len=elements.length; i<len; i++ ) {
@@ -179,6 +181,7 @@ var Collect = {
             }
 
             if ( storage.sites[host].indices[window.location.href] ) {
+                Collect.indexPage= true;
                 document.getElementById("indexTab").classList.add("set");
                 document.getElementById("addIndex").checked = true;
             }
@@ -243,7 +246,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectMain\"><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span>    <div id=\"selectorHolder\"></div></div><div id=\"selectorPreview\" class=\"topbar\"><span id=\"selectorText\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbar\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
+    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><span id=\"selectorText\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span>    <div id=\"selectorHolder\"></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -336,12 +339,12 @@ function removeSelectorEvent(event){
 
 function showRuleModal(event){
     var ele = Collect.selectorElements(true),
-        ruleHTML = document.getElementById("ruleHTML"),
+        rule = document.getElementById("ruleHTML"),
         html, capture;
     if ( ele ) {
         html = selectorTextHTML(ele)
-        ruleHTML.innerHTML = html;
-        capture = ruleHTML.getElementsByClassName("capture");
+        rule.innerHTML = html;
+        capture = rule.getElementsByClassName("capture");
         addEvents(capture, "click", capturePreview);
         document.getElementById("ruleHolder").style.display = "block";
     }
@@ -396,7 +399,8 @@ function saveRuleEvent(event){
     rule = {
         name: name,
         capture: capture,
-        selector: selector
+        selector: selector,
+        index: Collect.indexPage
     };
     saveRule(rule);
     hideModal();
