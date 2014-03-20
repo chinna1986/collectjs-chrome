@@ -19,7 +19,7 @@
 		    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
 		    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
 		    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index</div>
-		    <div class="tab" id="closeCollect" title="remove parent selector">&times;</div>
+		    <div class="tab" id="closeCollect" title="close collectjs">&times;</div>
 		</div>
 		<div id="tabGroups">
 		    <div id="optionGroup" class="group">
@@ -41,11 +41,12 @@
 	<div id="ruleBackground"></div>
 	<div id="ruleModal">
 		<div id="ruleHTMLHolder">
-			<div id="ruleCyclePrevious" class="cycle" title="previous element matching selector">&lt;&lt;</div>
-			<div id="ruleHTML"></div>
-			<div id="ruleCycleNext" class="cycle" title="next element matching selector">&gt;&gt;</div>
+			<span id="ruleCyclePrevious" class="cycle" title="previous element matching selector">&lt;&lt;</span>
+			<span id="ruleHTML"></span>
+			<span id="ruleCycleNext" class="cycle" title="next element matching selector">&gt;&gt;</span>
 		</div>
-		<div>
+		<div id="ruleAlert"></div>
+		<div id="ruleInputs">
 			<label for="ruleName">Name:</label>
 			<input id="ruleName" name="ruleName" type="text"></input>
 			<label for="ruleAttr">Attribute:</label>

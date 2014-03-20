@@ -169,7 +169,7 @@ body {
   top: 25%;
   left: 25%;
   width: 50%;
-  height: 300px;
+  min-height: 300px;
   padding: 25px;
   background: white;
   border: 1px solid #444444; }
@@ -182,13 +182,19 @@ body {
   #ruleModal .selected {
     background: #bddbce; }
 
-#ruleHTMLHolder div {
-  display: inline-block; }
 #ruleHTMLHolder .cycle {
   background: #efefef;
   margin: 0 10px;
   padding: 2px 3px;
   cursor: pointer; }
+
+#ruleAlert {
+  font-size: 0.75em; }
+
+#ruleInputs .error {
+  border-color: #c91900;
+  border-style: solid;
+  border-width: 2px; }
 
 #rulePreview {
   font-size: 16px;

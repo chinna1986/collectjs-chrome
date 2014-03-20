@@ -409,17 +409,26 @@ function saveRuleEvent(event){
         selector = document.getElementById("selectorText").textContent,
         capture = document.getElementById("ruleAttr").value,
         range = document.getElementById("ruleRange").value,
+        error = false,
         rule;
+    clearErrors();
+    document.getElementById("ruleAlert").innerHTML = "";
     if ( name === "") {
-        // some message that name isn't define
-        return;
+        error = true;
+        ruleAlertMessage("Name needs to be filled in");
+        document.getElementById("ruleName").classList.add("error");
     }
     if ( selector === "" ) {
-        // some message that selector isn't define
-        return;
+        error = true;
+        ruleAlertMessage("No css selector");
     }
     if ( capture === "" ) {
+        error = true;
+        ruleAlertMessage("No attribute selected");
+        document.getElementById("ruleAttr").classList.add("error");
         // some message that capture isn't define
+    }
+    if ( error ) {
         return;
     }
     rule = {
@@ -431,12 +440,25 @@ function saveRuleEvent(event){
     if ( range !== "" ) {
         rule.range = range;
     }
+    if ( Collect.parentSelector ) {
+        rule.parent = Collect.parentSelector;
+    }
     saveRule(rule);
     hideModal();
     resetInterface();
     document.getElementById("savedRuleHolder").appendChild(ruleHTML(rule));
 }
 
+function clearErrors(){
+    document.getElementById("ruleName").classList.remove("error");
+    document.getElementById("ruleAttr").classList.remove("error");
+}
+
+function ruleAlertMessage(msg){
+    var p = document.createElement("p");
+    p.textContent = msg;
+    document.getElementById("ruleAlert").appendChild(p);
+}
 
 function ruleHTML(obj){
     var span = document.createElement("span"),
@@ -448,6 +470,9 @@ function ruleHTML(obj){
     span.dataset.index = obj.index;
     if ( obj.range) {
         span.dataset.range = obj.range;
+    }
+    if ( obj.parent ) {
+        span.dataset.parent = obj.parent;
     }
 
     span.classList.add("collectGroup", "noSelect");
