@@ -137,6 +137,10 @@ var Collect = {
             return document.querySelectorAll(longSelector);    
         }
     },
+    matchSelector: function(){
+        this.elements = this.selectorElements();
+        this.elementIndex = 0;
+    },
     /*
     returns the first element matching the current selector as well as how many total elements
     match the selector string
@@ -196,12 +200,16 @@ var Collect = {
         document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
         document.getElementById("closeRuleModal").addEventListener("click", hideRuleModal, false);
         document.getElementById("saveRule").addEventListener("click", saveRuleEvent, false);
+        document.getElementById("ruleCyclePrevious").addEventListener("click", showPreviousElement, false);
+        document.getElementById("ruleCycleNext").addEventListener("click", showNextElement, false);
 
         // tabs
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
         document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
+
+
 
         
     },
@@ -337,9 +345,10 @@ function removeSelectorEvent(event){
 }
 
 function showRuleModal(event){
-    var ele = Collect.selectorElements(true),
-        rule = document.getElementById("ruleHTML"),
-        html, capture;
+    var rule = document.getElementById("ruleHTML"),
+        ele, html, capture;
+    Collect.matchSelector();
+    ele = Collect.elements[0];
     if ( ele ) {
         html = selectorTextHTML(ele)
         rule.innerHTML = html;
@@ -347,6 +356,20 @@ function showRuleModal(event){
         addEvents(capture, "click", capturePreview);
         document.getElementById("ruleHolder").style.display = "block";
     }
+}
+
+function showPreviousElement(event){
+    var index = Collect.elementIndex,
+        len = Collect.elements.length;
+    Collect.elementIndex = (index=== 0) ? len-1 : index-1;
+    document.getElementById("ruleHTML").innerHTML = selectorTextHTML(Collect.elements[Collect.elementIndex]);
+}
+
+function showNextElement(event){
+    var index = Collect.elementIndex,
+        len = Collect.elements.length;
+    Collect.elementIndex = (index=== len-1) ? 0 : index+1;
+    document.getElementById("ruleHTML").innerHTML = selectorTextHTML(Collect.elements[Collect.elementIndex]);   
 }
 
 function capturePreview(event){
