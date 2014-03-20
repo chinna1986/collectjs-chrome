@@ -40,11 +40,19 @@
 <div id="ruleHolder">
 	<div id="ruleBackground"></div>
 	<div id="ruleModal">
+		<div id="ruleHTMLHolder">
+			<div id="ruleCyclePrevious" class="cycle" title="previous element matching selector">&lt;&lt;</div>
+			<div id="ruleHTML"></div>
+			<div id="ruleCycleNext" class="cycle" title="next element matching selector">&gt;&gt;</div>
+		</div>
 		<div>
 			<label for="ruleName">Name:</label>
 			<input id="ruleName" name="ruleName" type="text"></input>
+			<label for="ruleAttr">Attribute:</label>
+			<input id="ruleAttr" name="ruleAttr" type="text"></input>
+			<label for="ruleRange">Range:</label>
+			<input id="ruleRange" name="ruleRange" type="text"></input>
 		</div>
-		<div id="ruleHTML"></div>
 		<div id="rulePreview"></div>
 		<div id="ruleButtons">
 			<button id="saveRule">Save</button>

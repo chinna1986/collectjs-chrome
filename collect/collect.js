@@ -14,7 +14,6 @@ var Collect = {
         activeTab: undefined,
         activeGroup: undefined
     },
-    activeRule: {},
     rules: {},
     indexPage: false,
     /*
@@ -246,7 +245,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><span id=\"selectorText\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span>    <div id=\"selectorHolder\"></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div id=\"ruleHTML\"></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
+    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><span id=\"selectorText\"></span><div id=\"selectorButtons\"><button id=\"saveSelector\">Save</button><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"remove parent selector\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\">    </div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span>    <div id=\"selectorHolder\"></div></div><div id=\"ruleHolder\"><div id=\"ruleBackground\"></div><div id=\"ruleModal\"><div id=\"ruleHTMLHolder\"><div id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">&lt;&lt;</div><div id=\"ruleHTML\"></div><div id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">&gt;&gt;</div></div><div><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div><div id=\"rulePreview\"></div><div id=\"ruleButtons\"><button id=\"saveRule\">Save</button><button id=\"closeRuleModal\">Close</button></div></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -357,14 +356,14 @@ function capturePreview(event){
             capture = this.dataset.capture,
             fn = captureFunction(capture),
             previewHTML = "";
-        Collect.activeRule.capture = capture;
+        document.getElementById("ruleAttr").value =capture;
         for ( var i=0, len=elements.length; i<len; i++ ) {
             previewHTML += "<p>" + fn(elements[i]) + "</p>";
         }
         this.classList.add("selected");
         document.getElementById("rulePreview").innerHTML = previewHTML;
     } else {
-        Collect.activeRule.capture = undefined;
+        document.getElementById("ruleAttr").value ='';
         document.getElementById("rulePreview").innerHTML = "";
         this.classList.remove("selected");
     }
@@ -385,15 +384,19 @@ function hideModal(){
 function saveRuleEvent(event){
     var name = document.getElementById("ruleName").value,
         selector = document.getElementById("selectorText").textContent,
-        capture = Collect.activeRule.capture,
+        capture = document.getElementById("ruleAttr").value,
+        range = document.getElementById("ruleRange").value,
         rule;
     if ( name === "") {
+        // some message that name isn't define
         return;
     }
     if ( selector === "" ) {
+        // some message that selector isn't define
         return;
     }
-    if ( capture === undefined ) {
+    if ( capture === "" ) {
+        // some message that capture isn't define
         return;
     }
     rule = {
@@ -402,6 +405,9 @@ function saveRuleEvent(event){
         selector: selector,
         index: Collect.indexPage
     };
+    if ( range !== "" ) {
+        rule.range = range;
+    }
     saveRule(rule);
     hideModal();
     resetInterface();
@@ -415,7 +421,11 @@ function ruleHTML(obj){
         deltog = document.createElement("span");
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
-    span.dataset.capture;
+    span.dataset.capture = obj.capture;
+    span.dataset.index = obj.index;
+    if ( obj.range) {
+        span.dataset.range = obj.range;
+    }
 
     span.classList.add("collectGroup", "noSelect");
     nametag.classList.add("savedSelector", "noSelect");

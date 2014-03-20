@@ -17,6 +17,7 @@ def insert_code(filename):
 	code = code.replace("'", "\\'").replace('"', '\\"')
 	# strip newlines and tabs
 	code = re.sub(r'[\t\n\r\f\v]', '', code)
+	# strip out multiline (/*...*/) comments
 	code = re.sub(r'\/\*.+?\*\/', '', code)
 	return code
 

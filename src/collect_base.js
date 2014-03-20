@@ -14,7 +14,6 @@ var Collect = {
         activeTab: undefined,
         activeGroup: undefined
     },
-    activeRule: {},
     rules: {},
     indexPage: false,
     /*
@@ -357,14 +356,14 @@ function capturePreview(event){
             capture = this.dataset.capture,
             fn = captureFunction(capture),
             previewHTML = "";
-        Collect.activeRule.capture = capture;
+        document.getElementById("ruleAttr").value =capture;
         for ( var i=0, len=elements.length; i<len; i++ ) {
             previewHTML += "<p>" + fn(elements[i]) + "</p>";
         }
         this.classList.add("selected");
         document.getElementById("rulePreview").innerHTML = previewHTML;
     } else {
-        Collect.activeRule.capture = undefined;
+        document.getElementById("ruleAttr").value ='';
         document.getElementById("rulePreview").innerHTML = "";
         this.classList.remove("selected");
     }
@@ -385,15 +384,19 @@ function hideModal(){
 function saveRuleEvent(event){
     var name = document.getElementById("ruleName").value,
         selector = document.getElementById("selectorText").textContent,
-        capture = Collect.activeRule.capture,
+        capture = document.getElementById("ruleAttr").value,
+        range = document.getElementById("ruleRange").value,
         rule;
     if ( name === "") {
+        // some message that name isn't define
         return;
     }
     if ( selector === "" ) {
+        // some message that selector isn't define
         return;
     }
-    if ( capture === undefined ) {
+    if ( capture === "" ) {
+        // some message that capture isn't define
         return;
     }
     rule = {
@@ -402,6 +405,9 @@ function saveRuleEvent(event){
         selector: selector,
         index: Collect.indexPage
     };
+    if ( range !== "" ) {
+        rule.range = range;
+    }
     saveRule(rule);
     hideModal();
     resetInterface();
@@ -415,7 +421,11 @@ function ruleHTML(obj){
         deltog = document.createElement("span");
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
-    span.dataset.capture;
+    span.dataset.capture = obj.capture;
+    span.dataset.index = obj.index;
+    if ( obj.range) {
+        span.dataset.range = obj.range;
+    }
 
     span.classList.add("collectGroup", "noSelect");
     nametag.classList.add("savedSelector", "noSelect");
