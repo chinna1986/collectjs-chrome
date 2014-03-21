@@ -202,6 +202,8 @@ var Collect = {
         document.getElementById("saveRule").addEventListener("click", saveRuleEvent, false);
         document.getElementById("ruleCyclePrevious").addEventListener("click", showPreviousElement, false);
         document.getElementById("ruleCycleNext").addEventListener("click", showNextElement, false);
+        document.getElementById("ruleRange").addEventListener("blur", applyRuleRange, false);
+
 
         // tabs
         addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
@@ -345,52 +347,101 @@ function removeSelectorEvent(event){
 }
 
 function showRuleModal(event){
-    var rule = document.getElementById("ruleHTML"),
-        ele, html, capture;
     Collect.matchSelector();
-    ele = Collect.elements[0];
+    var ele = Collect.elements[0];
     if ( ele ) {
-        html = selectorTextHTML(ele)
-        rule.innerHTML = html;
-        capture = rule.getElementsByClassName("capture");
-        addEvents(capture, "click", capturePreview);
+        addSelectorTextHTML(ele);
         document.getElementById("ruleHolder").style.display = "block";
     }
+}
+
+function applyRuleRange(event){
+    var rangeElement = document.getElementById("ruleRange"),
+        range = rangeElement.value,
+        rangeInt = parseInt(range, 10),
+        len = Collect.elements.length;
+    Collect.matchSelector();
+    if ( !isNaN(rangeInt) ) {
+        if ( rangeInt < 0 ) {
+            if ( -1*rangeInt > len ) {
+                rangeElement.value = "";
+            } else {
+                Collect.elements = Array.prototype.slice.call(Collect.elements).slice(0, rangeInt);
+                Collect.elementIndex = 0;
+                addSelectorTextHTML(Collect.elements[0]);
+            }
+        } else if ( range > 0 ) {
+            if ( rangeInt > len-1) {
+                rangeElement.value = "";
+            } else {
+                Collect.elements = Array.prototype.slice.call(Collect.elements).slice(rangeInt);
+                Collect.elementIndex = 0;
+                addSelectorTextHTML(Collect.elements[0]);
+            }
+        }
+    } else {
+        rangeElement.value = "";
+    }
+    generatePreviewElements(document.getElementById("ruleAttr").value, Collect.elements);
 }
 
 function showPreviousElement(event){
     var index = Collect.elementIndex,
         len = Collect.elements.length;
     Collect.elementIndex = (index=== 0) ? len-1 : index-1;
-    document.getElementById("ruleHTML").innerHTML = selectorTextHTML(Collect.elements[Collect.elementIndex]);
+    addSelectorTextHTML(Collect.elements[Collect.elementIndex]);
+    capture = rule.getElementsByClassName("capture");
+    addEvents(capture, "click", capturePreview);
+    markCapture();
 }
 
 function showNextElement(event){
     var index = Collect.elementIndex,
         len = Collect.elements.length;
     Collect.elementIndex = (index=== len-1) ? 0 : index+1;
-    document.getElementById("ruleHTML").innerHTML = selectorTextHTML(Collect.elements[Collect.elementIndex]);   
+    addSelectorTextHTML(Collect.elements[Collect.elementIndex])
+    markCapture();
+}
+
+function addSelectorTextHTML(ele){
+    var rule = document.getElementById("ruleHTML"),
+        capture;
+    rule.innerHTML = selectorTextHTML(ele);
+    capture = rule.getElementsByClassName("capture");
+    addEvents(capture, "click", capturePreview);
+}
+
+function markCapture(){
+    var capture = document.getElementById("ruleAttr").value,
+        selector;
+    if ( capture !== "") {
+        selector = ".capture[data-capture='" + capture + "']";
+        document.querySelector(selector).classList.add("selected");
+    }
 }
 
 function capturePreview(event){
     if ( !this.classList.contains("selected") ){
         clearClass("selected");
         var elements = Collect.selectorElements(),
-            capture = this.dataset.capture,
-            fn = captureFunction(capture),
-            previewHTML = "";
-        document.getElementById("ruleAttr").value =capture;
-        for ( var i=0, len=elements.length; i<len; i++ ) {
-            previewHTML += "<p>" + fn(elements[i]) + "</p>";
-        }
+            capture = this.dataset.capture;
+        generatePreviewElements(capture, elements);
+        document.getElementById("ruleAttr").value = capture;
         this.classList.add("selected");
-        document.getElementById("rulePreview").innerHTML = previewHTML;
     } else {
         document.getElementById("ruleAttr").value ='';
         document.getElementById("rulePreview").innerHTML = "";
         this.classList.remove("selected");
+    }   
+}
+
+function generatePreviewElements(capture, elements) {
+    var fn = captureFunction(capture),
+        previewHTML = "";
+    for ( var i=0, len=elements.length; i<len; i++ ) {
+        previewHTML += "<p>" + fn(elements[i]) + "</p>";
     }
-    
+    document.getElementById("rulePreview").innerHTML = previewHTML;
 }
 
 function hideRuleModal(event){
@@ -400,7 +451,11 @@ function hideRuleModal(event){
 function hideModal(){
     document.getElementById("rulePreview").innerHTML = "";
     document.getElementById("ruleHTML").innerHTML = "";
-    document.getElementById("ruleName").value = "";
+    var inputs = document.querySelectorAll("#ruleInputs input"),
+        len = inputs.length;
+    for ( var i=0; i<len; i++ ) {
+        inputs[i].value = "";
+    }
     document.getElementById("ruleHolder").style.display = "none";
 }
 
