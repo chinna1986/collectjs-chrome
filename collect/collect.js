@@ -251,6 +251,8 @@ var Collect = {
     }
 };
 
+Collect.setup();
+
 function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
@@ -275,6 +277,9 @@ function resetInterface(){
 /******************
     EVENTS
 ******************/
+/*
+event to create a SelectorFamily from this element
+*/
 function createSelectorFamily(event){
     event.stopPropagation();
     event.preventDefault();
@@ -282,16 +287,25 @@ function createSelectorFamily(event){
     Collect.setFamily(family);
 }
 
+/*
+add .collectHighlight to an element on mouseenter
+*/
 function highlightElement(event){
     this.classList.add("collectHighlight");
 }
 
+/*
+remove .collectHighlight from an element on mouseleave
+*/
 function unhighlightElement(event){
     this.classList.remove("collectHighlight");
 }
 
-function toggleIndex(event){
-    
+/*
+toggle whether the current page's url represents an index page for the crawler.
+saves index page in chrome.storage and uploads the url to a server through background.js
+*/
+function toggleIndex(event){  
     chrome.storage.local.get("sites", function(storage){
         var host = window.location.hostname,
             url = window.location.href,
@@ -325,7 +339,9 @@ function toggleIndex(event){
     });
 }
 
-
+/*
+removes the collectjs interface from the page
+*/
 function removeInterface(event){
     event.stopPropagation();
     event.preventDefault();
@@ -340,12 +356,18 @@ function removeInterface(event){
     }
 }
 
+/*
+clear the current SelectorFamily
+*/
 function removeSelectorEvent(event){
     event.stopPropagation();
     event.preventDefault();
     Collect.clearFamily();
 }
 
+/*
+show modal used for saving/previewing a rule
+*/
 function showRuleModal(event){
     Collect.matchSelector();
     var ele = Collect.elements[0];
@@ -355,6 +377,9 @@ function showRuleModal(event){
     }
 }
 
+/*
+on blur, update Collect.elements based on the value of #ruleRange
+*/
 function applyRuleRange(event){
     var rangeElement = document.getElementById("ruleRange"),
         range = rangeElement.value,
@@ -385,6 +410,10 @@ function applyRuleRange(event){
     generatePreviewElements(document.getElementById("ruleAttr").value, Collect.elements);
 }
 
+/*
+cycle to the previous element (based on Collect.elementIndex and Collect.elements) to represent an
+element in #ruleHTML
+*/
 function showPreviousElement(event){
     var index = Collect.elementIndex,
         len = Collect.elements.length;
@@ -395,6 +424,10 @@ function showPreviousElement(event){
     markCapture();
 }
 
+/*
+cycle to the next element (based on Collect.elementIndex and Collect.elements) to represent an
+element in #ruleHTML
+*/
 function showNextElement(event){
     var index = Collect.elementIndex,
         len = Collect.elements.length;
@@ -403,23 +436,11 @@ function showNextElement(event){
     markCapture();
 }
 
-function addSelectorTextHTML(ele){
-    var rule = document.getElementById("ruleHTML"),
-        capture;
-    rule.innerHTML = selectorTextHTML(ele);
-    capture = rule.getElementsByClassName("capture");
-    addEvents(capture, "click", capturePreview);
-}
-
-function markCapture(){
-    var capture = document.getElementById("ruleAttr").value,
-        selector;
-    if ( capture !== "") {
-        selector = ".capture[data-capture='" + capture + "']";
-        document.querySelector(selector).classList.add("selected");
-    }
-}
-
+/*
+if the .capture element clicked does not have the .selected class, set attribute to capture
+otherwise, clear the attribute to capture
+toggle .selected class
+*/
 function capturePreview(event){
     if ( !this.classList.contains("selected") ){
         clearClass("selected");
@@ -435,28 +456,8 @@ function capturePreview(event){
     }   
 }
 
-function generatePreviewElements(capture, elements) {
-    var fn = captureFunction(capture),
-        previewHTML = "";
-    for ( var i=0, len=elements.length; i<len; i++ ) {
-        previewHTML += "<p>" + fn(elements[i]) + "</p>";
-    }
-    document.getElementById("rulePreview").innerHTML = previewHTML;
-}
-
 function hideRuleModal(event){
     hideModal();
-}
-
-function hideModal(){
-    document.getElementById("rulePreview").innerHTML = "";
-    document.getElementById("ruleHTML").innerHTML = "";
-    var inputs = document.querySelectorAll("#ruleInputs input"),
-        len = inputs.length;
-    for ( var i=0; i<len; i++ ) {
-        inputs[i].value = "";
-    }
-    document.getElementById("ruleHolder").style.display = "none";
 }
 
 function saveRuleEvent(event){
@@ -502,49 +503,6 @@ function saveRuleEvent(event){
     hideModal();
     resetInterface();
     document.getElementById("savedRuleHolder").appendChild(ruleHTML(rule));
-}
-
-function clearErrors(){
-    document.getElementById("ruleName").classList.remove("error");
-    document.getElementById("ruleAttr").classList.remove("error");
-}
-
-function ruleAlertMessage(msg){
-    var p = document.createElement("p");
-    p.textContent = msg;
-    document.getElementById("ruleAlert").appendChild(p);
-}
-
-function ruleHTML(obj){
-    var span = document.createElement("span"),
-        nametag = document.createElement("span"),
-        deltog = document.createElement("span");
-    span.dataset.selector = obj.selector;
-    span.dataset.name = obj.name;
-    span.dataset.capture = obj.capture;
-    span.dataset.index = obj.index;
-    if ( obj.range) {
-        span.dataset.range = obj.range;
-    }
-    if ( obj.parent ) {
-        span.dataset.parent = obj.parent;
-    }
-
-    span.classList.add("collectGroup", "noSelect");
-    nametag.classList.add("savedSelector", "noSelect");
-    deltog.classList.add("deltog", "noSelect");
-
-    span.appendChild(nametag);
-    span.appendChild(deltog);
-
-    nametag.textContent = obj.name;
-    deltog.innerHTML = "&times;"
-
-    nametag.addEventListener("mouseenter", previewSavedRule, false);
-    nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
-    deltog.addEventListener("click", deleteRuleEvent, false);
-    
-    return span;
 }
 
 function previewSavedRule(event){
@@ -593,6 +551,114 @@ function toggleTab(event){
     }
 }
 
+/****************
+EVENT HELPERS
+****************/
+
+/*
+given an element, generate the html to represent an element and its "captureable" attributes and
+create the event listeners for it to work
+*/
+function addSelectorTextHTML(ele){
+    var rule = document.getElementById("ruleHTML"),
+        capture;
+    rule.innerHTML = selectorTextHTML(ele);
+    capture = rule.getElementsByClassName("capture");
+    addEvents(capture, "click", capturePreview);
+}
+
+/*
+if #ruleAttr is set, add .selected class to the matching #ruleHTML .capture span
+*/
+function markCapture(){
+    var capture = document.getElementById("ruleAttr").value,
+        selector;
+    if ( capture !== "") {
+        selector = ".capture[data-capture='" + capture + "']";
+        document.querySelector(selector).classList.add("selected");
+    }
+}
+/*
+generate paragraphs html for the captured attribute on all of the elements and attach them to #rulePreview
+*/
+function generatePreviewElements(capture, elements) {
+    var fn = captureFunction(capture),
+        previewHTML = "";
+    for ( var i=0, len=elements.length; i<len; i++ ) {
+        previewHTML += "<p>" + fn(elements[i]) + "</p>";
+    }
+    document.getElementById("rulePreview").innerHTML = previewHTML;
+}
+
+/*
+hide (display=none) the rule modal and clear out modal elements
+*/
+function hideModal(){
+    document.getElementById("rulePreview").innerHTML = "";
+    document.getElementById("ruleHTML").innerHTML = "";
+    var inputs = document.querySelectorAll("#ruleInputs input"),
+        len = inputs.length;
+    for ( var i=0; i<len; i++ ) {
+        inputs[i].value = "";
+    }
+    document.getElementById("ruleHolder").style.display = "none";
+}
+
+/*
+remove .error class from rule modal inputs
+*/
+function clearErrors(){
+    document.getElementById("ruleName").classList.remove("error");
+    document.getElementById("ruleAttr").classList.remove("error");
+}
+
+/*
+add the message to #ruleAlert
+*/
+function ruleAlertMessage(msg){
+    var p = document.createElement("p");
+    p.textContent = msg;
+    document.getElementById("ruleAlert").appendChild(p);
+}
+
+/*
+generate and return a span representing a rule object
+*/
+function ruleHTML(obj){
+    var span = document.createElement("span"),
+        nametag = document.createElement("span"),
+        deltog = document.createElement("span");
+    span.dataset.selector = obj.selector;
+    span.dataset.name = obj.name;
+    span.dataset.capture = obj.capture;
+    span.dataset.index = obj.index;
+    if ( obj.range) {
+        span.dataset.range = obj.range;
+    }
+    if ( obj.parent ) {
+        span.dataset.parent = obj.parent;
+    }
+
+    span.classList.add("collectGroup", "noSelect");
+    nametag.classList.add("savedSelector", "noSelect");
+    deltog.classList.add("deltog", "noSelect");
+
+    span.appendChild(nametag);
+    span.appendChild(deltog);
+
+    nametag.textContent = obj.name;
+    deltog.innerHTML = "&times;"
+
+    nametag.addEventListener("mouseenter", previewSavedRule, false);
+    nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
+    deltog.addEventListener("click", deleteRuleEvent, false);
+    
+    return span;
+}
+
+/*
+show the .grouop associated with a tab
+*/
 function showActive(ele){
     // if one is already shown, hide that first
     hideActive();
@@ -603,6 +669,9 @@ function showActive(ele){
     group.classList.add("show");
 }
 
+/*
+hide the active .group
+*/
 function hideActive(){
     if ( Collect.options.activeGroup ) {
         Collect.options.activeGroup.classList.remove("show");
@@ -613,8 +682,6 @@ function hideActive(){
     Collect.options.activeTab = undefined;
     Collect.options.activeGroup = undefined;
 }
-
-Collect.setup();
 
 /********************
 UTILITY FUNCTIONS
