@@ -424,6 +424,7 @@ function applyRuleRange(event){
     } else {
         rangeElement.value = "";
     }
+    document.getElementById("selectorCount").textContent = Collect.elements.length;
     generatePreviewElements(document.getElementById("ruleAttr").value, Collect.elements);
 }
 

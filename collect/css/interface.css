@@ -48,7 +48,7 @@ body {
 
 #collectTabs {
   position: absolute;
-  top: -30px;
+  top: -31px;
   height: 30px;
   right: 0;
   background: gold;
@@ -146,6 +146,8 @@ body {
 
 #ruleItems {
   display: none; }
+  #ruleItems div {
+    margin: 5px 0; }
   #ruleItems .error {
     border-color: #c91900;
     border-style: solid;
