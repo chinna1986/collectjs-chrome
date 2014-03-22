@@ -194,11 +194,9 @@ var Collect = {
         // preview
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
         document.getElementById("addParent").addEventListener("click", addParentEvent, false);
-        document.getElementById("saveSelector").addEventListener("click", showRuleModal, false);
+        document.getElementById("saveSelector").addEventListener("click", showRuleInputs, false);
 
         // rule preview
-        document.getElementById("ruleBackground").addEventListener("click", hideRuleModal, false);
-        document.getElementById("closeRuleModal").addEventListener("click", hideRuleModal, false);
         document.getElementById("saveRule").addEventListener("click", saveRuleEvent, false);
         document.getElementById("ruleCyclePrevious").addEventListener("click", showPreviousElement, false);
         document.getElementById("ruleCycleNext").addEventListener("click", showNextElement, false);
@@ -265,13 +263,28 @@ function addInterface(){
 
 function resetInterface(){
     clearClass("queryCheck");
+    Collect.html.text.textContent = '';
     document.getElementById("selectorCount").textContent = "";
+
+    // selectorItems
     var family = Collect.html.family;
     while (family.lastChild) {
         family.removeChild(family.lastChild);
     }
-    Collect.html.text.textContent = '';
+
+    // ruleItems
+    document.getElementById("rulePreview").innerHTML = "";
+    document.getElementById("ruleHTML").innerHTML = "";
+    var inputs = document.querySelectorAll("#ruleInputs input"),
+        len = inputs.length;
+    for ( var i=0; i<len; i++ ) {
+        inputs[i].value = "";
+    }
+
+    // divs to hide
     document.getElementById('selectorButtons').style.display = "none";
+    document.getElementById("selectorItems").style.display = "none";
+    document.getElementById("ruleItems").style.display = "none";
 }
 
 /******************
@@ -284,6 +297,7 @@ function createSelectorFamily(event){
     event.stopPropagation();
     event.preventDefault();
     var family = new SelectorFamily(this, Collect.parentSelector);
+    document.getElementById("selectorItems").style.display = "inline-block";
     Collect.setFamily(family);
 }
 
@@ -365,16 +379,19 @@ function removeSelectorEvent(event){
     Collect.clearFamily();
 }
 
-/*
-show modal used for saving/previewing a rule
-*/
-function showRuleModal(event){
+function showRuleInputs(event){
     Collect.matchSelector();
     var ele = Collect.elements[0];
     if ( ele ) {
+        document.getElementById("selectorItems").style.display = "none";
+        document.getElementById("ruleItems").style.display = "inline-block";
         addSelectorTextHTML(ele);
-        document.getElementById("ruleHolder").style.display = "block";
     }
+}
+
+function hideRuleInputs(event){
+    document.getElementById("selectorItems").style.display = "inline-block";
+    document.getElementById("ruleItems").style.display = "none";
 }
 
 /*
@@ -456,10 +473,6 @@ function capturePreview(event){
     }   
 }
 
-function hideRuleModal(event){
-    hideModal();
-}
-
 function saveRuleEvent(event){
     var name = document.getElementById("ruleName").value,
         selector = document.getElementById("selectorText").textContent,
@@ -500,7 +513,6 @@ function saveRuleEvent(event){
         rule.parent = Collect.parentSelector;
     }
     saveRule(rule);
-    hideModal();
     resetInterface();
     document.getElementById("savedRuleHolder").appendChild(ruleHTML(rule));
 }
@@ -591,21 +603,7 @@ function generatePreviewElements(capture, elements) {
 }
 
 /*
-hide (display=none) the rule modal and clear out modal elements
-*/
-function hideModal(){
-    document.getElementById("rulePreview").innerHTML = "";
-    document.getElementById("ruleHTML").innerHTML = "";
-    var inputs = document.querySelectorAll("#ruleInputs input"),
-        len = inputs.length;
-    for ( var i=0; i<len; i++ ) {
-        inputs[i].value = "";
-    }
-    document.getElementById("ruleHolder").style.display = "none";
-}
-
-/*
-remove .error class from rule modal inputs
+remove .error class from rule inputs
 */
 function clearErrors(){
     document.getElementById("ruleName").classList.remove("error");

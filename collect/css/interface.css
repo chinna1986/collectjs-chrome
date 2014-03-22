@@ -102,7 +102,7 @@ body {
   #tabGroups .group {
     border-color: #444444;
     border-style: solid;
-    border-width: 1px 0 1px 1px;
+    border-width: 1px 0 0 1px;
     display: none;
     min-width: 500px;
     padding: 15px; }
@@ -125,8 +125,48 @@ body {
       background: #efefef; }
 
 /* main */
+.items {
+  display: inline-block;
+  margin-top: 15px; }
+
+#selectorItems, #ruleItems {
+  display: none; }
+
 #selectorHolder {
   display: inline-block; }
+
+#ruleHTMLHolder .cycle {
+  background: #efefef;
+  margin: 0 10px;
+  padding: 2px 3px;
+  cursor: pointer; }
+
+#ruleAlert {
+  font-size: 0.75em; }
+
+#ruleItems {
+  display: none; }
+  #ruleItems .error {
+    border-color: #c91900;
+    border-style: solid;
+    border-width: 2px; }
+  #ruleItems .capture {
+    background: #ddd;
+    padding: 2px;
+    cursor: pointer; }
+  #ruleItems .selected {
+    background: #bddbce; }
+
+#rulePreview {
+  font-size: 16px;
+  overflow-y: scroll;
+  height: 200px;
+  border: 2px inset; }
+  #rulePreview p {
+    margin-bottom: 5px;
+    padding: 2px 15px; }
+  #rulePreview p:nth-of-type(even) {
+    background: #efefef; }
 
 /* Selector */
 .selectorGroup {
@@ -149,63 +189,6 @@ body {
 
 .selectorGroup:hover .deltog, .selectorGroup:hover .onlychild, .selectorGroup:hover .nthtype {
   color: #777; }
-
-/* ruleModal */
-#ruleHolder {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%; }
-
-#ruleBackground {
-  background: rgba(0, 0, 0, 0.25);
-  width: 100%;
-  height: 100%; }
-
-#ruleModal {
-  position: absolute;
-  top: 25%;
-  left: 25%;
-  width: 50%;
-  min-height: 300px;
-  padding: 25px;
-  background: white;
-  border: 1px solid #444444; }
-  #ruleModal > div {
-    margin-bottom: 10px; }
-  #ruleModal .capture {
-    background: #ddd;
-    padding: 2px;
-    cursor: pointer; }
-  #ruleModal .selected {
-    background: #bddbce; }
-
-#ruleHTMLHolder .cycle {
-  background: #efefef;
-  margin: 0 10px;
-  padding: 2px 3px;
-  cursor: pointer; }
-
-#ruleAlert {
-  font-size: 0.75em; }
-
-#ruleInputs .error {
-  border-color: #c91900;
-  border-style: solid;
-  border-width: 2px; }
-
-#rulePreview {
-  font-size: 16px;
-  overflow-y: scroll;
-  height: 200px;
-  border: 2px inset; }
-  #rulePreview p {
-    margin-bottom: 5px;
-    padding: 2px 15px; }
-  #rulePreview p:nth-of-type(even) {
-    background: #efefef; }
 
 .collectHighlight {
   background: rgba(50, 50, 50, 0.1) !important;

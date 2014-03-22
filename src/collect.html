@@ -1,8 +1,8 @@
 <div id="topbar">
 	<div id="selectorPreview" class="topbarGroup">
 		<span id="selectorText"></span>
+		<span id="selectorCount" title="number of elements current selector matches"></span>
 		<div id="selectorButtons">
-			<button id="saveSelector">Save</button>
 			<button id="addParent" title="Use the current selector as a parent selector">Set Parent</button>
 			<button id="clearSelector">Clear</button>
 		</div>
@@ -16,14 +16,17 @@
 		    		<button id="removeParent">&times;</button>
 	    		</section>
 		    </div>
+		    <div class="tab toggle" id="previewTab" data-for="previewGroup">Preview</div>
 		    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
 		    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
 		    <div class="tab toggle" id="indexTab" data-for="indexGroup">Index</div>
 		    <div class="tab" id="closeCollect" title="close collectjs">&times;</div>
 		</div>
 		<div id="tabGroups">
-		    <div id="optionGroup" class="group">
-		    </div>
+			<div id="previewGroup" class="group">
+				<div id="rulePreview"></div>
+			</div>
+		    <div id="optionGroup" class="group"></div>
 		    <div id="ruleGroup" class="group">
 		    	<div id="savedRuleHolder"></div>
 		    </div>
@@ -34,19 +37,13 @@
 	</div>
 </div>
 <div id="collectMain">
-	<span id="selectorCount" title="number of elements current selector matches"></span>
-    <div id="selectorHolder"></div>
-</div>
-<div id="ruleHolder">
-	<div id="ruleBackground"></div>
-	<div id="ruleModal">
-		<div id="ruleHTMLHolder">
-			<span id="ruleCyclePrevious" class="cycle" title="previous element matching selector">&lt;&lt;</span>
-			<span id="ruleHTML"></span>
-			<span id="ruleCycleNext" class="cycle" title="next element matching selector">&gt;&gt;</span>
-		</div>
+	<div id="selectorItems" class="items">
+    	<div id="selectorHolder"></div>
+    	<button id="saveSelector">Confirm Selector</button>
+	</div>
+	<div id="ruleItems" class="items">
 		<div id="ruleAlert"></div>
-		<div id="ruleInputs">
+	    <div id="ruleInputs">
 			<label for="ruleName">Name:</label>
 			<input id="ruleName" name="ruleName" type="text"></input>
 			<label for="ruleAttr">Attribute:</label>
@@ -54,10 +51,11 @@
 			<label for="ruleRange">Range:</label>
 			<input id="ruleRange" name="ruleRange" type="text"></input>
 		</div>
-		<div id="rulePreview"></div>
-		<div id="ruleButtons">
-			<button id="saveRule">Save</button>
-			<button id="closeRuleModal">Close</button>
+		<div id="ruleHTMLHolder">
+			<span id="ruleCyclePrevious" class="cycle" title="previous element matching selector">&lt;&lt;</span>
+			<span id="ruleHTML"></span>
+			<span id="ruleCycleNext" class="cycle" title="next element matching selector">&gt;&gt;</span>
 		</div>
+		<button id="saveRule">Save Rule</button>
 	</div>
 </div>
