@@ -174,11 +174,11 @@ Selector.prototype.setupElements = function(){
         this.ele.appendChild(curr.ele);
     }
 
-    this.nthtypeCreator = selectorSpan("+t", ["nthtype"], "add the nth-of-type pseudo selector"),
+    this.nthtypeCreator = selectorSpan("+t", ["nthtype", "noSelect"], "add the nth-of-type pseudo selector"),
     this.ele.appendChild(this.nthtypeCreator);
     this.nthtypeCreator.addEventListener('click', createNthofType.bind(this), false);
 
-    deltog = selectorSpan("x", ["deltog"]);
+    deltog = selectorSpan("x", ["deltog", "noSelect"]);
     this.ele.appendChild(deltog);
     deltog.addEventListener('click', removeSelectorGroup, false);
     //this.onlychildCreator = selectorSpan(">", ["onlychild"], "next selector must be direct child (> in css)"),
@@ -316,7 +316,11 @@ function removeSelectorGroup(event){
 function selectorSpan(text, classes, title){
     var span = document.createElement("span");
     span.textContent = text;
-    span.classList.add(classes);
+    if ( classes ) {
+        for ( var i=0, len=classes.length; i<len; i++ ) {
+            span.classList.add(classes[i]);
+        }    
+    }
     if ( title ) {
         span.setAttribute("title", title);
     }

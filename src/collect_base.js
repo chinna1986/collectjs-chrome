@@ -296,6 +296,7 @@ event to create a SelectorFamily from this element
 function createSelectorFamily(event){
     event.stopPropagation();
     event.preventDefault();
+    resetInterface();
     var family = new SelectorFamily(this, Collect.parentSelector);
     document.getElementById("selectorItems").style.display = "inline-block";
     Collect.setFamily(family);
@@ -434,11 +435,9 @@ element in #ruleHTML
 */
 function showPreviousElement(event){
     var index = Collect.elementIndex,
-        len = Collect.elements.length;
+        len = Collect.elements.length
     Collect.elementIndex = (index=== 0) ? len-1 : index-1;
     addSelectorTextHTML(Collect.elements[Collect.elementIndex]);
-    capture = rule.getElementsByClassName("capture");
-    addEvents(capture, "click", capturePreview);
     markCapture();
 }
 
@@ -450,7 +449,7 @@ function showNextElement(event){
     var index = Collect.elementIndex,
         len = Collect.elements.length;
     Collect.elementIndex = (index=== len-1) ? 0 : index+1;
-    addSelectorTextHTML(Collect.elements[Collect.elementIndex])
+    addSelectorTextHTML(Collect.elements[Collect.elementIndex]);
     markCapture();
 }
 
@@ -598,7 +597,7 @@ function generatePreviewElements(capture, elements) {
     var fn = captureFunction(capture),
         previewHTML = "";
     for ( var i=0, len=elements.length; i<len; i++ ) {
-        previewHTML += "<p>" + fn(elements[i]) + "</p>";
+        previewHTML += "<p class=\"noSelect\">" + fn(elements[i]) + "</p>";
     }
     document.getElementById("rulePreview").innerHTML = previewHTML;
 }
