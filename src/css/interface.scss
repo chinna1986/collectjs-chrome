@@ -8,6 +8,7 @@ $gray: #CCCCCC;
 $gold: #FFD700;
 $dark-gold: #E0BD00;
 $white: #ffffff;
+$black: #000000;
 
 /* general */
 body{
@@ -45,9 +46,13 @@ body{
     border-color: #777;
     padding: 5px;
     background: white;
-    
-    #selectorText{
-        margin-right: 15px;
+}
+
+#selectorText{
+    margin-right: 15px;
+
+    .parent{
+        background: $light-green;
     }
 }
 
@@ -179,10 +184,15 @@ body{
 
 /* main */
 
+#collectMain{
+    padding: 5px 5px 15px;
+    color: $black;
+}
+
 .items{
     display: inline-block;
     margin-top: 15px;
-}
+}    
 
 #selectorItems, #ruleItems{
     display: none;

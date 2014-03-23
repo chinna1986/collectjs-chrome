@@ -51,8 +51,13 @@ var Collect = {
     set the text of the SelectorFamily's selector string in the interface
     */
     updateSelectorText: function(){
-        var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + this.selector();
-        this.html.text.textContent = selectorString;
+        var selectorString = "";
+        if ( this.parentSelector ) {
+            selectorString += "<span class='parent noSelect' title='parent element selector'>" + this.parentSelector + "</span> ";
+        }
+        selectorString += this.selector();
+        //var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + ;
+        this.html.text.innerHTML = selectorString;
     },
     /*
     sets Collect.parent, stores the selector in parentSelector and turns on events for only    
@@ -629,7 +634,9 @@ function ruleHTML(obj){
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
     span.dataset.capture = obj.capture;
-    span.dataset.index = obj.index;
+    if ( obj.index ) {
+        span.dataset.index = obj.index;
+    }
     if ( obj.range) {
         span.dataset.range = obj.range;
     }

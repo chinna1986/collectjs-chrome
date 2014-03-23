@@ -29,8 +29,11 @@ body {
   border-color: #777;
   padding: 5px;
   background: white; }
-  #selectorPreview #selectorText {
-    margin-right: 15px; }
+
+#selectorText {
+  margin-right: 15px; }
+  #selectorText .parent {
+    background: #bddbce; }
 
 #selectorButtons {
   display: none; }
@@ -125,6 +128,10 @@ body {
       background: #efefef; }
 
 /* main */
+#collectMain {
+  padding: 5px 5px 15px;
+  color: black; }
+
 .items {
   display: inline-block;
   margin-top: 15px; }

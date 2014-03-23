@@ -51,8 +51,13 @@ var Collect = {
     set the text of the SelectorFamily's selector string in the interface
     */
     updateSelectorText: function(){
-        var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + this.selector();
-        this.html.text.textContent = selectorString;
+        var selectorString = "";
+        if ( this.parentSelector ) {
+            selectorString += "<span class='parent noSelect' title='parent element selector'>" + this.parentSelector + "</span> ";
+        }
+        selectorString += this.selector();
+        //var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + ;
+        this.html.text.innerHTML = selectorString;
     },
     /*
     sets Collect.parent, stores the selector in parentSelector and turns on events for only    
@@ -255,7 +260,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><span id=\"selectorText\"></span><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span><div id=\"selectorButtons\"><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div>    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div>    <div id=\"ruleInputs\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div><div id=\"ruleHTMLHolder\"><span id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</span><span id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</span><span id=\"ruleHTML\"></span></div><button id=\"saveRule\">Save Rule</button></div></div>";
+    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><span id=\"selectorText\"></span><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span><div id=\"selectorButtons\"><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab\">    <span>Parent</span>    <section id=\"parentWrapper\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\">&times;</button>    </section>    </div>    <div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div>    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div>    <div id=\"ruleInputs\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div><div id=\"ruleHTMLHolder\"><span id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</span><span id=\"ruleHTML\"></span><span id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</span></div><button id=\"saveRule\">Save Rule</button></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -629,7 +634,9 @@ function ruleHTML(obj){
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
     span.dataset.capture = obj.capture;
-    span.dataset.index = obj.index;
+    if ( obj.index ) {
+        span.dataset.index = obj.index;
+    }
     if ( obj.range) {
         span.dataset.range = obj.range;
     }

@@ -12,10 +12,9 @@ describe("html functions", function(){
                 capture: 'attr-href'
             };
         });
-        it("sets saved_selector class when complete", function(){
-            var html = '<span data-selector="a" data-name="link" class="collectGroup noSelect">' +
-                '<span class="savedSelector noSelect">link</span>' +
-                '<span class="deltog noSelect">×</span></span>';
+        it("sets savedSelector class when complete", function(){
+            var html = '<span data-selector="a" data-name="link" data-capture="attr-href" class="collectGroup noSelect">' +
+                '<span class="savedSelector noSelect">link</span><span class="deltog noSelect">×</span></span>'
             expect(ruleHTML(selectorObj).outerHTML).toEqual(html);
         });
     });
