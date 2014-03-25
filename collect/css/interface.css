@@ -76,23 +76,26 @@ body {
     cursor: pointer; }
 
 #parentWrapper {
-  display: none; }
+  display: none;
+  background: white;
+  margin-right: 5px;
+  word-spacing: -10px; }
 
 #parentSelector {
-  background: white;
   padding: 0 3px;
   display: inline-block; }
 
 #removeParent {
   cursor: pointer;
-  background: gold;
   border: 0;
   font-weight: bolder;
   font-size: 18px;
-  line-height: 18px; }
+  background: inherit;
+  line-height: 18px;
+  color: #f296a3; }
 
 #removeParent:hover {
-  background: #e0bd00; }
+  color: #c91900; }
 
 #collectButtons {
   width: 30%;

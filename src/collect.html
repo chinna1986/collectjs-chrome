@@ -1,5 +1,9 @@
 <div id="topbar">
 	<div id="selectorPreview" class="topbarGroup">
+		<div id="parentWrapper" title="parent selector">
+    		<span id="parentSelector"></span>
+    		<button id="removeParent" title="remove parent selector">&times;</button>
+		</div>
 		<span id="selectorText"></span>
 		<span id="selectorCount" title="number of elements current selector matches"></span>
 		<div id="selectorButtons">
@@ -9,13 +13,6 @@
 	</div>
 	<div id="collectOptions" class="topbarGroup">
 		<div id="collectTabs">
-		    <div class="tab">
-		    	<span>Parent</span>
-		    	<section id="parentWrapper">
-		    		<span id="parentSelector"></span>
-		    		<button id="removeParent">&times;</button>
-	    		</section>
-		    </div>
 		    <div class="tab toggle" id="previewTab" data-for="previewGroup">Preview</div>
 		    <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
 		    <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>

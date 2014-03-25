@@ -51,13 +51,7 @@ var Collect = {
     set the text of the SelectorFamily's selector string in the interface
     */
     updateSelectorText: function(){
-        var selectorString = "";
-        if ( this.parentSelector ) {
-            selectorString += "<span class='parent noSelect' title='parent element selector'>" + this.parentSelector + "</span> ";
-        }
-        selectorString += this.selector();
-        //var selectorString = (this.parentSelector ? this.parentSelector + " ": "") + ;
-        this.html.text.innerHTML = selectorString;
+        this.html.text.innerHTML = this.selector();
     },
     /*
     sets Collect.parent, stores the selector in parentSelector and turns on events for only    
