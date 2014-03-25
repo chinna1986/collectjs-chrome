@@ -520,7 +520,8 @@ function previewSavedRule(event){
     clearClass("queryCheck");
     clearClass("collectHighlight");
     var parent = this.parentElement,
-        selector = parent.dataset.selector,
+        parentSelector = parent.dataset.parent ? parent.dataset.parent + " " : "",
+        selector = parentSelector + parent.dataset.selector,
         elements = document.querySelectorAll(selector+Collect.not);
     addClass("savedPreview", elements);
 }
