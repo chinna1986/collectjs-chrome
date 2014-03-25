@@ -519,11 +519,21 @@ function saveRuleEvent(event){
 function previewSavedRule(event){
     clearClass("queryCheck");
     clearClass("collectHighlight");
+
     var parent = this.parentElement,
+        index = parent.dataset.index,
+        parentSelector, selector, elements;
+
+    if ( parent.dataset.index === "true" && Collect.indexPage ) {
         parentSelector = parent.dataset.parent ? parent.dataset.parent + " " : "",
         selector = parentSelector + parent.dataset.selector,
         elements = document.querySelectorAll(selector+Collect.not);
-    addClass("savedPreview", elements);
+        addClass("savedPreview", elements);    
+    } else if ( parent.dataset.index === "false" && !Collect.indexPage ) {
+        selector = parent.dataset.selector,
+        elements = document.querySelectorAll(selector+Collect.not);
+        addClass("savedPreview", elements);    
+    }
 }
 
 function unpreviewSavedRule(event){
@@ -629,9 +639,7 @@ function ruleHTML(obj){
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
     span.dataset.capture = obj.capture;
-    if ( obj.index ) {
-        span.dataset.index = obj.index;
-    }
+    span.dataset.index = obj.index;
     if ( obj.range) {
         span.dataset.range = obj.range;
     }
