@@ -204,10 +204,11 @@ var Collect = {
 
 
         // tabs
-        addEvents(document.querySelectorAll("#collectTabs .toggle, #selectorTabs .toggle"), 'click', toggleTab);
+        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
         document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
+        document.getElementById("previewTab").addEventListener("click", togglePreview, false);
 
 
 
@@ -574,6 +575,17 @@ function toggleTab(event){
     } else {
         this.classList.add("active");
         showActive(this);
+    }
+}
+
+function togglePreview(event){
+    event.preventDefault();
+    event.stopPropagation();
+    var group = document.getElementById("previewGroup")
+    if ( group.classList.contains("show") ){
+        group.classList.remove("show");
+    } else {
+        group.classList.add("show");
     }
 }
 
