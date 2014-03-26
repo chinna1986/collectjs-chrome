@@ -41,7 +41,7 @@ var Collect = {
             this.html.family.appendChild(this.family.ele);
             this.testSelector();
         }
-        document.getElementById('selectorButtons').style.display = "inline-block";
+        document.getElementById('selectorPreview').style.display = "block";
     },
     clearFamily: function(){
         this.family = undefined;
@@ -61,11 +61,13 @@ var Collect = {
         this.parentSelector = this.selector();
         if ( this.parentSelector  === "") {
             this.parentSelector = undefined;
+            return false;
         }
         // parent to select elements from is the first element in the page matching the selector
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
+        return true;
     },
     /*
     remove parent & parentSelector, attaches events to all non-.noSelect elements
@@ -153,7 +155,7 @@ var Collect = {
             elements[i].classList.add("queryCheck");
         }
         count = elements.length ? elements.length : "";
-        document.getElementById("selectorCount").textContent = count;
+        document.getElementById("currentCount").textContent = count;
     },
     /*
     messy proof of concept
@@ -192,7 +194,6 @@ var Collect = {
     interfaceEvents: function(){
         // preview
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
-        document.getElementById("addParent").addEventListener("click", addParentEvent, false);
         document.getElementById("saveSelector").addEventListener("click", showRuleInputs, false);
 
         // rule preview
@@ -203,10 +204,10 @@ var Collect = {
 
 
         // tabs
-        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        addEvents(document.querySelectorAll("#collectTabs .toggle, #selectorTabs .toggle"), 'click', toggleTab);
         document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
-        document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
+        document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
 
 
 
@@ -254,7 +255,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorPreview\" class=\"topbarGroup\"><div id=\"parentWrapper\" title=\"parent selector\">    <span id=\"parentSelector\"></span>    <button id=\"removeParent\" title=\"remove parent selector\">&times;</button></div><span id=\"selectorText\"></span><span id=\"selectorCount\" title=\"number of elements current selector matches\"></span><div id=\"selectorButtons\"><button id=\"addParent\" title=\"Use the current selector as a parent selector\">Set Parent</button><button id=\"clearSelector\">Clear</button></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div>    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div>    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div>    <div id=\"ruleInputs\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div><div id=\"ruleHTMLHolder\"><span id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</span><span id=\"ruleHTML\"></span><span id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</span></div><button id=\"saveRule\">Save Rule</button></div></div>";
+    div.innerHTML = "<div id=\"topbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab\"><div id=\"parentWrapper\" title=\"parent selector\">    Parent <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div>    <div id=\"ruleInputs\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div><div id=\"ruleHTMLHolder\"><span id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</span><span id=\"ruleHTML\"></span><span id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</span></div><button id=\"saveRule\">Save Rule</button></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -263,7 +264,7 @@ function addInterface(){
 function resetInterface(){
     clearClass("queryCheck");
     Collect.html.text.textContent = '';
-    document.getElementById("selectorCount").textContent = "";
+    document.getElementById("currentCount").textContent = "";
 
     // selectorItems
     var family = Collect.html.family;
@@ -281,7 +282,8 @@ function resetInterface(){
     }
 
     // divs to hide
-    document.getElementById('selectorButtons').style.display = "none";
+    document.getElementById("selectorPreview").style.display = "none";    
+    
     document.getElementById("selectorItems").style.display = "none";
     document.getElementById("ruleItems").style.display = "none";
 }
@@ -424,7 +426,7 @@ function applyRuleRange(event){
     } else {
         rangeElement.value = "";
     }
-    document.getElementById("selectorCount").textContent = Collect.elements.length;
+    document.getElementById("currentCount").textContent = Collect.elements.length;
     generatePreviewElements(document.getElementById("ruleAttr").value, Collect.elements);
 }
 
@@ -547,18 +549,20 @@ function deleteRuleEvent(event){
     parent.parentElement.removeChild(parent);
 }
 
-function addParentEvent(event){
+function toggleParentEvent(event){
     event.preventDefault();
-    Collect.setParent();
-    document.getElementById("addParent").style.display = "none";
-    document.getElementById("parentWrapper").style.display = "inline";
-}
-
-function removeParentEvent(event){
-    event.preventDefault();
-    Collect.removeParent();
-    document.getElementById("addParent").style.display = "inline";
-    document.getElementById("parentWrapper").style.display = "none";
+    if ( !Collect.parentSelector ){
+        var success = Collect.setParent();
+        if ( success ) {
+            this.textContent = "×";
+            this.setAttribute("title", "remove parent selector");    
+        }        
+    } else {
+        Collect.removeParent();
+        this.textContent = "+";
+        this.setAttribute("title", "add parent selector");
+    }
+    
 }
 
 function toggleTab(event){

@@ -41,7 +41,7 @@ var Collect = {
             this.html.family.appendChild(this.family.ele);
             this.testSelector();
         }
-        document.getElementById('selectorButtons').style.display = "inline-block";
+        document.getElementById('selectorPreview').style.display = "block";
     },
     clearFamily: function(){
         this.family = undefined;
@@ -61,11 +61,13 @@ var Collect = {
         this.parentSelector = this.selector();
         if ( this.parentSelector  === "") {
             this.parentSelector = undefined;
+            return false;
         }
         // parent to select elements from is the first element in the page matching the selector
         this.html.parent.textContent = this.parentSelector;
         this.clearFamily();
         this.turnOn();
+        return true;
     },
     /*
     remove parent & parentSelector, attaches events to all non-.noSelect elements
@@ -153,7 +155,7 @@ var Collect = {
             elements[i].classList.add("queryCheck");
         }
         count = elements.length ? elements.length : "";
-        document.getElementById("selectorCount").textContent = count;
+        document.getElementById("currentCount").textContent = count;
     },
     /*
     messy proof of concept
@@ -192,7 +194,6 @@ var Collect = {
     interfaceEvents: function(){
         // preview
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
-        document.getElementById("addParent").addEventListener("click", addParentEvent, false);
         document.getElementById("saveSelector").addEventListener("click", showRuleInputs, false);
 
         // rule preview
@@ -203,10 +204,10 @@ var Collect = {
 
 
         // tabs
-        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
+        addEvents(document.querySelectorAll("#collectTabs .toggle, #selectorTabs .toggle"), 'click', toggleTab);
         document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
-        document.getElementById("removeParent").addEventListener("click", removeParentEvent, false);
+        document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
 
 
 
@@ -263,7 +264,7 @@ function addInterface(){
 function resetInterface(){
     clearClass("queryCheck");
     Collect.html.text.textContent = '';
-    document.getElementById("selectorCount").textContent = "";
+    document.getElementById("currentCount").textContent = "";
 
     // selectorItems
     var family = Collect.html.family;
@@ -281,7 +282,8 @@ function resetInterface(){
     }
 
     // divs to hide
-    document.getElementById('selectorButtons').style.display = "none";
+    document.getElementById("selectorPreview").style.display = "none";    
+    
     document.getElementById("selectorItems").style.display = "none";
     document.getElementById("ruleItems").style.display = "none";
 }
@@ -424,7 +426,7 @@ function applyRuleRange(event){
     } else {
         rangeElement.value = "";
     }
-    document.getElementById("selectorCount").textContent = Collect.elements.length;
+    document.getElementById("currentCount").textContent = Collect.elements.length;
     generatePreviewElements(document.getElementById("ruleAttr").value, Collect.elements);
 }
 
@@ -547,18 +549,20 @@ function deleteRuleEvent(event){
     parent.parentElement.removeChild(parent);
 }
 
-function addParentEvent(event){
+function toggleParentEvent(event){
     event.preventDefault();
-    Collect.setParent();
-    document.getElementById("addParent").style.display = "none";
-    document.getElementById("parentWrapper").style.display = "inline";
-}
-
-function removeParentEvent(event){
-    event.preventDefault();
-    Collect.removeParent();
-    document.getElementById("addParent").style.display = "inline";
-    document.getElementById("parentWrapper").style.display = "none";
+    if ( !Collect.parentSelector ){
+        var success = Collect.setParent();
+        if ( success ) {
+            this.textContent = "×";
+            this.setAttribute("title", "remove parent selector");    
+        }        
+    } else {
+        Collect.removeParent();
+        this.textContent = "+";
+        this.setAttribute("title", "add parent selector");
+    }
+    
 }
 
 function toggleTab(event){
