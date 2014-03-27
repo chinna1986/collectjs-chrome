@@ -13,13 +13,51 @@ body {
   background: white;
   font-size: 20px;
   font-family: sans-serif;
-  color: black; }
+  color: black;
+  text-align: left; }
 
-#topbar {
+#collectTopbar {
   position: relative; }
-  #topbar .topbarGroup {
+  #collectTopbar .topbarGroup {
     position: absolute;
     bottom: 0; }
+
+#selectorTabs, #collectTabs {
+  position: absolute;
+  top: -31px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid #444444;
+  word-spacing: -6px; }
+  #selectorTabs .tab, #collectTabs .tab {
+    word-spacing: normal;
+    display: inline-block;
+    padding: 0 5px;
+    height: 30px;
+    line-height: 1.5;
+    cursor: pointer; }
+    #selectorTabs .tab div, #collectTabs .tab div {
+      display: inline-block; }
+
+#selectorTabs {
+  left: 0;
+  border-top: 1px solid #444444;
+  background: #45aacc; }
+  #selectorTabs .tab {
+    border-right: 1px solid #444444; }
+
+#collectTabs {
+  right: 0;
+  background: gold; }
+  #collectTabs .tab {
+    border-left: 1px solid #444444; }
+  #collectTabs .tab.set {
+    background: #bddbce; }
+  #collectTabs .active {
+    background: white; }
+  #collectTabs .toggle, #collectTabs #closeCollect, #collectTabs #addIndex {
+    cursor: pointer; }
 
 /* Preview */
 #selectorPreview {
@@ -44,115 +82,36 @@ body {
   font-weight: bolder;
   font-size: 18px;
   background: inherit;
-  line-height: 18px;
+  line-height: 1;
   color: #f296a3; }
 
 #removeParent:hover {
   color: #c91900; }
 
-/* selector tabs */
 #selectorTabs {
   left: 0; }
 
-#selectorTabs {
-  position: absolute;
-  top: -31px;
-  height: 30px;
-  left: 0;
-  background: white;
-  padding: 0;
-  margin: 0;
-  border-top: 1px solid #444444;
-  word-spacing: -6px;
-  background: #45aacc; }
-  #selectorTabs .tab {
-    word-spacing: normal;
-    border-right: 1px solid #444444;
-    display: inline-block;
-    padding: 0 5px;
-    line-height: 30px;
-    cursor: pointer; }
-    #selectorTabs .tab div {
-      display: inline-block; }
-
-#toggleParent {
-  background: #45aacc;
-  font-size: 18px;
-  line-height: 18px;
-  font-weight: bold;
-  border: 0;
-  cursor: pointer; }
-
-#clearSelector {
-  background: #f296a3; }
-
-#selectorGroups {
-  background: white;
-  font-size: 16px;
-  min-width: 500px; }
-  #selectorGroups .group {
-    border-color: #444444;
-    border-style: solid;
-    border-width: 1px 1px 0 0;
-    display: none;
-    min-width: 500px;
-    padding: 15px; }
-  #selectorGroups .show {
-    display: block; }
-
-#rulePreview {
-  font-size: 16px;
-  overflow-y: scroll;
-  height: 200px;
-  border: 2px inset; }
-  #rulePreview p {
-    margin-bottom: 5px;
-    padding: 2px 15px; }
-  #rulePreview p:nth-of-type(even) {
-    background: #efefef; }
-
-/* Options */
 #collectOptions {
   right: 0; }
 
-#collectTabs {
-  position: absolute;
-  top: -31px;
-  height: 30px;
-  right: 0;
-  background: gold;
-  padding: 0;
-  margin: 0;
-  border-top: 1px solid #444444;
-  word-spacing: -6px; }
-  #collectTabs .tab {
-    word-spacing: normal;
-    border-left: 1px solid #444444;
-    display: inline-block;
-    padding: 0 5px;
-    line-height: 30px; }
-    #collectTabs .tab div {
-      display: inline-block; }
-  #collectTabs .tab.set {
-    background: #bddbce; }
-  #collectTabs .active {
-    background: white; }
-  #collectTabs .toggle, #collectTabs #closeCollect, #collectTabs #addIndex {
-    cursor: pointer; }
-
-#tabGroups {
+#selectorGroups, #tabGroups {
   background: white;
   font-size: 16px;
   min-width: 500px; }
-  #tabGroups .group {
+  #selectorGroups .group, #tabGroups .group {
     border-color: #444444;
     border-style: solid;
-    border-width: 1px 0 0 1px;
     display: none;
     min-width: 500px;
     padding: 15px; }
-  #tabGroups .show {
+  #selectorGroups .show, #tabGroups .show {
     display: block; }
+
+#selectorGroups .group {
+  border-width: 1px 1px 0 0; }
+
+#tabGroups .group {
+  border-width: 1px 0 0 1px; }
 
 #optionGroup {
   height: 250px; }
@@ -169,17 +128,34 @@ body {
       cursor: pointer;
       background: #efefef; }
 
-/* main */
+#toggleParent {
+  background: #45aacc;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: bold;
+  border: 0;
+  cursor: pointer; }
+
+#clearSelector {
+  background: #f296a3; }
+
+#rulePreview {
+  font-size: 16px;
+  overflow-y: scroll;
+  height: 200px;
+  border: 2px inset; }
+  #rulePreview p {
+    margin-bottom: 5px;
+    padding: 2px 15px; }
+  #rulePreview p:nth-of-type(even) {
+    background: #efefef; }
+
 #collectMain {
   padding: 5px 5px 15px;
   color: black; }
-
-.items {
-  display: inline-block;
-  margin-top: 15px; }
-
-#selectorItems, #ruleItems {
-  display: none; }
+  #collectMain .items {
+    display: none;
+    margin-top: 15px; }
 
 #selectorHolder {
   display: inline-block; }
@@ -187,47 +163,51 @@ body {
 #ruleHTMLHolder .cycle {
   margin: 0 10px;
   padding: 2px 3px;
-  cursor: pointer;
-  border-bottom: 1px solid black; }
+  cursor: pointer; }
 
 #ruleAlert {
   font-size: 0.75em; }
 
-#ruleItems {
-  display: none; }
-  #ruleItems div {
-    margin: 5px 0; }
-  #ruleItems .error {
-    border-color: #c91900;
-    border-style: solid;
-    border-width: 2px; }
-  #ruleItems .capture {
-    background: #ddd;
-    padding: 2px;
-    cursor: pointer; }
-  #ruleItems .selected {
-    background: #bddbce; }
+#ruleItems div {
+  margin: 5px 0; }
+#ruleItems .error {
+  border-color: #c91900;
+  border-style: solid;
+  border-width: 2px; }
+#ruleItems .capture {
+  background: #ddd;
+  padding: 2px;
+  cursor: pointer; }
+#ruleItems .selected {
+  background: #bddbce; }
+#ruleItems .rule {
+  color: black;
+  font-size: 14px; }
+  #ruleItems .rule label {
+    width: 100px; }
+  #ruleItems .rule label, #ruleItems .rule input {
+    margin: 0;
+    display: inline-block; }
 
 /* Selector */
-.selectorGroup {
+#selectorHolder .selectorGroup {
   display: inline-block;
   white-space: nowrap;
   padding: 2px 0 0 2px;
   position: relative;
   cursor: pointer; }
-  .selectorGroup * {
+  #selectorHolder .selectorGroup * {
     font-size: 16px; }
-  .selectorGroup .toggleable {
+  #selectorHolder .selectorGroup .toggleable {
     color: #444444;
     border-bottom: 1px solid #777; }
-  .selectorGroup .toggleable.off {
+  #selectorHolder .selectorGroup .toggleable.off {
     color: #ccc; }
-  .selectorGroup .deltog, .selectorGroup .nthtype, .selectorGroup .onlychild {
+  #selectorHolder .selectorGroup .deltog, #selectorHolder .selectorGroup .nthtype, #selectorHolder .selectorGroup .onlychild {
     font-weight: bold;
     padding: 0 3px 0 2px;
     color: white; }
-
-.selectorGroup:hover .deltog, .selectorGroup:hover .onlychild, .selectorGroup:hover .nthtype {
+#selectorHolder .selectorGroup:hover .deltog, #selectorHolder .selectorGroup:hover .onlychild, #selectorHolder .selectorGroup:hover .nthtype {
   color: #777; }
 
 .collectHighlight {

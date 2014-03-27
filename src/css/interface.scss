@@ -28,14 +28,71 @@ body{
     font-size: 20px;
     font-family: sans-serif;
     color: $black;
+    text-align: left;
 }
 
-#topbar{
+#collectTopbar{
     position: relative;
 
     .topbarGroup{
         position: absolute;
         bottom: 0;
+    }
+}
+
+
+#selectorTabs, #collectTabs{
+    position: absolute;
+    top: -31px;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid $dark-gray;
+    word-spacing: -6px;
+
+
+    .tab{
+        word-spacing: normal;
+        display: inline-block;
+        padding: 0 5px;
+        height: 30px;
+        line-height: 1.5;
+        cursor: pointer;
+
+        div{
+            display: inline-block;
+        }
+    }
+}
+
+#selectorTabs{
+    left: 0;
+    border-top: 1px solid $dark-gray;
+    background: $blue;
+
+    .tab{
+        border-right: 1px solid $dark-gray;
+    }
+}
+
+#collectTabs{
+    right: 0;
+    background: $gold;
+
+    .tab{
+        border-left: 1px solid $dark-gray;
+    }
+
+    .tab.set{
+        background: $light-green;
+    }
+
+    .active{
+        background: $white;
+    }
+
+    .toggle, #closeCollect, #addIndex{
+        cursor: pointer;
     }
 }
 
@@ -68,7 +125,7 @@ body{
     font-weight: bolder;
     font-size: 18px;
     background: inherit;
-    line-height: 18px;
+    line-height: 1;
     color: $light-red;
 }
 
@@ -76,59 +133,22 @@ body{
     color: $red;
 }
 
-/* selector tabs */
-
 #selectorTabs{
     left: 0;
 }
 
-#selectorTabs{
-    position: absolute;
-    top: -31px;
-    height: 30px;
-    left: 0;
-    background: $white;
-    padding: 0;
-    margin: 0;
-    border-top: 1px solid $dark-gray;
-    word-spacing: -6px;
-    background: $blue;
-
-    .tab{
-        word-spacing: normal;
-        border-right: 1px solid $dark-gray;
-        display: inline-block;
-        padding: 0 5px;
-        line-height: 30px;
-        cursor: pointer;
-
-        div{
-            display: inline-block;
-        }
-    }
+#collectOptions{
+    right: 0;
 }
 
-#toggleParent{
-    background: $blue;
-    font-size: 18px;
-    line-height: 18px;
-    font-weight: bold;
-    border: 0;
-    cursor: pointer;
-}
-
-#clearSelector{
-    background: $light-red;
-}
-
-#selectorGroups{
+#selectorGroups, #tabGroups{
     background: $white;
     font-size: 16px;
     min-width: 500px;
+
     .group{
         border-color: $dark-gray;
         border-style: solid;
-        border-width: 1px 1px 0 0;
         display: none;
         min-width: 500px;
         padding: 15px;
@@ -139,78 +159,15 @@ body{
     }    
 }
 
-#rulePreview{
-    font-size: 16px;
-    overflow-y: scroll;
-    height: 200px;
-    border: 2px inset;
-
-    p{
-        margin-bottom: 5px;
-        padding: 2px 15px;
-    }
-    p:nth-of-type(even){
-        background: $light-gray;
+#selectorGroups{
+    .group{
+        border-width: 1px 1px 0 0;
     }
 }
-
-/* Options */
-#collectOptions{
-    right: 0;
-}
-
-#collectTabs{
-    position: absolute;
-    top: -31px;
-    height: 30px;
-    right: 0;
-    background: $gold;
-    padding: 0;
-    margin: 0;
-    border-top: 1px solid $dark-gray;
-    word-spacing: -6px;
-
-    .tab{
-        word-spacing: normal;
-        border-left: 1px solid $dark-gray;
-        display: inline-block;
-        padding: 0 5px;
-        line-height: 30px;
-
-        div{
-            display: inline-block;
-        }
-    }
-
-    .tab.set{
-        background: $light-green;
-    }
-
-    .active{
-        background: $white;
-    }
-
-    .toggle, #closeCollect, #addIndex{
-        cursor: pointer;
-    }
-}
-
 
 #tabGroups{
-    background: $white;
-    font-size: 16px;
-    min-width: 500px;
     .group{
-        border-color: $dark-gray;
-        border-style: solid;
         border-width: 1px 0 0 1px;
-        display: none;
-        min-width: 500px;
-        padding: 15px;
-    }
-
-    .show{
-        display: block;
     }
 }
 
@@ -237,20 +194,42 @@ body{
     }
 }
 
-/* main */
+#toggleParent{
+    background: $blue;
+    font-size: 18px;
+    line-height: 1;
+    font-weight: bold;
+    border: 0;
+    cursor: pointer;
+}
+
+#clearSelector{
+    background: $light-red;
+}
+
+#rulePreview{
+    font-size: 16px;
+    overflow-y: scroll;
+    height: 200px;
+    border: 2px inset;
+
+    p{
+        margin-bottom: 5px;
+        padding: 2px 15px;
+    }
+    p:nth-of-type(even){
+        background: $light-gray;
+    }
+}
 
 #collectMain{
     padding: 5px 5px 15px;
     color: $black;
-}
 
-.items{
-    display: inline-block;
-    margin-top: 15px;
-}    
-
-#selectorItems, #ruleItems{
-    display: none;
+    .items{
+        display: none;
+        margin-top: 15px;
+    }    
 }
 
 #selectorHolder{
@@ -262,7 +241,6 @@ body{
         margin: 0 10px;
         padding: 2px 3px;
         cursor: pointer;
-        border-bottom: 1px solid $black;
     }
 }
 
@@ -271,7 +249,6 @@ body{
 }
 
 #ruleItems{
-    display: none;
 
     div{
         margin: 5px 0
@@ -292,40 +269,55 @@ body{
     .selected{
         background: $light-green;
     }
+
+    .rule{
+        color: $black;
+        font-size: 14px;
+
+        label{
+            width: 100px;
+        }
+
+        label, input{
+            margin: 0;
+            display: inline-block;
+        }
+    }    
 }
 
 /* Selector */
+#selectorHolder{
+    .selectorGroup{
+        display: inline-block;
+        white-space: nowrap;
+        padding: 2px 0 0 2px;
+        position: relative;
+        cursor: pointer;   
 
-.selectorGroup{
-    display: inline-block;
-    white-space: nowrap;
-    padding: 2px 0 0 2px;
-    position: relative;
-    cursor: pointer;   
+        *{
+            font-size: 16px;
+        }
 
-    *{
-        font-size: 16px;
+        .toggleable{
+            color: $dark-gray;
+            border-bottom: 1px solid #777;   
+        }
+
+        .toggleable.off{
+            color: #ccc;
+        }
+
+        .deltog, .nthtype, .onlychild{
+            font-weight: bold;
+            padding: 0 3px 0 2px;
+            color: $white;
+        }
     }
 
-    .toggleable{
-        color: $dark-gray;
-        border-bottom: 1px solid #777;   
-    }
-
-    .toggleable.off{
-        color: #ccc;
-    }
-
-    .deltog, .nthtype, .onlychild{
-        font-weight: bold;
-        padding: 0 3px 0 2px;
-        color: $white;
-    }
-}
-
-.selectorGroup:hover{
-    .deltog, .onlychild, .nthtype{
-        color: #777;
+    .selectorGroup:hover{
+        .deltog, .onlychild, .nthtype{
+            color: #777;
+        }
     }
 }
 
