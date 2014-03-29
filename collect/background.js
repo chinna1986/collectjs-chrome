@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
     if ( message ) {
         switch ( message.type ) {
             case "upload":
-                xhr("POST", "http://localhost:5000/upload", message.msg, sendResponse, true);
+                xhr("POST", "http://localhost:5000/upload", JSON.stringify(message.data), sendResponse, true);
                 // return true so sendResponse does not become invalid
                 // http://developer.chrome.com/extensions/runtime.html#event-onMessage
                 return true;
@@ -51,10 +51,11 @@ function xhr(type, url, data, callback, json){
         xhr.open("GET", url + "?" + data);
         xhr.send();
     } else if ( type === "POST") {
+        
+        xhr.open("POST", url);
         if ( json ) {
             xhr.setRequestHeader("Content-Type", "application/json");
         }
-        xhr.open("POST", url);
         xhr.send(data);
     }
 }

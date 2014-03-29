@@ -177,14 +177,19 @@ var Collect = {
     loadSavedItems: function(){
         chrome.storage.local.get('sites', function loadRulesChrome(storage){
             var host = window.location.hostname,
-                holder = document.getElementById("savedRuleHolder")
-            // rules
-            Collect.rules = storage.sites[host].rules;
-            for (var key in Collect.rules){
-                holder.appendChild(ruleHTML(Collect.rules[key]));
+                holder = document.getElementById("savedRuleHolder"),
+                site = storage.sites[host];
+            console.log("site: ", site);
+            var rules = site.rules;
+            if ( rules ) {
+                // rules
+                Collect.rules = rules;
+                for (var key in Collect.rules){
+                    holder.appendChild(ruleHTML(Collect.rules[key]));
+                }
             }
 
-            if ( storage.sites[host].indices[window.location.href] ) {
+            if ( site.indices[window.location.href] ) {
                 Collect.indexPage= true;
                 document.getElementById("indexTab").classList.add("set");
                 document.getElementById("addIndex").checked = true;
@@ -209,10 +214,7 @@ var Collect = {
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
         document.getElementById("previewTab").addEventListener("click", togglePreview, false);
-
-
-
-        
+        document.getElementById("uploadRules").addEventListener("click", uploadRules, false);        
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -256,7 +258,7 @@ function addInterface(){
     var div = document.createElement("div");
     div.setAttribute("id", "collectjs");
     div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab\"><div id=\"parentWrapper\" title=\"parent selector\">    Parent <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index Page</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div>    <div id=\"ruleInputs\">    <div class=\"rule\">    <label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input>    </div>    <div class=\"rule\">    <label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input>    </div>    <div class=\"rule\">    <label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input>    </div></div><button id=\"saveRule\">Save Rule</button></div></div>";
+    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab\"><div id=\"parentWrapper\" title=\"parent selector\">    Parent <span id=\"parentSelector\"></span>    <button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\">    <div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div>    <div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div>    <div class=\"tab toggle\" id=\"indexTab\" data-for=\"indexGroup\">Index Page</div>    <div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\">    <div id=\"optionGroup\" class=\"group\"></div>    <div id=\"ruleGroup\" class=\"group\">    <div id=\"savedRuleHolder\"></div>    <button id=\"uploadRules\">Upload Saved Rules</button>    </div>    <div id=\"indexGroup\" class=\"group\">    <label for=\"addIndex\">Index Page:</label><input type=\"checkbox\" id=\"addIndex\">    </div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\">    <div id=\"selectorHolder\"></div>    <button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div>    <div id=\"ruleInputs\">    <div class=\"rule\">    <label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input>    </div>    <div class=\"rule\">    <label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input>    </div>    <div class=\"rule\">    <label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input>    </div></div><button id=\"saveRule\">Save Rule</button></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -589,6 +591,15 @@ function togglePreview(event){
     }
 }
 
+function uploadRules(event){
+    chrome.storage.local.get(null, function(storage){
+        var host = window.location.hostname,
+            site = storage.sites[host];
+        chrome.runtime.sendMessage({'type': 'upload', data: site});        
+    })
+    
+}
+
 /****************
 EVENT HELPERS
 ****************/
@@ -797,11 +808,20 @@ function captureFunction(capture){
 }
 
 //    STORAGE
+
+/*
+creates an object representing a site and saves it to chrome.storage.local
+the object contains:
+    site: hostname of the site
+    rules: array of rule objects
+    indices: array of url strings for index pages
+*/
 function setupHostname(){
     chrome.storage.local.get("sites", function setupHostnameChrome(storage){
         var host = window.location.hostname;
-        if ( ! storage.sites[host] ) {
+        if ( !storage.sites[host] ) {
             storage.sites[host] = {
+                site: host,
                 rules: {},
                 indices: {}
             };
