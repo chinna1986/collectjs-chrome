@@ -46,6 +46,8 @@ body {
   background: #45aacc; }
   #selectorTabs .tab {
     border-right: 1px solid #444444; }
+  #selectorTabs .tab.hidden {
+    display: none; }
 
 #collectTabs {
   right: 0;

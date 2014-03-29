@@ -24,12 +24,6 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
                 // return true so sendResponse does not become invalid
                 // http://developer.chrome.com/extensions/runtime.html#event-onMessage
                 return true;
-            case "addindex":
-                xhr("GET", "http://localhost:5000/addindex", "name="+message.url, sendResponse);
-                return true;
-            case "removeindex":
-                xhr("GET", "http://localhost:5000/removeindex", "name="+message.url, sendResponse);
-                return true;
         }
     }
 });

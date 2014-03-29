@@ -73,6 +73,10 @@ body{
     .tab{
         border-right: 1px solid $dark-gray;
     }
+
+    .tab.hidden{
+        display: none;
+    }
 }
 
 #collectTabs{

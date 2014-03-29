@@ -193,6 +193,7 @@ var Collect = {
                 Collect.indexPage= true;
                 document.getElementById("indexTab").classList.add("set");
                 document.getElementById("addIndex").checked = true;
+                document.getElementById("parentTab").classList.remove("hidden");
             }
         });
     },
@@ -322,7 +323,7 @@ function unhighlightElement(event){
 
 /*
 toggle whether the current page's url represents an index page for the crawler.
-saves index page in chrome.storage and uploads the url to a server through background.js
+saves index page in chrome.storage
 */
 function toggleIndex(event){  
     chrome.storage.local.get("sites", function(storage){
@@ -333,28 +334,18 @@ function toggleIndex(event){
         if ( !tab.classList.contains("set")) {
             // set right away, remove if there is an error
             tab.classList.add("set");
-            chrome.runtime.sendMessage({'type': 'addindex', 'url': url}, function addIndexChrome(response){
-                if ( !response.error ){
-                    storage.sites[host].indices[url] = true;
-                    chrome.storage.local.set({"sites": storage.sites});
-                } else {
-                    tab.classList.remove("set");
-                }
-            });
+            storage.sites[host].indices[url] = true;
         }
         // removing
         else {
             // remove right away, reset if there is an error
             tab.classList.remove("set");
-            delete storage.sites[host].indices[url];
-            chrome.runtime.sendMessage({'type': 'removeindex', 'url': url}, function removeIndexChrome(response){
-                if ( !response.error ){
-                    chrome.storage.local.set({"sites": storage.sites});
-                } else {
-                    tab.classList.add("set");
-                }
-            });
+            if ( storage.sites[host].indices[url] ) {
+                delete storage.sites[host].indices[url];    
+            }
         }
+        document.getElementById("parentTab").classList.toggle("hidden");
+        chrome.storage.local.set({"sites": storage.sites});
     });
 }
 
@@ -813,8 +804,8 @@ function captureFunction(capture){
 creates an object representing a site and saves it to chrome.storage.local
 the object contains:
     site: hostname of the site
-    rules: array of rule objects
-    indices: array of url strings for index pages
+    rules: object containing rule objects
+    indices: object with keys as urls for index pages
 */
 function setupHostname(){
     chrome.storage.local.get("sites", function setupHostnameChrome(storage){
