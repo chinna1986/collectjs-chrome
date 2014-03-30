@@ -9,16 +9,17 @@ module.exports = function(grunt){
                 }
             }
         },
-        copy: {
-            main: {
-                src: 'src/collect.js',
-                dest: 'collect/collect.js'
+        html_to_js_str: {
+            test: {
+                files: {
+                  'collect/collect.js': 'src/collect.js'
+                }
             }
-        }
+        },
     });
     
     grunt.loadNpmTasks('grunt-contrib-sass');
-    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-html-to-js-str');
     
-    grunt.registerTask('default', ['sass', 'copy']);
+    grunt.registerTask('default', ['sass', 'html_to_js_str']);
 }
