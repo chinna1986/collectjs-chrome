@@ -1,0 +1,9 @@
+{
+  "name": "collectJS",
+  "version": "0.7.0",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-sass": "^0.7.3",
+    "grunt-contrib-copy": "^0.5.0"
+  }
+}

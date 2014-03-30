@@ -2,4 +2,4 @@
 *.pem
 *.crx
 .sass-cache
-todo.txt
+node_modules
