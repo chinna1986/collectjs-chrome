@@ -2,6 +2,19 @@ module.exports = function(grunt){
     
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        jshint: {
+            options: {
+                browser: true,
+                validthis: true,
+                globalstrict: true,
+                globals: {
+                    chrome: true,
+                    SelectorFamily: true
+                },
+                expr: true
+            },
+            all: ['collect/collect.js']
+        },
         sass: {
             dist: {
                 files: {
@@ -18,8 +31,9 @@ module.exports = function(grunt){
         },
     });
     
+    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-html-to-js-str');
     
-    grunt.registerTask('default', ['sass', 'html_to_js_str']);
+    grunt.registerTask('default', ['sass', 'html_to_js_str', 'jshint']);
 }

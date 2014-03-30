@@ -166,7 +166,7 @@ var Collect = {
             family: document.getElementById("selectorHolder"),
             text: document.getElementById("selectorText"),
             parent: document.getElementById("parentSelector")
-        }
+        };
         // make sure there is a rules object for the current hostname
         setupHostname();
         this.loadSavedItems();
@@ -179,7 +179,6 @@ var Collect = {
             var host = window.location.hostname,
                 holder = document.getElementById("savedRuleHolder"),
                 site = storage.sites[host];
-            console.log("site: ", site);
             var rules = site.rules;
             if ( rules ) {
                 // rules
@@ -430,7 +429,7 @@ element in #ruleHTML
 */
 function showPreviousElement(event){
     var index = Collect.elementIndex,
-        len = Collect.elements.length
+        len = Collect.elements.length;
     Collect.elementIndex = (index=== 0) ? len-1 : index-1;
     addSelectorTextHTML(Collect.elements[Collect.elementIndex]);
     markCapture();
@@ -522,12 +521,12 @@ function previewSavedRule(event){
 
     if ( parent.dataset.index === "true" && Collect.indexPage ) {
         parentSelector = parent.dataset.parent ? parent.dataset.parent + " " : "",
-        selector = parentSelector + parent.dataset.selector,
-        elements = document.querySelectorAll(selector+Collect.not);
+        selector = parentSelector + parent.dataset.selector + Collect.not,
+        elements = document.querySelectorAll(selector);
         addClass("savedPreview", elements);    
     } else if ( parent.dataset.index === "false" && !Collect.indexPage ) {
-        selector = parent.dataset.selector,
-        elements = document.querySelectorAll(selector+Collect.not);
+        selector = parent.dataset.selector + Collect.not,
+        elements = document.querySelectorAll(selector);
         addClass("savedPreview", elements);    
     }
 }
@@ -574,7 +573,7 @@ function toggleTab(event){
 function togglePreview(event){
     event.preventDefault();
     event.stopPropagation();
-    var group = document.getElementById("previewGroup")
+    var group = document.getElementById("previewGroup");
     if ( group.classList.contains("show") ){
         group.classList.remove("show");
     } else {
@@ -587,8 +586,7 @@ function uploadRules(event){
         var host = window.location.hostname,
             site = storage.sites[host];
         chrome.runtime.sendMessage({'type': 'upload', data: site});        
-    })
-    
+    });
 }
 
 /****************
@@ -673,7 +671,7 @@ function ruleHTML(obj){
     span.appendChild(deltog);
 
     nametag.textContent = obj.name;
-    deltog.innerHTML = "&times;"
+    deltog.innerHTML = "&times;";
 
     nametag.addEventListener("mouseenter", previewSavedRule, false);
     nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
@@ -777,8 +775,8 @@ function addNoSelect(eles){
 }
 
 function selectorIsComplete(selector_object){
-    if ( selector_object.name === '' || selector_object.selector === ''
-        || selector_object.capture === '' ) {
+    if ( selector_object.name === '' || selector_object.selector === '' ||
+        selector_object.capture === '' ) {
         selector_object.incomplete = true;
     }
     return selector_object;
