@@ -180,7 +180,6 @@ body{
 }
 
 #ruleGroup{
-    height: 50px;
 
     .collectGroup{
         margin-right: 10px;
@@ -194,6 +193,15 @@ body{
         .deltog{
             cursor: pointer;
             background: $light-gray;
+        }
+    }
+
+    .ruleGroup{
+        margin-bottom: 15px;
+
+        h2{
+            text-decoration: underline;
+            margin: 10px 0;
         }
     }
 }

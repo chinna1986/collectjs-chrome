@@ -118,17 +118,20 @@ body {
 #optionGroup {
   height: 250px; }
 
-#ruleGroup {
-  height: 50px; }
-  #ruleGroup .collectGroup {
-    margin-right: 10px;
-    padding: 3px 0 3px 3px;
-    border: 1px solid #444444; }
-    #ruleGroup .collectGroup span {
-      padding: 3px; }
-    #ruleGroup .collectGroup .deltog {
-      cursor: pointer;
-      background: #efefef; }
+#ruleGroup .collectGroup {
+  margin-right: 10px;
+  padding: 3px 0 3px 3px;
+  border: 1px solid #444444; }
+  #ruleGroup .collectGroup span {
+    padding: 3px; }
+  #ruleGroup .collectGroup .deltog {
+    cursor: pointer;
+    background: #efefef; }
+#ruleGroup .ruleGroup {
+  margin-bottom: 15px; }
+  #ruleGroup .ruleGroup h2 {
+    text-decoration: underline;
+    margin: 10px 0; }
 
 #toggleParent {
   background: #45aacc;

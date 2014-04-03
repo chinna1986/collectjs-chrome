@@ -15,6 +15,7 @@ var Collect = {
         activeGroup: undefined
     },
     rules: {},
+    ruleGroups: {},
     indexPage: false,
     /*
     create a SelectorFamily given a css selector string
@@ -175,16 +176,17 @@ var Collect = {
         this.bubbleEvents();
     },
     loadSavedItems: function(){
+        // set the default group to attach to
+        this.ruleGroups.default = document.querySelector("#savedRuleHolder .ruleGroup[data-selector=default] .groupRules");
         chrome.storage.local.get('sites', function loadRulesChrome(storage){
             var host = window.location.hostname,
-                holder = document.getElementById("savedRuleHolder"),
-                site = storage.sites[host];
-            var rules = site.rules;
+                site = storage.sites[host],
+                rules = site.rules;
             if ( rules ) {
                 // rules
                 Collect.rules = rules;
                 for (var key in Collect.rules){
-                    holder.appendChild(ruleHTML(Collect.rules[key]));
+                    addRule(Collect.rules[key]);                    
                 }
             }
 
@@ -255,10 +257,9 @@ var Collect = {
 Collect.setup();
 
 function addInterface(){
-    var div = document.createElement("div");
+    var div = noSelectElement("div");
     div.setAttribute("id", "collectjs");
-    div.classList.add("noSelect");
-    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\"><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"optionGroup\" class=\"group\"></div><div id=\"ruleGroup\" class=\"group\"><div id=\"savedRuleHolder\"></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
+    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\"><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"optionGroup\" class=\"group\"></div><div id=\"ruleGroup\" class=\"group\"><div id=\"savedRuleHolder\"><div class=\"ruleGroup\" data-selector=\"default\"><div class=\"groupRules\"></div></div></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
     
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
@@ -508,7 +509,7 @@ function saveRuleEvent(event){
     }
     saveRule(rule);
     resetInterface();
-    document.getElementById("savedRuleHolder").appendChild(ruleHTML(rule));
+    addRule(rule);
 }
 
 function previewSavedRule(event){
@@ -640,18 +641,66 @@ function clearErrors(){
 add the message to #ruleAlert
 */
 function ruleAlertMessage(msg){
-    var p = document.createElement("p");
+    var p = noSelectElement("p");
     p.textContent = msg;
     document.getElementById("ruleAlert").appendChild(p);
+}
+
+
+/*
+add's a rule element to it's respective location in #ruleGroup
+*/
+function addRule(rule){
+    var holder, ruleElement;
+    if ( rule.parent ) {
+        holder = ruleHolderHTML(rule.parent);
+    } else {
+        holder = Collect.ruleGroups.default;
+    }
+
+    ruleElement = ruleHTML(rule);
+    holder.appendChild(ruleElement);
+}
+
+/*
+check if there is a ruleGroup for a rule's parent element, creates one and caches it if it doesn't exist
+returns an element for all rules with the same parent to append to
+*/
+function ruleHolderHTML(name){
+    var group, div, h2;
+    // check if group is cached, 
+    if ( Collect.ruleGroups[name] ) {
+        div = Collect.ruleGroups[name];
+    } else {
+        group = document.querySelector('.ruleGroup[data-selector="' + name + '"]');    
+        if ( !group ) {
+            group = noSelectElement("div");
+            h2 = noSelectElement("h2");
+            div = noSelectElement("div");
+
+            group.classList.add("ruleGroup");
+            group.dataset.selector = name;
+            h2.textContent = name;
+            div.classList.add("groupRules");
+
+            group.appendChild(h2);
+            group.appendChild(div);
+
+            Collect.ruleGroups[name] = div;
+
+            document.getElementById("savedRuleHolder").appendChild(group);
+        }
+    }
+    return div;
 }
 
 /*
 generate and return a span representing a rule object
 */
 function ruleHTML(obj){
-    var span = document.createElement("span"),
-        nametag = document.createElement("span"),
-        deltog = document.createElement("span");
+    var span = noSelectElement("span"),
+        nametag = noSelectElement("span"),
+        deltog = noSelectElement("span");
     span.dataset.selector = obj.selector;
     span.dataset.name = obj.name;
     span.dataset.capture = obj.capture;
@@ -663,9 +712,9 @@ function ruleHTML(obj){
         span.dataset.parent = obj.parent;
     }
 
-    span.classList.add("collectGroup", "noSelect");
-    nametag.classList.add("savedSelector", "noSelect");
-    deltog.classList.add("deltog", "noSelect");
+    span.classList.add("collectGroup");
+    nametag.classList.add("savedSelector");
+    deltog.classList.add("deltog");
 
     span.appendChild(nametag);
     span.appendChild(deltog);
@@ -710,6 +759,12 @@ function hideActive(){
 /********************
 UTILITY FUNCTIONS
 ********************/
+
+function noSelectElement(type){
+    var ele = document.createElement(type);
+    ele.classList.add("noSelect");
+    return ele;
+}
 
 // check if an element has a class
 function hasClass(ele, name){   
