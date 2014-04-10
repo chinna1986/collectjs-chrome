@@ -18,7 +18,7 @@ body{
 
 /* Interface */
 #collectjs{
-    z-index:100;
+    z-index:1000;
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -29,6 +29,35 @@ body{
     font-family: sans-serif;
     color: $black;
     text-align: left;
+
+    *{
+        color: $black;
+    }
+
+    button{
+        padding: 5px;
+        height: 100%;
+        border-radius: 3px;
+        background-color: #ccc;
+        border: 1px outset #7a7b7a;
+        font-size: 14px;
+        line-height: 1.2;
+        text-transform: none;
+    }
+
+    input{
+        box-shadow: none;
+        border-radius:0;
+        background: $white;
+        border: 1px solid $dark-gray;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    input[type=text]{
+        height: 20px;
+        padding: 2px;
+    }
 }
 
 #collectTopbar{
@@ -95,9 +124,11 @@ body{
         background: $white;
     }
 
-    .toggle, #closeCollect, #addIndex{
-        cursor: pointer;
-    }
+    
+}
+
+#collectTabs .toggle, #closeCollect, #addIndex{
+    cursor: pointer;
 }
 
 /* Preview */
@@ -206,13 +237,14 @@ body{
     }
 }
 
-#toggleParent{
+#parentWrapper button{
     background: $blue;
     font-size: 18px;
     line-height: 1;
     font-weight: bold;
     border: 0;
     cursor: pointer;
+    padding: 3px 5px;
 }
 
 #clearSelector{
@@ -294,7 +326,11 @@ body{
             margin: 0;
             display: inline-block;
         }
-    }    
+    }
+
+    input[type=text]{
+        width: 250px;
+    }
 }
 
 /* Selector */

@@ -4,7 +4,7 @@ body {
 
 /* Interface */
 #collectjs {
-  z-index: 100;
+  z-index: 1000;
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -15,6 +15,27 @@ body {
   font-family: sans-serif;
   color: black;
   text-align: left; }
+  #collectjs * {
+    color: black; }
+  #collectjs button {
+    padding: 5px;
+    height: 100%;
+    border-radius: 3px;
+    background-color: #ccc;
+    border: 1px outset #7a7b7a;
+    font-size: 14px;
+    line-height: 1.2;
+    text-transform: none; }
+  #collectjs input {
+    box-shadow: none;
+    border-radius: 0;
+    background: white;
+    border: 1px solid #444444;
+    font-size: 16px;
+    line-height: 1.2; }
+  #collectjs input[type=text] {
+    height: 20px;
+    padding: 2px; }
 
 #collectTopbar {
   position: relative; }
@@ -58,8 +79,9 @@ body {
     background: #bddbce; }
   #collectTabs .active {
     background: white; }
-  #collectTabs .toggle, #collectTabs #closeCollect, #collectTabs #addIndex {
-    cursor: pointer; }
+
+#collectTabs .toggle, #closeCollect, #addIndex {
+  cursor: pointer; }
 
 /* Preview */
 #selectorPreview {
@@ -133,13 +155,14 @@ body {
     text-decoration: underline;
     margin: 10px 0; }
 
-#toggleParent {
+#parentWrapper button {
   background: #45aacc;
   font-size: 18px;
   line-height: 1;
   font-weight: bold;
   border: 0;
-  cursor: pointer; }
+  cursor: pointer;
+  padding: 3px 5px; }
 
 #clearSelector {
   background: #f296a3; }
@@ -193,6 +216,8 @@ body {
   #ruleItems .rule label, #ruleItems .rule input {
     margin: 0;
     display: inline-block; }
+#ruleItems input[type=text] {
+  width: 250px; }
 
 /* Selector */
 #selectorHolder .selectorGroup {
