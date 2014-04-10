@@ -29,9 +29,11 @@ body{
     font-family: sans-serif;
     color: $black;
     text-align: left;
+    box-sizing: border-box;
 
     *{
         color: $black;
+        box-sizing: border-box;
     }
 
     button{
@@ -55,8 +57,9 @@ body{
     }
 
     input[type=text]{
-        height: 20px;
+        height: 24px;
         padding: 2px;
+        font-family: sans-serif;
     }
 }
 
@@ -244,7 +247,7 @@ body{
     font-weight: bold;
     border: 0;
     cursor: pointer;
-    padding: 3px 5px;
+    height: 18px;
 }
 
 #clearSelector{
