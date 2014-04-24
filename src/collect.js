@@ -940,6 +940,9 @@ function captureFunction(capture){
 rejects if name contains characters not allowed in filename: <, >, :, ", \, /, |, ?, *
 */
 function legalFilename(name){
+    if ( name === null ) {
+        return false;
+    }
     var badCharacters = /[<>:"\/\\\|\?\*]/,
         match = name.match(badCharacters);
     return ( match === null );

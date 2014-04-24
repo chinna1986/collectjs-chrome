@@ -212,6 +212,10 @@ describe("utility functions", function(){
                 expect(legalFilename(badNames[i])).toBe(false);
             }
         });
+
+        it("returns false for null name", function(){
+            expect(legalFilename(null)).toBe(false);
+        });
     });
 });
 
