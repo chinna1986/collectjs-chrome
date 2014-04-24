@@ -9,8 +9,9 @@ module.exports = function(grunt){
                 globalstrict: true,
                 globals: {
                     chrome: true,
-                    SelectorFamily: true
+                    SelectorFamily: true,
                 },
+                devel: true,
                 expr: true
             },
             all: ['collect/collect.js']
@@ -29,11 +30,23 @@ module.exports = function(grunt){
                 }
             }
         },
+        jasmine: {
+            pivotal: {
+                src: 'collect/collect.js',
+                options: {
+                    specs: 'tests/CollectSpec.js',
+                    helpers: 'tests/CollectHelper.js'
+                }
+            }
+        }
     });
     
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-html-to-js-str');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
     
     grunt.registerTask('default', ['sass', 'html_to_js_str', 'jshint']);
+
+    grunt.registerTask('test', ['html_to_js_str', 'jasmine']);
 }

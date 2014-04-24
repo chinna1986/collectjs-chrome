@@ -14,8 +14,11 @@ var Collect = {
         activeTab: undefined,
         activeGroup: undefined
     },
-    rules: {},
-    ruleGroups: {},
+    group: {
+        name: "default",
+        rules: {},
+        indices: {}
+    },
     indexPage: false,
     /*
     create a SelectorFamily given a css selector string
@@ -176,26 +179,23 @@ var Collect = {
         this.bubbleEvents();
     },
     loadSavedItems: function(){
-        // set the default group to attach to
-        this.ruleGroups.default = document.querySelector("#savedRuleHolder .ruleGroup[data-selector=default] .groupRules");
-        chrome.storage.local.get('sites', function loadRulesChrome(storage){
+        // add option elements for all of the groups in sites[window.location.hostname].groups
+        chrome.storage.local.get('sites', function loadGroupsChrome(storage){
             var host = window.location.hostname,
                 site = storage.sites[host],
-                rules = site.rules;
-            if ( rules ) {
-                // rules
-                Collect.rules = rules;
-                for (var key in Collect.rules){
-                    addRule(Collect.rules[key]);                    
-                }
+                groups = site.groups,
+                select = document.getElementById("allGroups"),
+                newOption;
+
+            for ( var key in groups ) {
+                newOption = document.createElement("option");
+                newOption.setAttribute("value", key);
+                newOption.textContent = key;
+                select.appendChild(newOption);
             }
 
-            if ( site.indices[window.location.href] ) {
-                Collect.indexPage= true;
-                document.getElementById("indexTab").classList.add("set");
-                document.getElementById("addIndex").checked = true;
-                document.getElementById("parentTab").classList.remove("hidden");
-            }
+            Collect.group = groups["default"];
+            loadGroupObject(Collect.group);
         });
     },
     interfaceEvents: function(){
@@ -216,7 +216,10 @@ var Collect = {
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
         document.getElementById("previewTab").addEventListener("click", togglePreview, false);
-        document.getElementById("uploadRules").addEventListener("click", uploadRules, false);        
+        document.getElementById("uploadRules").addEventListener("click", uploadRules, false);
+        document.getElementById("newGroup").addEventListener("click", createNewGroup, false);
+        document.getElementById("deleteGroup").addEventListener("click", deleteGroup, false);
+        document.getElementById("allGroups").addEventListener("change", loadGroup, false);
     },
     /*
     events that bubble up from selector elements, but interact with the interface
@@ -259,8 +262,7 @@ Collect.setup();
 function addInterface(){
     var div = noSelectElement("div");
     div.setAttribute("id", "collectjs");
-    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\"><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"optionGroup\" class=\"group\"></div><div id=\"ruleGroup\" class=\"group\"><div id=\"savedRuleHolder\"><div class=\"ruleGroup\" data-selector=\"default\"><div class=\"groupRules\"></div></div></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
-    
+    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\"><div class=\"tab toggle\" id=\"groupTab\" data-for=\"groupGroup\">Group<span id=\"groupName\"></span></div><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"groupGroup\" class=\"group\"><select id=\"allGroups\"></select><button id=\"newGroup\">Add Rule Group</button><button id=\"deleteGroup\">Remove Rule Group</button></div><div id=\"optionGroup\" class=\"group\"></div><div id=\"ruleGroup\" class=\"group\"><div id=\"savedRuleHolder\"><div class=\"ruleGroup\" data-selector=\"default\"><div class=\"groupRules\"></div></div></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
 }
@@ -329,19 +331,20 @@ function toggleIndex(event){
     chrome.storage.local.get("sites", function(storage){
         var host = window.location.hostname,
             url = window.location.href,
-            tab = document.getElementById("indexTab");
+            tab = document.getElementById("indexTab"),
+            group = Collect.currentGroup;
         // adding
         if ( !tab.classList.contains("set")) {
             // set right away, remove if there is an error
             tab.classList.add("set");
-            storage.sites[host].indices[url] = true;
+            storage.sites[host].groups[group].indices[url] = true;
         }
         // removing
         else {
             // remove right away, reset if there is an error
             tab.classList.remove("set");
-            if ( storage.sites[host].indices[url] ) {
-                delete storage.sites[host].indices[url];    
+            if ( storage.sites[host].groups[group].indices[url] ) {
+                delete storage.sites[host].groups[group].indices[url];    
             }
         }
         document.getElementById("parentTab").classList.toggle("hidden");
@@ -585,8 +588,92 @@ function togglePreview(event){
 function uploadRules(event){
     chrome.storage.local.get(null, function(storage){
         var host = window.location.hostname,
-            site = storage.sites[host];
-        chrome.runtime.sendMessage({'type': 'upload', data: site});        
+            site = storage.sites[host],
+            group = Collect.currentGroup;
+        console.log(site.groups[group]);
+        chrome.runtime.sendMessage({'type': 'upload', data: site.groups[group]});
+    });
+}
+
+function createNewGroup(event){
+    event.preventDefault();
+    var name = prompt("Group Name");
+    // make sure name isn't empty string
+    if ( name === "" ) {
+        return;
+    }
+    chrome.storage.local.get("sites", function(storage){
+        var host = window.location.hostname,
+            site = storage.sites[host],
+            newOption;
+
+        // if group already exists, set it as the currentGroup
+        if ( site.groups[name] ) {
+            setCurrentGroup(document.querySelector("#allGroups option[value=" + name + "]"));
+            return;
+        } else {
+            newOption = document.createElement("option");
+            newOption.setAttribute("value", name);
+            newOption.textContent = name;
+            document.getElementById("allGroups").appendChild(newOption);
+            setCurrentGroup(newOption);
+            
+            storage.sites[host].groups[name] = {
+                name: name,
+                indices: {},
+                rules: {}
+            };
+            chrome.storage.local.set({'sites': storage.sites});
+        }
+    });
+}
+
+/*
+deletes the group currently selected, and removes its associated option from #allGroups
+if the current group is "default", delete the rules for the group but don't delete the group
+*/
+function deleteGroup(event){
+    event.preventDefault();
+    var currGroup = document.querySelector("#allGroups option:checked"),
+        groupName = currGroup.value,
+        defaultGroup = (groupName === "default"),
+        confirmed;
+    if ( groupName === "default" ) {
+        confirmed = confirm("Cannot delete \"default\" group. Do you want to clear out all of its rules instead?");
+    } else {
+        confirmed = confirm("Are you sure you want to delete this group and all of its related rules?");    
+    }
+    if ( !confirmed ) {
+        return;
+    }
+    chrome.storage.local.get("sites", function deleteGroupChrome(storage){
+        var host = window.location.hostname,
+            site = storage.sites[host],
+            currOption = document.querySelector("#allGroups option:checked");
+        // just delete all of the rules for "default" option
+        if ( defaultGroup ) {
+            site.groups["default"] = {};
+        } else {
+            delete site.groups[groupName];
+            currOption.parentElement.removeChild(currOption);
+            Collect.currentGroup = "default";
+            setCurrentGroup(document.querySelect("#allGroups option[value=default]"));
+        }
+        storage.sites[host] = site;
+        chrome.storage.local.set({'sites': storage.sites});
+    });
+}
+
+function loadGroup(event){
+    event.preventDefault();
+    var option = this.querySelector('option:checked'),
+        name = option.value;
+    chrome.storage.local.get('sites', function loadGroupsChrome(storage){
+        var host = window.location.hostname,
+            site = storage.sites[host],
+            group = site.groups[name];
+        Collect.group = group;
+        loadGroupObject(group);
     });
 }
 
@@ -604,6 +691,63 @@ function addSelectorTextHTML(ele){
     rule.innerHTML = selectorTextHTML(ele);
     capture = rule.getElementsByClassName("capture");
     addEvents(capture, "click", capturePreview);
+}
+
+function setCurrentGroup(option){
+    Collect.currentGroup = option.value;
+    option.setAttribute("selected", true);
+    document.getElementById("groupName").textContent = ": " + option.value;
+}
+
+/*
+given a group object (rules, indices)
+*/
+function loadGroupObject(group){
+    var currOption = document.querySelector("#allGroups option[value=" + group.name + "]");
+    setCurrentGroup(currOption);
+    if ( group.rules ) {
+        clearRules();
+        for (var key in group.rules){
+            addRule(group.rules[key]);                    
+        }
+    }
+    if ( group.indices[window.location.href] ) {
+        Collect.indexPage = true;
+        document.getElementById("indexTab").classList.add("set");
+        document.getElementById("addIndex").checked = true;
+        document.getElementById("parentTab").classList.remove("hidden");
+    } else {
+        Collect.indexPage = false;
+        document.getElementById("indexTab").classList.remove("set");
+        document.getElementById("addIndex").checked = false;
+        document.getElementById("parentTab").classList.add("hidden");
+    }
+}
+
+function clearGroup(name){
+    var currOption = document.querySelector("#allGroups option[value=" + name + "]");
+        setCurrentGroup(currOption);
+
+    chrome.storage.local.get('sites', function clearGroupChrome(storage){
+        var host = window.location.hostname,
+            site = storage.sites[host],
+            group = site.groups[name],
+            rules = group.rules;
+    });   
+}
+
+function clearRules(){
+    // clear out, don't delete default ruleGroup
+    var groups = document.getElementsByClassName("ruleGroup"),
+        curr;
+    for ( var i=0, len=groups.length; i<len; i++ ) {
+        curr = groups[i];
+        if ( curr.dataset.selector === "default" ) {
+            curr.querySelector(".groupRules").innerHTML = "";
+        } else {
+            curr.parentElement.removeChild(curr);
+        }
+    }
 }
 
 /*
@@ -652,10 +796,11 @@ add's a rule element to it's respective location in #ruleGroup
 */
 function addRule(rule){
     var holder, ruleElement;
+
     if ( rule.parent ) {
         holder = ruleHolderHTML(rule.parent);
     } else {
-        holder = Collect.ruleGroups.default;
+        holder = document.querySelector('.ruleGroup[data-selector="default"] .groupRules');
     }
 
     ruleElement = ruleHTML(rule);
@@ -663,33 +808,25 @@ function addRule(rule){
 }
 
 /*
-check if there is a ruleGroup for a rule's parent element, creates one and caches it if it doesn't exist
 returns an element for all rules with the same parent to append to
 */
 function ruleHolderHTML(name){
-    var group, div, h2;
-    // check if group is cached, 
-    if ( Collect.ruleGroups[name] ) {
-        div = Collect.ruleGroups[name];
-    } else {
-        group = document.querySelector('.ruleGroup[data-selector="' + name + '"]');    
-        if ( !group ) {
-            group = noSelectElement("div");
-            h2 = noSelectElement("h2");
-            div = noSelectElement("div");
+    var group = document.querySelector('.ruleGroup[data-selector="' + name + '"]'),
+        div, h2;
+    if ( !group ) {
+        group = noSelectElement("div");
+        h2 = noSelectElement("h2");
+        div = noSelectElement("div");
 
-            group.classList.add("ruleGroup");
-            group.dataset.selector = name;
-            h2.textContent = name;
-            div.classList.add("groupRules");
+        group.classList.add("ruleGroup");
+        group.dataset.selector = name;
+        h2.textContent = name;
+        div.classList.add("groupRules");
 
-            group.appendChild(h2);
-            group.appendChild(div);
+        group.appendChild(h2);
+        group.appendChild(div);
 
-            Collect.ruleGroups[name] = div;
-
-            document.getElementById("savedRuleHolder").appendChild(group);
-        }
+        document.getElementById("savedRuleHolder").appendChild(group);
     }
     return div;
 }
@@ -852,13 +989,16 @@ function captureFunction(capture){
 }
 
 //    STORAGE
-
 /*
 creates an object representing a site and saves it to chrome.storage.local
-the object contains:
-    site: hostname of the site
-    rules: object containing rule objects
-    indices: object with keys as urls for index pages
+the object is:
+    host:
+        site: <hostname>
+        groups:
+            <name>:
+                name: <name>,
+                indices: {},
+                rules: {}
 */
 function setupHostname(){
     chrome.storage.local.get("sites", function setupHostnameChrome(storage){
@@ -866,8 +1006,13 @@ function setupHostname(){
         if ( !storage.sites[host] ) {
             storage.sites[host] = {
                 site: host,
-                rules: {},
-                indices: {}
+                groups: {
+                    "default": {
+                        name: "default",
+                        indices: {},
+                        rules: {}
+                    }
+                }
             };
             chrome.storage.local.set({'sites': storage.sites});
         }        
@@ -878,8 +1023,9 @@ function saveRule(rule){
     chrome.storage.local.get('sites', function saveRuleChrome(storage){
         var host = window.location.hostname,
             site = storage.sites[host],
-            name = rule.name;
-        site.rules[name] = rule;
+            name = rule.name,
+            group = Collect.currentGroup;
+        site.groups[group].rules[name] = rule;
         storage.sites[host] = site;
         chrome.storage.local.set({'sites': storage.sites});
     });
@@ -888,8 +1034,9 @@ function saveRule(rule){
 function deleteRule(name){
     chrome.storage.local.get('sites', function deleteRuleChrome(storage){
         var host = window.location.hostname,
-            sites = storage.sites;
-        delete sites[host].rules[name];
+            sites = storage.sites,
+            group = Collect.currentGroup;
+        delete sites[host].groups[group].rules[name];
         chrome.storage.local.set({'sites': sites});
     });  
 }
@@ -923,7 +1070,8 @@ function selectorTextHTML(element) {
 }
 
 function cleanElement(ele){
-    ele.classList.remove('queryCheck', 'collectHighlight');
+    ele.classList.remove('queryCheck');
+    ele.classList.remove('collectHighlight');
     if ( ele.hasAttribute('src') ) {
         var value = ele.getAttribute('src'),
             query = value.indexOf('?');
@@ -939,7 +1087,6 @@ function cleanElement(ele){
         }
         ele.innerHTML = innerText;
     }
-
     return ele;
 }
 

@@ -19,6 +19,7 @@
     </div>
     <div id="collectOptions" class="topbarGroup">
         <div id="collectTabs">
+            <div class="tab toggle" id="groupTab" data-for="groupGroup">Group<span id="groupName"></span></div>
             <div class="tab toggle" id="ruleTab" data-for="ruleGroup">Rules</div>
             <div class="tab toggle" id="optionTab" data-for="optionGroup">Options</div>
             <div class="tab" id="indexTab">
@@ -28,6 +29,11 @@
             <div class="tab" id="closeCollect" title="close collectjs">&times;</div>
         </div>
         <div id="tabGroups">
+            <div id="groupGroup" class="group">
+                <select id="allGroups"></select>
+                <button id="newGroup">Add Rule Group</button>
+                <button id="deleteGroup">Remove Rule Group</button>
+            </div>
             <div id="optionGroup" class="group"></div>
             <div id="ruleGroup" class="group">
                 <div id="savedRuleHolder">

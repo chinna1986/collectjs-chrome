@@ -13,3 +13,29 @@ To pack extension and use:
 3) Open the folder where the packed extension (a .crx file) is located (that should be one folder above the extension folder)
 4) Drag the .crx file to the Chrome extensions page
 5) Accept the extension's permissions
+
+Rules format:
+
+    sites: {
+        example.com: {
+            groups: {
+                name: {
+                    name: name,
+                    indices: [...],
+                    rules: {
+                        name: {
+                            capture: ...,
+                            index: ...,
+                            name: ...,
+                            selector: ...,
+                            parent: ...,
+                            range: ...        
+                        }
+                    }
+                },
+                ...
+            }
+        },
+        ...
+    }
+

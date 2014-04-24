@@ -3,6 +3,7 @@ describe("collect", function(){
 });
 
 describe("html functions", function(){
+    
     describe("ruleHTML", function(){
         var selectorObj;
         beforeEach(function(){
@@ -14,12 +15,12 @@ describe("html functions", function(){
             };
         });
         it("sets savedSelector class when complete", function(){
-            var html = '<span data-selector="a" data-name="link" data-capture="attr-href" data-index="false" class="collectGroup noSelect">' + 
-                '<span class="savedSelector noSelect">link</span><span class="deltog noSelect">×</span></span>';
+            var html = '<span class="noSelect collectGroup" data-selector="a" data-name="link" data-capture="attr-href" data-index="false">' + 
+                '<span class="noSelect savedSelector">link</span><span class="noSelect deltog">×</span></span>';
             expect(ruleHTML(selectorObj).outerHTML).toEqual(html);
         });
     });
-
+    
     describe("cleanElement", function(){
         var ele;
         beforeEach(function(){
@@ -31,7 +32,9 @@ describe("html functions", function(){
             expect(ele.getAttribute("src")).toEqual("http://www.example.com/");
         });
         it("removes unwanted classes", function(){
-            ele.classList.add("queryCheck", "keeper", "collectHighlight");
+            ele.classList.add("queryCheck");
+            ele.classList.add("keeper");
+            ele.classList.add("collectHighlight");
             ele = cleanElement(ele);
             expect(ele.className).toEqual("keeper");
         });
