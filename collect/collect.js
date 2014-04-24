@@ -184,7 +184,6 @@ var Collect = {
     },
     loadSavedItems: function(){
         // add option elements for all of the groups in sites[window.location.hostname].groups
-        console.log("!");
         chrome.storage.local.get('sites', function loadGroupsChrome(storage){
             var host = window.location.hostname,
                 site = storage.sites[host],
@@ -1069,6 +1068,8 @@ function ruleHolderHTML(name){
         group.appendChild(div);
 
         document.getElementById("savedRuleHolder").appendChild(group);
+    } else {
+        div = group.getElementsByTagName("div")[0];
     }
     return div;
 }
