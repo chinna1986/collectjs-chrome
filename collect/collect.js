@@ -165,15 +165,18 @@ var Collect = {
     messy proof of concept
     */
     setup: function(){
+        // make sure there is a rules object for the current hostname
+        
         addInterface();
         this.html = {
             family: document.getElementById("selectorHolder"),
             text: document.getElementById("selectorText"),
             parent: document.getElementById("parentSelector")
         };
-        // make sure there is a rules object for the current hostname
-        setupHostname();
-        this.loadSavedItems();
+        
+        // don't call loadSavedItems until hostname has been setup because it is asynchronous
+        // and will throw errors the first time visiting a site and opening collectJS
+        setupHostname(this.loadSavedItems);
         this.turnOn();
         this.interfaceEvents();
         this.bubbleEvents();
@@ -590,7 +593,6 @@ function uploadRules(event){
         var host = window.location.hostname,
             site = storage.sites[host],
             group = Collect.currentGroup;
-        console.log(site.groups[group]);
         chrome.runtime.sendMessage({'type': 'upload', data: site.groups[group]});
     });
 }
@@ -1000,7 +1002,7 @@ the object is:
                 indices: {},
                 rules: {}
 */
-function setupHostname(){
+function setupHostname(callback){
     chrome.storage.local.get("sites", function setupHostnameChrome(storage){
         var host = window.location.hostname;
         if ( !storage.sites[host] ) {
@@ -1014,7 +1016,9 @@ function setupHostname(){
                     }
                 }
             };
-            chrome.storage.local.set({'sites': storage.sites});
+            chrome.storage.local.set({'sites': storage.sites}, function(){
+                callback();
+            });
         }        
     });
 }
