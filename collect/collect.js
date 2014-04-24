@@ -8,6 +8,7 @@ var Collect = {
     */
     family: undefined,
     parentSelector: undefined,
+    // elements within the page that can be selected by collectJS
     eles: [],
     not: ":not(.noSelect)",
     options: {
@@ -601,9 +602,10 @@ function createNewGroup(event){
     event.preventDefault();
     var name = prompt("Group Name");
     // make sure name isn't empty string
-    if ( name === "" ) {
+    if ( name === "" || !legalFilename(name)) {
         return;
     }
+    
     chrome.storage.local.get("sites", function(storage){
         var host = window.location.hostname,
             site = storage.sites[host],
@@ -679,10 +681,9 @@ function loadGroup(event){
     });
 }
 
-/****************
-EVENT HELPERS
-****************/
-
+/***********************
+    EVENT HELPERS
+***********************/
 /*
 given an element, generate the html to represent an element and its "captureable" attributes and
 create the event listeners for it to work
@@ -810,66 +811,7 @@ function addRule(rule){
 }
 
 /*
-returns an element for all rules with the same parent to append to
-*/
-function ruleHolderHTML(name){
-    var group = document.querySelector('.ruleGroup[data-selector="' + name + '"]'),
-        div, h2;
-    if ( !group ) {
-        group = noSelectElement("div");
-        h2 = noSelectElement("h2");
-        div = noSelectElement("div");
-
-        group.classList.add("ruleGroup");
-        group.dataset.selector = name;
-        h2.textContent = name;
-        div.classList.add("groupRules");
-
-        group.appendChild(h2);
-        group.appendChild(div);
-
-        document.getElementById("savedRuleHolder").appendChild(group);
-    }
-    return div;
-}
-
-/*
-generate and return a span representing a rule object
-*/
-function ruleHTML(obj){
-    var span = noSelectElement("span"),
-        nametag = noSelectElement("span"),
-        deltog = noSelectElement("span");
-    span.dataset.selector = obj.selector;
-    span.dataset.name = obj.name;
-    span.dataset.capture = obj.capture;
-    span.dataset.index = obj.index;
-    if ( obj.range) {
-        span.dataset.range = obj.range;
-    }
-    if ( obj.parent ) {
-        span.dataset.parent = obj.parent;
-    }
-
-    span.classList.add("collectGroup");
-    nametag.classList.add("savedSelector");
-    deltog.classList.add("deltog");
-
-    span.appendChild(nametag);
-    span.appendChild(deltog);
-
-    nametag.textContent = obj.name;
-    deltog.innerHTML = "&times;";
-
-    nametag.addEventListener("mouseenter", previewSavedRule, false);
-    nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
-    deltog.addEventListener("click", deleteRuleEvent, false);
-    
-    return span;
-}
-
-/*
-show the .grouop associated with a tab
+show the .group associated with a tab
 */
 function showActive(ele){
     // if one is already shown, hide that first
@@ -895,9 +837,10 @@ function hideActive(){
     Collect.options.activeGroup = undefined;
 }
 
-/********************
-UTILITY FUNCTIONS
-********************/
+/***********************
+    UTILITY FUNCTIONS
+general helper functions
+***********************/
 
 function noSelectElement(type){
     var ele = document.createElement(type);
@@ -920,6 +863,9 @@ function clearClass(name){
     }
 }
 
+/*
+iterate over array (or converted nodelist) and add a class to each element
+*/
 function addClass(name, eles){
     eles = Array.prototype.slice.call(eles);
     var len = eles.length;
@@ -990,7 +936,19 @@ function captureFunction(capture){
     }
 }
 
-//    STORAGE
+/*
+rejects if name contains characters not allowed in filename: <, >, :, ", \, /, |, ?, *
+*/
+function legalFilename(name){
+    var badCharacters = /[<>:"\/\\\|\?\*]/,
+        match = name.match(badCharacters);
+    return ( match === null );
+}
+
+
+/***********************
+        STORAGE
+***********************/
 /*
 creates an object representing a site and saves it to chrome.storage.local
 the object is:
@@ -1045,7 +1003,67 @@ function deleteRule(name){
     });  
 }
 
-//GENERAL HTML RETURNING FUNCTIONS
+/***********************
+    HTML FUNCTIONS
+***********************/
+/*
+generate and return a span representing a rule object
+*/
+function ruleHTML(obj){
+    var span = noSelectElement("span"),
+        nametag = noSelectElement("span"),
+        deltog = noSelectElement("span");
+    span.dataset.selector = obj.selector;
+    span.dataset.name = obj.name;
+    span.dataset.capture = obj.capture;
+    span.dataset.index = obj.index;
+    if ( obj.range) {
+        span.dataset.range = obj.range;
+    }
+    if ( obj.parent ) {
+        span.dataset.parent = obj.parent;
+    }
+
+    span.classList.add("collectGroup");
+    nametag.classList.add("savedSelector");
+    deltog.classList.add("deltog");
+
+    span.appendChild(nametag);
+    span.appendChild(deltog);
+
+    nametag.textContent = obj.name;
+    deltog.innerHTML = "&times;";
+
+    nametag.addEventListener("mouseenter", previewSavedRule, false);
+    nametag.addEventListener("mouseleave", unpreviewSavedRule, false);
+    deltog.addEventListener("click", deleteRuleEvent, false);
+    
+    return span;
+}
+
+/*
+returns an element for all rules with the same parent to append to
+*/
+function ruleHolderHTML(name){
+    var group = document.querySelector('.ruleGroup[data-selector="' + name + '"]'),
+        div, h2;
+    if ( !group ) {
+        group = noSelectElement("div");
+        h2 = noSelectElement("h2");
+        div = noSelectElement("div");
+
+        group.classList.add("ruleGroup");
+        group.dataset.selector = name;
+        h2.textContent = name;
+        div.classList.add("groupRules");
+
+        group.appendChild(h2);
+        group.appendChild(div);
+
+        document.getElementById("savedRuleHolder").appendChild(group);
+    }
+    return div;
+}
 
 //given an element, return html for selector text with 
 //"capture"able parts wrapped
