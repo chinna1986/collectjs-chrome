@@ -184,6 +184,7 @@ var Collect = {
     },
     loadSavedItems: function(){
         // add option elements for all of the groups in sites[window.location.hostname].groups
+        console.log("!");
         chrome.storage.local.get('sites', function loadGroupsChrome(storage){
             var host = window.location.hostname,
                 site = storage.sites[host],
@@ -962,6 +963,8 @@ the object is:
                 name: <name>,
                 indices: {},
                 rules: {}
+Because the necessary storage structure doesn't exist the first time visiting a site, callback is 
+used to call any functions that require storage to be setup after the initial setup is complete
 */
 function setupHostname(callback){
     chrome.storage.local.get("sites", function setupHostnameChrome(storage){
@@ -980,7 +983,9 @@ function setupHostname(callback){
             chrome.storage.local.set({'sites': storage.sites}, function(){
                 callback();
             });
-        }        
+        } else {
+            callback();
+        }
     });
 }
 
