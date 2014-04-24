@@ -601,9 +601,10 @@ function createNewGroup(event){
     event.preventDefault();
     var name = prompt("Group Name");
     // make sure name isn't empty string
-    if ( name === "" ) {
+    if ( name === "" || !legalFilename(name)) {
         return;
     }
+    
     chrome.storage.local.get("sites", function(storage){
         var host = window.location.hostname,
             site = storage.sites[host],
@@ -682,6 +683,15 @@ function loadGroup(event){
 /****************
 EVENT HELPERS
 ****************/
+
+/*
+characters not allowed in filename: <, >, :, ", \, /, |, ?, *
+*/
+function legalFilename(name){
+    var badCharacters = /[<>:"\/\\\|\?\*]/,
+        match = name.match(badCharacters);
+    return ( match === null );
+}
 
 /*
 given an element, generate the html to represent an element and its "captureable" attributes and
