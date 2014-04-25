@@ -283,6 +283,7 @@ function resetInterface(){
     }
 
     // ruleItems
+    document.getElementById("previewGroup").classList.remove("show");
     document.getElementById("rulePreview").innerHTML = "";
     document.getElementById("ruleHTML").innerHTML = "";
     var inputs = document.querySelectorAll("#ruleInputs input"),
@@ -997,6 +998,8 @@ function saveRule(rule){
         site.groups[group].rules[name] = rule;
         storage.sites[host] = site;
         chrome.storage.local.set({'sites': storage.sites});
+        // hide preview after saving rule
+        document.getElementById("previewGroup").classList.remove("show");
     });
 }
 
