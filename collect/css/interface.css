@@ -48,7 +48,7 @@ body {
 
 #selectorTabs, #collectTabs {
   position: absolute;
-  top: -31px;
+  top: -30px;
   height: 30px;
   padding: 0;
   margin: 0;
@@ -58,11 +58,15 @@ body {
     word-spacing: normal;
     display: inline-block;
     padding: 0 5px;
-    height: 30px;
+    height: 29px;
     line-height: 1.5;
     cursor: pointer; }
     #selectorTabs .tab div, #collectTabs .tab div {
       display: inline-block; }
+  #selectorTabs .toggle:hover, #collectTabs .toggle:hover {
+    background: #e0bd00; }
+  #selectorTabs .tab.active, #collectTabs .tab.active {
+    height: 30px; }
 
 #selectorTabs {
   left: 0;

@@ -629,6 +629,7 @@ function createNewGroup(event){
                 rules: {}
             };
             chrome.storage.local.set({'sites': storage.sites});
+            hideActive();
         }
     });
 }
@@ -662,10 +663,11 @@ function deleteGroup(event){
             delete site.groups[groupName];
             currOption.parentElement.removeChild(currOption);
             Collect.currentGroup = "default";
-            setCurrentGroup(document.querySelect("#allGroups option[value=default]"));
+            setCurrentGroup(document.querySelector("#allGroups option[value=default]"));
         }
         storage.sites[host] = site;
         chrome.storage.local.set({'sites': storage.sites});
+        hideActive();
     });
 }
 
