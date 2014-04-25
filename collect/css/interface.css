@@ -103,18 +103,6 @@ body {
   padding: 0 3px;
   display: inline-block; }
 
-#removeParent {
-  cursor: pointer;
-  border: 0;
-  font-weight: bolder;
-  font-size: 18px;
-  background: inherit;
-  line-height: 1;
-  color: #f296a3; }
-
-#removeParent:hover {
-  color: #c91900; }
-
 #selectorTabs {
   left: 0; }
 
@@ -165,7 +153,9 @@ body {
   font-weight: bold;
   border: 0;
   cursor: pointer;
-  height: 18px; }
+  height: 18px;
+  font-family: sans-serif;
+  vertical-align: inherit; }
 
 #clearSelector {
   background: #f296a3; }

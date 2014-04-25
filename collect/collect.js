@@ -1097,7 +1097,8 @@ function selectorTextHTML(element) {
 
     if ( clone.textContent !== "" ) {
         text = clone.textContent;
-        html = html.replace(text, wrapTextHTML(text, 'text'));
+        // wrap tags so the textContent and not something else is replaced
+        html = html.replace(("&gt;" + text + "&lt;"), ("&gt;" + wrapTextHTML(text, 'text') + "&lt;"));
     }
 
     return html;
@@ -1125,6 +1126,8 @@ function cleanElement(ele){
 }
 
 function attributeText(attr) {
+    // encode ampersand
+    attr.value = attr.value.replace("&", "&amp;");
     return attr.name + "=\"" + attr.value + "\"";
 }
 
