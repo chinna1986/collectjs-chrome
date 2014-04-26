@@ -1,4 +1,5 @@
 "use strict";
+
 /*********************************
             COLLECT
 *********************************/
@@ -9,17 +10,8 @@ var Collect = {
     family: undefined,
     parentSelector: undefined,
     // elements within the page that can be selected by collectJS
-    eles: [],
+    allElements: [],
     not: ":not(.noSelect)",
-    options: {
-        activeTab: undefined,
-        activeGroup: undefined
-    },
-    group: {
-        name: "default",
-        rules: {},
-        indices: {}
-    },
     indexPage: false,
     /*
     create a SelectorFamily given a css selector string
@@ -93,9 +85,9 @@ var Collect = {
         var prefix = this.parentSelector ? this.parentSelector : "body",
             curr;
         this.turnOff();
-        this.eles = document.querySelectorAll(prefix + " *" + this.not);
-        for ( var i=0, len=this.eles.length; i<len; i++ ) {
-            curr = this.eles[i];
+        this.allElements = document.querySelectorAll(prefix + " *" + this.not);
+        for ( var i=0, len=this.allElements.length; i<len; i++ ) {
+            curr = this.allElements[i];
             curr.addEventListener('click', createSelectorFamily, false);
             curr.addEventListener('mouseenter', highlightElement, false);
             curr.addEventListener('mouseleave', unhighlightElement, false);
@@ -108,14 +100,14 @@ var Collect = {
     */
     turnOff: function(){
         var curr;
-        for ( var i=0, len=this.eles.length; i<len; i++ ) {
-            curr = this.eles[i];
+        for ( var i=0, len=this.allElements.length; i<len; i++ ) {
+            curr = this.allElements[i];
             curr.removeEventListener('click', createSelectorFamily);
             curr.removeEventListener('mouseenter', highlightElement);
             curr.removeEventListener('mouseleave', unhighlightElement);
             
         }
-        this.eles = [];
+        this.allElements = [];
     },
     /*
     selector string based on whether toggleable elements are off or not
@@ -198,8 +190,7 @@ var Collect = {
                 select.appendChild(newOption);
             }
 
-            Collect.group = groups["default"];
-            loadGroupObject(Collect.group);
+            loadGroupObject(groups["default"]);
         });
     },
     interfaceEvents: function(){
@@ -207,21 +198,20 @@ var Collect = {
         document.getElementById("clearSelector").addEventListener('click', removeSelectorEvent, false);
         document.getElementById("saveSelector").addEventListener("click", showRuleInputs, false);
 
-        // rule preview
+        // rules
         document.getElementById("saveRule").addEventListener("click", saveRuleEvent, false);
         document.getElementById("ruleCyclePrevious").addEventListener("click", showPreviousElement, false);
         document.getElementById("ruleCycleNext").addEventListener("click", showNextElement, false);
         document.getElementById("ruleRange").addEventListener("blur", applyRuleRange, false);
-
+        document.getElementById("uploadRules").addEventListener("click", uploadRules, false);
 
         // tabs
-        addEvents(document.querySelectorAll("#collectTabs .toggle"), 'click', toggleTab);
         document.getElementById("addIndex").addEventListener("click", toggleIndex, false);
         document.getElementById('closeCollect').addEventListener('click', removeInterface, false);
         document.getElementById("toggleParent").addEventListener("click", toggleParentEvent, false);
-        document.getElementById("previewTab").addEventListener("click", togglePreview, false);
-        document.getElementById("uploadRules").addEventListener("click", uploadRules, false);
-        document.getElementById("newGroup").addEventListener("click", createNewGroup, false);
+
+        // groups
+        document.getElementById("newGroup").addEventListener("click", createGroup, false);
         document.getElementById("deleteGroup").addEventListener("click", deleteGroup, false);
         document.getElementById("allGroups").addEventListener("change", loadGroup, false);
     },
@@ -266,9 +256,12 @@ Collect.setup();
 function addInterface(){
     var div = noSelectElement("div");
     div.setAttribute("id", "collectjs");
-    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previewGroup\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\"><div id=\"previewGroup\" class=\"group\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\"><div class=\"tab toggle\" id=\"groupTab\" data-for=\"groupGroup\">Group<span id=\"groupName\"></span></div><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"ruleGroup\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"optionGroup\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\"><div id=\"groupGroup\" class=\"group\"><select id=\"allGroups\"></select><button id=\"newGroup\">Add Rule Group</button><button id=\"deleteGroup\">Remove Rule Group</button></div><div id=\"optionGroup\" class=\"group\"></div><div id=\"ruleGroup\" class=\"group\"><div id=\"savedRuleHolder\"><div class=\"ruleGroup\" data-selector=\"default\"><div class=\"groupRules\"></div></div></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
+    div.innerHTML = "<div id=\"collectTopbar\"><div id=\"selectorButtons\" class=\"topbarGroup\"><div id=\"selectorTabs\" class=\"tabs\"><div class=\"tab hidden\" id=\"parentTab\"><div id=\"parentWrapper\" title=\"parent selector\">Parent <span id=\"parentSelector\"></span><button id=\"toggleParent\" title=\"add parent selector\">+</button></div></div><div class=\"tab\" id=\"selectorCount\">Count <span id=\"currentCount\"></span></div><div class=\"tab toggle\" id=\"previewTab\" data-for=\"previews\">Preview</div><div class=\"tab\" id=\"clearSelector\">Clear</div></div><div id=\"selectorGroups\" class=\"groups\"><div class=\"group previews\"><div id=\"rulePreview\"></div></div></div></div><div id=\"collectOptions\" class=\"topbarGroup\"><div id=\"collectTabs\" class=\"tabs\"><div class=\"tab toggle\" id=\"groupTab\" data-for=\"groups\">Group<span id=\"groupName\"></span></div><div class=\"tab toggle\" id=\"ruleTab\" data-for=\"rules\">Rules</div><div class=\"tab toggle\" id=\"optionTab\" data-for=\"options\">Options</div><div class=\"tab\" id=\"indexTab\">Index Page<input type=\"checkbox\" id=\"addIndex\"></div><div class=\"tab\" id=\"closeCollect\" title=\"close collectjs\">&times;</div></div><div id=\"tabGroups\" class=\"groups\"><div class=\"group groups\"><select id=\"allGroups\"></select><button id=\"newGroup\">Add Rule Group</button><button id=\"deleteGroup\">Remove Rule Group</button></div><div class=\"group options\"></div><div class=\"group rules\"><div id=\"savedRuleHolder\"><div class=\"ruleGroup\" data-selector=\"default\"><div class=\"groupRules\"></div></div></div><button id=\"uploadRules\">Upload Saved Rules</button></div></div></div></div><div id=\"collectMain\"><div id=\"selectorPreview\">Selector: <span id=\"selectorText\"></span></div><div id=\"selectorItems\" class=\"items\"><div id=\"selectorHolder\"></div><button id=\"saveSelector\">Confirm Selector</button></div><div id=\"ruleItems\" class=\"items\"><div id=\"ruleAlert\"></div><div id=\"ruleHTMLHolder\"><button id=\"ruleCyclePrevious\" class=\"cycle\" title=\"previous element matching selector\">Previous</button><span id=\"ruleHTML\"></span><button id=\"ruleCycleNext\" class=\"cycle\" title=\"next element matching selector\">Next</button></div><div id=\"ruleInputs\"><div class=\"rule\"><label for=\"ruleName\">Name:</label><input id=\"ruleName\" name=\"ruleName\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleAttr\">Attribute:</label><input id=\"ruleAttr\" name=\"ruleAttr\" type=\"text\"></input></div><div class=\"rule\"><label for=\"ruleRange\">Range:</label><input id=\"ruleRange\" name=\"ruleRange\" type=\"text\"></input></div></div><button id=\"saveRule\">Save Rule</button></div></div>";
     document.body.appendChild(div);
     addNoSelect(div.querySelectorAll("*"));
+
+    Collect.collectTabs = tabs(document.getElementById("collectOptions")),
+    Collect.selectorTabs = tabs(document.getElementById("selectorButtons"));
 }
 
 function resetInterface(){
@@ -283,7 +276,7 @@ function resetInterface(){
     }
 
     // ruleItems
-    document.getElementById("previewGroup").classList.remove("show");
+    Collect.selectorTabs.hide();
     document.getElementById("rulePreview").innerHTML = "";
     document.getElementById("ruleHTML").innerHTML = "";
     var inputs = document.querySelectorAll("#ruleInputs input"),
@@ -405,8 +398,9 @@ function applyRuleRange(event){
     var rangeElement = document.getElementById("ruleRange"),
         range = rangeElement.value,
         rangeInt = parseInt(range, 10),
-        len = Collect.elements.length;
+        len;
     Collect.matchSelector();
+    len = Collect.elements.length;
     if ( !isNaN(rangeInt) ) {
         if ( rangeInt < 0 ) {
             if ( -1*rangeInt > len ) {
@@ -567,29 +561,6 @@ function toggleParentEvent(event){
     
 }
 
-function toggleTab(event){
-    event.preventDefault();
-    event.stopPropagation();
-    if ( this.classList.contains("active") ){
-        this.classList.remove("active");
-        hideActive();
-    } else {
-        this.classList.add("active");
-        showActive(this);
-    }
-}
-
-function togglePreview(event){
-    event.preventDefault();
-    event.stopPropagation();
-    var group = document.getElementById("previewGroup");
-    if ( group.classList.contains("show") ){
-        group.classList.remove("show");
-    } else {
-        group.classList.add("show");
-    }
-}
-
 function uploadRules(event){
     chrome.storage.local.get(null, function(storage){
         var host = window.location.hostname,
@@ -599,7 +570,7 @@ function uploadRules(event){
     });
 }
 
-function createNewGroup(event){
+function createGroup(event){
     event.preventDefault();
     var name = prompt("Group Name");
     // make sure name isn't empty string
@@ -629,7 +600,7 @@ function createNewGroup(event){
                 rules: {}
             };
             chrome.storage.local.set({'sites': storage.sites});
-            hideActive();
+            Collect.collectTabs.hide();
         }
     });
 }
@@ -667,7 +638,7 @@ function deleteGroup(event){
         }
         storage.sites[host] = site;
         chrome.storage.local.set({'sites': storage.sites});
-        hideActive();
+        Collect.collectTabs.hide();
     });
 }
 
@@ -679,7 +650,6 @@ function loadGroup(event){
         var host = window.location.hostname,
             site = storage.sites[host],
             group = site.groups[name];
-        Collect.group = group;
         loadGroupObject(group);
     });
 }
@@ -811,33 +781,6 @@ function addRule(rule){
 
     ruleElement = ruleHTML(rule);
     holder.appendChild(ruleElement);
-}
-
-/*
-show the .group associated with a tab
-*/
-function showActive(ele){
-    // if one is already shown, hide that first
-    hideActive();
-    var groupID = ele.dataset.for,
-        group = document.getElementById(groupID);
-    Collect.options.activeTab = ele;
-    Collect.options.activeGroup = group;
-    group.classList.add("show");
-}
-
-/*
-hide the active .group
-*/
-function hideActive(){
-    if ( Collect.options.activeGroup ) {
-        Collect.options.activeGroup.classList.remove("show");
-    }
-    if ( Collect.options.activeTab ) {
-        Collect.options.activeTab.classList.remove("active");
-    }
-    Collect.options.activeTab = undefined;
-    Collect.options.activeGroup = undefined;
 }
 
 /***********************
@@ -1001,7 +944,7 @@ function saveRule(rule){
         storage.sites[host] = site;
         chrome.storage.local.set({'sites': storage.sites});
         // hide preview after saving rule
-        document.getElementById("previewGroup").classList.remove("show");
+        Collect.selectorTabs.hide();
     });
 }
 

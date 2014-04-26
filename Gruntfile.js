@@ -10,6 +10,7 @@ module.exports = function(grunt){
                 globals: {
                     chrome: true,
                     SelectorFamily: true,
+                    tabs: true
                 },
                 devel: true,
                 expr: true

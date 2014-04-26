@@ -135,18 +135,18 @@ body {
 #optionGroup {
   height: 250px; }
 
-#ruleGroup .collectGroup {
+.rules .collectGroup {
   margin-right: 10px;
   padding: 3px 0 3px 3px;
   border: 1px solid #444444; }
-  #ruleGroup .collectGroup span {
+  .rules .collectGroup span {
     padding: 3px; }
-  #ruleGroup .collectGroup .deltog {
+  .rules .collectGroup .deltog {
     cursor: pointer;
     background: #efefef; }
-#ruleGroup .ruleGroup {
+.rules .ruleGroup {
   margin-bottom: 15px; }
-  #ruleGroup .ruleGroup h2 {
+  .rules .ruleGroup h2 {
     text-decoration: underline;
     margin: 10px 0; }
 
